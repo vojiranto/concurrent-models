@@ -1,12 +1,12 @@
 module Control.Actor.Message
-    ( ActorMsg
+    ( ActorMessage
     , TypeRep(..)
-    , MsgType
+    , MessageType
     , otherwiseType
-    , toActorMsg
-    , fromActorMsg
-    , fromDataToMsgType
-    , fromActorMsgToType
+    , toActorMessage
+    , fromActorMessage
+    , fromDataToMessageType
+    , fromActorMessageToType
     ) where
 
 import           Universum
@@ -15,20 +15,20 @@ import           Data.Dynamic
 import           Data.Typeable
 import qualified Data.Text     as T
 
-type ActorMsg = Dynamic
-type MsgType  = Text
+type ActorMessage = Dynamic
+type MessageType  = Text
 
-otherwiseType :: MsgType
+otherwiseType :: MessageType
 otherwiseType = "otherwise"
 
-toActorMsg :: Typeable a => a -> ActorMsg
-toActorMsg = toDyn
+toActorMessage :: Typeable a => a -> ActorMessage
+toActorMessage = toDyn
 
-fromActorMsg :: Typeable a => ActorMsg -> a
-fromActorMsg = fromJust . fromDynamic
+fromActorMessage :: Typeable a => ActorMessage -> a
+fromActorMessage = fromJust . fromDynamic
 
-fromActorMsgToType :: ActorMsg -> MsgType
-fromActorMsgToType = T.pack . takeWhile (/= ' ') . show . dynTypeRep
+fromActorMessageToType :: ActorMessage -> MessageType
+fromActorMessageToType = T.pack . takeWhile (/= ' ') . show . dynTypeRep
 
-fromDataToMsgType :: Typeable a => a -> MsgType
-fromDataToMsgType = T.pack . takeWhile (/= ' ') . show . typeOf
+fromDataToMessageType :: Typeable a => a -> MessageType
+fromDataToMessageType = T.pack . takeWhile (/= ' ') . show . typeOf

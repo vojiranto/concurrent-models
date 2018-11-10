@@ -7,8 +7,8 @@ module Control.Actor
     , notify
     , math
     , otherwiseMath
-    , fromActorMsgToType
-    , fromDataToMsgType
+    , fromActorMessageToType
+    , fromDataToMessageType
     ) where
 
 import           Universum
@@ -21,30 +21,42 @@ import qualified Data.Map           as M
 
 data StopActor = StopActor
 
-data Actor = Actor (TChan ActorMsg) ThreadId
+stopType :: MessageType
+stopType = fromDataToMessageType StopActor
+
+data Actor = Actor (TChan ActorMessage) ThreadId
+
+data AnlyzeMessageResult = StopNodeR | ApplyHandlerR
+    deriving Eq
+
+analyzeMessage :: ActorMessage -> AnlyzeMessageResult
+analyzeMessage message
+    | fromActorMessageToType message == stopType = StopNodeR
+    | otherwise                                  = ApplyHandlerR
+
+applyHandler :: HandlerMap -> ActorMessage -> IO ()
+applyHandler handlerMap message = do
+    let messageType = fromActorMessageToType message
+    case messageType `M.lookup` handlerMap of
+        Just handler -> handler message
+        _            -> whenJust (otherwiseType `M.lookup` handlerMap) $
+                            \handler -> handler message
 
 mkActor :: (Actor -> HandlerL a) -> IO Actor
 mkActor handler = do
-    chan <- atomically newTChan
+    chan     <- atomically newTChan
     threadId <- forkIO $ do
-        threadId   <- myThreadId
-        handlerMap <- runHandlerL (handler $ Actor chan threadId)
-        let loop = do
-                msg <- atomically (readTChan chan)
-                let msgType = fromActorMsgToType msg
-                if msgType == fromDataToMsgType StopActor then pure ()
-                else do
-                    case msgType `M.lookup` handlerMap of
-                        Just handle -> handle msg
-                        Nothing     -> case otherwiseType `M.lookup` handlerMap of
-                            Just handle -> handle msg
-                            Nothing     -> error "Msg with type is droped."
-                    loop
-        loop
+        actor      <- Actor chan <$> myThreadId
+        handlerMap <- makeHandlerMap (handler actor)
+        forever $ do
+            message <- atomically $ readTChan chan
+            case analyzeMessage message of
+                StopNodeR       -> killActor actor
+                ApplyHandlerR   -> applyHandler handlerMap message
     pure $ Actor chan threadId
 
 notify :: Typeable a => Actor -> a -> IO () 
-notify (Actor chan _) msg = atomically $ writeTChan chan $ toActorMsg msg
+notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message
 
 stopActor :: Actor -> IO ()
 stopActor actor = notify actor StopActor
