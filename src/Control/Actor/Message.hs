@@ -1,4 +1,4 @@
-module Control.ActorMsg
+module Control.Actor.Message
     ( ActorMsg
     , TypeRep(..)
     , MsgType

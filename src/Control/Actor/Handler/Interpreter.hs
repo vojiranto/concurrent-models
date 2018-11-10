@@ -1,10 +1,10 @@
-module Control.Handler.Interpreter where
+module Control.Actor.Handler.Interpreter where
 
 import           Universum
 import qualified Data.Map as M
 import           Control.Monad.Free
-import           Control.Handler.Language
-import           Control.ActorMsg
+import           Control.Actor.Handler.Language
+import           Control.Actor.Message
 
 type HandlerMap = M.Map MsgType (ActorMsg -> IO ())
 

@@ -12,9 +12,9 @@ module Control.Actor
     ) where
 
 import           Universum
-import           Control.Handler.Language 
-import           Control.Handler.Interpreter
-import           Control.ActorMsg
+import           Control.Actor.Handler.Language 
+import           Control.Actor.Handler.Interpreter
+import           Control.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent
 import qualified Data.Map           as M

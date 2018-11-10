@@ -1,11 +1,11 @@
 {-# Language DeriveFunctor    #-}
 {-# Language FlexibleContexts #-}
 
-module Control.Handler.Language where
+module Control.Actor.Handler.Language where
 
 import           Universum
 import           Control.Monad.Free
-import           Control.ActorMsg
+import           Control.Actor.Message
 
 type ActorHandler = ActorMsg -> IO ()
 
