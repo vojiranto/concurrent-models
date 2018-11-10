@@ -16,7 +16,7 @@ import           Control.Actor.Handler.Language
 import           Control.Actor.Handler.Interpreter
 import           Control.Actor.Message
 import           Control.Concurrent.STM.TChan
-import           Control.Concurrent
+import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 import qualified Data.Map           as M
 
 data StopActor = StopActor
@@ -48,11 +48,15 @@ mkActor handler = do
     threadId <- forkIO $ do
         actor      <- Actor chan <$> myThreadId
         handlerMap <- makeHandlerMap (handler actor)
+        mutex      <- newMVar True
         forever $ do
+            void $ takeMVar mutex
             message <- atomically $ readTChan chan
             case analyzeMessage message of
                 StopNodeR       -> killActor actor
-                ApplyHandlerR   -> applyHandler handlerMap message
+                ApplyHandlerR   -> do
+                    applyHandler handlerMap message
+                    putMVar mutex True
     pure $ Actor chan threadId
 
 notify :: Typeable a => Actor -> a -> IO () 
