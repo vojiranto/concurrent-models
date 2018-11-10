@@ -3,10 +3,10 @@ module Control.StateMachine.Language where
 
 import           Universum
 import           Control.Monad.Free
-import           Control.Actor.Message
+import           Data.Typeable
 
 type MachineState = TypeRep
-type MachineEvent = ActorMessage
+type MachineEvent = TypeRep
 
 data StateMachineF next where
     AddState        :: MachineState -> (() -> next) -> StateMachineF next
@@ -19,20 +19,20 @@ data StateMachineF next where
 
 type StateMachineL = Free StateMachineF
 
-addState :: MachineState -> StateMachineL ()
-addState state = liftF $ AddState state id
+addState :: Typeable a => a -> StateMachineL ()
+addState state = liftF $ AddState (typeOf state) id
 
-setInitialState ::  MachineState -> StateMachineL ()
-setInitialState state = liftF $ SetInitialState state id
+setInitialState :: Typeable a => a -> StateMachineL ()
+setInitialState state = liftF $ SetInitialState (typeOf state) id
 
-setFinishState :: MachineState -> StateMachineL ()
-setFinishState state = liftF $ SetFinishState state id
+setFinishState :: Typeable a => a -> StateMachineL ()
+setFinishState state = liftF $ SetFinishState (typeOf state) id
 
-addTransition :: MachineState -> MachineEvent -> MachineState -> StateMachineL ()
-addTransition state1 event state2 = liftF $ AddTransition state1 event state2 id
+addTransition :: (Typeable a, Typeable b, Typeable c) => a -> b -> c -> StateMachineL ()
+addTransition state1 event state2 = liftF $ AddTransition (typeOf state1) (typeOf event) (typeOf state2) id
 
-entryDo :: MachineState -> IO () -> StateMachineL ()
-entryDo state io = liftF $ EntryDo state io id
+entryDo :: Typeable a => a -> IO () -> StateMachineL ()
+entryDo state io = liftF $ EntryDo (typeOf state) io id
 
-exitDo :: MachineState -> IO () -> StateMachineL ()
-exitDo state io = liftF $ ExitDo state io id
+exitDo :: Typeable a => a -> IO () -> StateMachineL ()
+exitDo state io = liftF $ ExitDo (typeOf state) io id
