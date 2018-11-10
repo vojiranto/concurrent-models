@@ -3,6 +3,7 @@ module Control.Actor
     , HandlerL
     , mkActor
     , stopActor
+    , killActor
     , notify
     , math
     , otherwiseMath
@@ -20,29 +21,33 @@ import qualified Data.Map           as M
 
 data StopActor = StopActor
 
-newtype Actor = Actor (TChan ActorMsg)
+data Actor = Actor (TChan ActorMsg) ThreadId
 
-mkActor :: (Actor -> HandlerL a) -> IO (Actor, IO ())
+mkActor :: (Actor -> HandlerL a) -> IO Actor
 mkActor handler = do
     chan <- atomically newTChan
-    let actor = Actor chan
-    handlerMap <- runHandlerL (handler actor)
-    let loop = do
-            msg <- atomically (readTChan chan)
-            let msgType = fromActorMsgToType msg
-            if msgType == fromDataToMsgType StopActor then pure ()
-            else do
-                case msgType `M.lookup` handlerMap of
-                    Just handle -> handle msg
-                    Nothing     -> case otherwiseType `M.lookup` handlerMap of
+    threadId <- forkIO $ do
+        threadId   <- myThreadId
+        handlerMap <- runHandlerL (handler $ Actor chan threadId)
+        let loop = do
+                msg <- atomically (readTChan chan)
+                let msgType = fromActorMsgToType msg
+                if msgType == fromDataToMsgType StopActor then pure ()
+                else do
+                    case msgType `M.lookup` handlerMap of
                         Just handle -> handle msg
-                        Nothing     -> error "Msg with type is droped."
-                loop
-    void $ forkIO loop 
-    pure (actor, stopActor actor)
+                        Nothing     -> case otherwiseType `M.lookup` handlerMap of
+                            Just handle -> handle msg
+                            Nothing     -> error "Msg with type is droped."
+                    loop
+        loop
+    pure $ Actor chan threadId
 
 notify :: Typeable a => Actor -> a -> IO () 
-notify (Actor chan) msg = atomically $ writeTChan chan $ toActorMsg msg
+notify (Actor chan _) msg = atomically $ writeTChan chan $ toActorMsg msg
 
 stopActor :: Actor -> IO ()
 stopActor actor = notify actor StopActor
+
+killActor :: Actor -> IO ()
+killActor (Actor _ threadId) = killThread threadId

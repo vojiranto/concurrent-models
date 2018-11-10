@@ -21,7 +21,7 @@ handlers myLink = do
 
 main :: IO ()
 main = do
-    (actor1, _) <- mkActor handlers
-    (actor2, _) <- mkActor handlers
+    actor1 <- mkActor handlers
+    actor2 <- mkActor handlers
     notify actor2 $ Ping actor1 10
     threadDelay 10000
