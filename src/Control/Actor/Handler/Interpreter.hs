@@ -9,9 +9,8 @@ import           Control.Actor.Message
 type HandlerMap = M.Map MessageType (ActorMessage -> IO ())
 
 interpretHandlerL :: IORef HandlerMap -> HandlerF a -> IO a
-interpretHandlerL m (MakeHandler messageType handler next) = do
-    modifyIORef m (M.insert messageType handler)
-    pure (next ())
+interpretHandlerL m (MakeHandler messageType handler next) =
+    next <$> modifyIORef m (M.insert messageType handler)
 
 makeHandlerMap :: HandlerL a-> IO HandlerMap
 makeHandlerMap h = do

@@ -1,7 +1,7 @@
 module Control.Actor
     ( Actor
     , HandlerL
-    , mkActor
+    , makeActor
     , stopActor
     , killActor
     , notify
@@ -42,8 +42,8 @@ applyHandler handlerMap message = do
         _            -> whenJust (otherwiseType `M.lookup` handlerMap) $
                             \handler -> handler message
 
-mkActor :: (Actor -> HandlerL a) -> IO Actor
-mkActor handler = do
+makeActor :: (Actor -> HandlerL a) -> IO Actor
+makeActor handler = do
     chan     <- atomically newTChan
     threadId <- forkIO $ do
         actor      <- Actor chan <$> myThreadId

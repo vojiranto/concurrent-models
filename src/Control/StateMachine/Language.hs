@@ -6,7 +6,6 @@ import           Control.Monad.Free
 import           Control.StateMachine.Domain
 
 data StateMachineF next where
-    SetInitialState :: MachineState -> (() -> next) -> StateMachineF next
     SetFinishState  :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition   :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
     EntryDo         :: MachineState -> IO () -> (() -> next) -> StateMachineF next
@@ -14,9 +13,6 @@ data StateMachineF next where
     deriving (Functor)
 
 type StateMachineL = Free StateMachineF
-
-setInitialState :: Typeable a => a -> StateMachineL ()
-setInitialState state = liftF $ SetInitialState (toMachineState state) id
 
 setFinishState :: Typeable a => a -> StateMachineL ()
 setFinishState state = liftF $ SetFinishState (toMachineState state) id
