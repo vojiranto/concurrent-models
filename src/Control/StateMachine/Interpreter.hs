@@ -4,3 +4,5 @@ import           Universum
 import qualified Data.Map as M
 import           Control.Monad.Free
 import           Control.StateMachine.Language
+import           Control.StateMachine.Runtime
+import           Control.StateMachine.Domain
