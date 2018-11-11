@@ -22,20 +22,25 @@ import           Control.StateMachine.Domain        as D
 
 newtype StateMachine = StateMachine (TChan D.MachineEvent)
 
-stateMachineWorker :: IORef R.StateMaschineData -> StateMachine -> IO ()
-stateMachineWorker stateMachineRef (StateMachine chan) = do
-    machineData <- readIORef stateMachineRef
+eventAnalize, stateAnalize, stateMachineWorker :: IORef R.StateMaschineData -> StateMachine -> IO ()
+eventAnalize stateMachineRef (StateMachine chan) = do
     event       <- atomically $ readTChan chan
-    let currentState = machineData ^. R.currentState
-    case R.takeTransition currentState event machineData of
-        Nothing       -> stateMachineWorker stateMachineRef (StateMachine chan)
-        Just newState -> do
-            R.apply currentState (machineData ^. R.exitDo)
-            R.apply newState     (machineData ^. R.entryDo)
+    machineData <- readIORef stateMachineRef
+    whenJust (R.takeTransition event machineData) $
+        \(R.Transition currentState newState) -> do
+            R.applyExitAction  machineData currentState 
+            R.applyEntryAction machineData newState
             modifyIORef stateMachineRef $ R.currentState .~ newState
-            if S.member newState (machineData ^. R.finishStates)
-                then R.apply newState     (machineData ^. R.exitDo)
-                else stateMachineWorker stateMachineRef (StateMachine chan)
+    stateAnalize stateMachineRef (StateMachine chan)
+
+stateAnalize stateMachineRef (StateMachine chan) = do
+    machineData <- readIORef stateMachineRef
+    let currentState = machineData ^. R.currentState
+    if R.isFinish machineData currentState
+        then R.applyExitAction machineData currentState
+        else eventAnalize stateMachineRef (StateMachine chan)
+
+stateMachineWorker = stateAnalize
 
 runStateMachine :: Typeable a => a -> StateMachineL () -> IO StateMachine
 runStateMachine initState machineDescriptione = do
@@ -43,8 +48,8 @@ runStateMachine initState machineDescriptione = do
     void $ forkIO $ do
         stateMachineData <- makeStateMachineData (toMachineState initState) machineDescriptione
         stateMachineRef  <- newIORef stateMachineData
-        R.apply (stateMachineData ^. R.currentState) (stateMachineData ^. R.entryDo)
-        stateMachineWorker stateMachineRef (StateMachine chan)
+        R.applyEntryAction stateMachineData (stateMachineData ^. R.currentState)
+        stateMachineWorker stateMachineRef  (StateMachine chan)
     pure $ StateMachine chan
 
 emit :: Typeable a => StateMachine -> a -> IO ()
