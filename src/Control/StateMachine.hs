@@ -6,6 +6,7 @@ module Control.StateMachine
     , setFinishState
     , addTransition
     , entryDo
+    , transitionDo
     , exitDo
     ) where
 
@@ -28,7 +29,8 @@ eventAnalize stateMachineRef (StateMachine chan) = do
     machineData <- readIORef stateMachineRef
     whenJust (R.takeTransition event machineData) $
         \(R.Transition currentState newState) -> do
-            R.applyExitAction  machineData currentState 
+            R.applyExitAction  machineData currentState
+            R.applyTransition  machineData currentState event newState 
             R.applyEntryAction machineData newState
             modifyIORef stateMachineRef $ R.currentState .~ newState
     stateAnalize stateMachineRef (StateMachine chan)

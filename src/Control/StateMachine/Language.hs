@@ -9,6 +9,7 @@ data StateMachineF next where
     SetFinishState  :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition   :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
     EntryDo         :: MachineState -> IO () -> (() -> next) -> StateMachineF next
+    TransitionDo    :: MachineState -> MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     ExitDo          :: MachineState -> IO () -> (() -> next) -> StateMachineF next
     deriving (Functor)
 
@@ -23,6 +24,10 @@ addTransition state1 event state2 =
 
 entryDo :: Typeable a => a -> IO () -> StateMachineL ()
 entryDo state io = liftF $ EntryDo (toMachineState state) io id
+
+transitionDo :: (Typeable a, Typeable b, Typeable c) => a -> b -> (c -> IO ()) -> StateMachineL ()
+transitionDo st1 st2 action =
+    liftF $ TransitionDo (toMachineState st1) (toMachineState st2) (actionToType action) (action . fromMachineEvent) id
 
 exitDo :: Typeable a => a -> IO () -> StateMachineL ()
 exitDo state io = liftF $ ExitDo (toMachineState state) io id
