@@ -24,3 +24,6 @@ eventToType (MachineEvent event) = EventType (show . dynTypeRep $ event)
 
 actionToType :: Typeable a => (a -> IO ()) -> EventType
 actionToType action = EventType (T.pack . takeWhile (/= ' ') . show . typeOf $ action)
+
+conditionToType :: Typeable a => (a -> Maybe MachineState) -> EventType
+conditionToType action = EventType (T.pack . takeWhile (/= ' ') . show . typeOf $ action)

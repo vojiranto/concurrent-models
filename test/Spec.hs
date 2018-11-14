@@ -33,18 +33,34 @@ handlers myLink = do
 stateMachinExemple :: IO ()
 stateMachinExemple = do
     putTextLn ""
-    sm <- runStateMachine Off $ do
+    sm1 <- runStateMachine Off $ do
         addTransition On  TakeOff Off
         addTransition Off TakeOn  On
 
-        entryDo On  $ putTextLn "Now the room is bright."
-        entryDo Off $ putTextLn "Now the room is dark."
+        entryDo On  $ putTextLn "Now the room1 is bright."
+        entryDo Off $ putTextLn "Now the room1 is dark."
 
-    emit sm TakeOn
-    emit sm TakeOn
-    emit sm TakeOff
+    emit sm1 TakeOn
+    emit sm1 TakeOn
+    emit sm1 TakeOff
 
     threadDelay 10000
+    putTextLn ""
+    sm2 <- runStateMachine Off $ do
+        addConditionalTransition Off $
+            \pressing -> if pressing == StrongPress then just On else Nothing 
+        addConditionalTransition On $
+            \pressing -> if pressing == StrongPress then just Off else Nothing 
+
+        entryDo On  $ putTextLn "Now the room2 is bright."
+        entryDo Off $ putTextLn "Now the room2 is dark."
+
+    emit sm2 StrongPress
+    emit sm2 WeaklyPress
+    emit sm2 StrongPress
+    threadDelay 10000
+
+data Press = StrongPress | WeaklyPress deriving Eq
 
 data On  = On
 data Off = Off

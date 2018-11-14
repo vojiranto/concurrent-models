@@ -12,7 +12,9 @@ interpretStateMachineL :: IORef R.StateMaschineData -> L.StateMachineF a -> IO a
 interpretStateMachineL m (L.SetFinishState st next) =
     next <$> modifyIORef m (R.finishStates %~ S.insert st)
 interpretStateMachineL m (L.AddTransition st1 ev st2 next) =
-    next <$> modifyIORef m (R.transitions %~ R.addTransitionToMap st1 ev st2 )
+    next <$> modifyIORef m (R.transitions %~ R.addTransitionToMap st1 ev st2 )    
+interpretStateMachineL m (L.AddConditionalTransition st1 ev condtition next) =
+    next <$> modifyIORef m (R.conditionalTransitions %~ M.insert (st1, ev) condtition)
 interpretStateMachineL m (L.EntryDo st action next) =
     next <$> modifyIORef m (R.entryDo %~ M.insert st action)
 interpretStateMachineL m (L.TransitionDo st1 st2 eventType action next) =
