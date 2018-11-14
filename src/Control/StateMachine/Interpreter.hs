@@ -20,7 +20,10 @@ interpretStateMachineL m (L.EntryDo st action next) =
 interpretStateMachineL m (L.TransitionDo st1 st2 eventType action next) =
     next <$> modifyIORef m (R.transitionDo %~ M.insert (st1, eventType, st2) action)    
 interpretStateMachineL m (L.EntryWithEventDo st1 eventType action next) =
-    next <$> modifyIORef m (R.entryWithEventDo %~ M.insert (st1, eventType) action)    
+    next <$> modifyIORef m (R.entryWithEventDo %~ M.insert (st1, eventType) action)
+
+interpretStateMachineL m (L.StaticalDo st1 eventType action next) =
+    next <$> modifyIORef m (R.staticalDo %~ M.insert (st1, eventType) action)
 interpretStateMachineL m (L.ExitWithEventDo st1  eventType action next) =
     next <$> modifyIORef m (R.exitWithEventDo %~ M.insert (st1, eventType) action)    
 

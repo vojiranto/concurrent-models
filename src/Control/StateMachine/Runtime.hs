@@ -17,6 +17,7 @@ data StateMaschineData = StateMaschineData
     , _conditionalTransitions   :: M.Map (MachineState, EventType) (MachineEvent -> Maybe MachineState)
     , _currentState             :: MachineState
     , _finishStates             :: S.Set MachineState
+    , _staticalDo               :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
     , _entryDo                  :: M.Map MachineState (IO ())
     , _entryWithEventDo         :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
     , _transitionDo             :: TransitionActions
@@ -26,10 +27,8 @@ data StateMaschineData = StateMaschineData
 makeLenses ''StateMaschineData
 
 emptyData :: MachineState -> StateMaschineData
-emptyData initState = StateMaschineData mempty mempty initState mempty mempty mempty mempty mempty mempty
-
-apply :: MachineState -> M.Map MachineState (IO ()) -> IO ()
-apply state ioHandlers = whenJust (state `M.lookup` ioHandlers) id
+emptyData initState =
+    StateMaschineData mempty mempty initState mempty mempty mempty mempty mempty mempty mempty
 
 takeTransition :: MachineEvent -> StateMaschineData -> Maybe Transition
 takeTransition event maschineData =
@@ -53,13 +52,19 @@ takeTransition event maschineData =
         conditionals :: M.Map (MachineState, EventType) (MachineEvent -> Maybe MachineState)
         conditionals = maschineData ^. conditionalTransitions
 
+apply :: MachineState -> M.Map MachineState (IO ()) -> IO ()
+apply state actionMap = whenJust (state `M.lookup` actionMap) id
+
+applyEvent :: MachineState -> MachineEvent -> M.Map (MachineState, EventType) (MachineEvent -> IO ()) -> IO ()
+applyEvent state event actionMap = whenJust ((state, eventToType event) `M.lookup` actionMap) ($ event)
+
 applyTransitionActions :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
 applyTransitionActions machineData state1 event state2 = do
     let eventType = eventToType event
     apply state1 (machineData ^. exitDo)
-    whenJust ((state1, eventType) `M.lookup` (machineData ^. exitWithEventDo))      ($ event)
+    applyEvent state1 event (machineData ^. exitWithEventDo)
     whenJust ((state1, eventType, state2) `M.lookup` (machineData ^. transitionDo)) ($ event)    
-    whenJust ((state2, eventType) `M.lookup` (machineData ^. entryWithEventDo))     ($ event)
+    applyEvent state2 event (machineData ^. entryWithEventDo)
     apply state2 (machineData ^. entryDo)
 
 isFinish :: StateMaschineData -> MachineState -> Bool

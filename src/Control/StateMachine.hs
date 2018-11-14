@@ -3,13 +3,16 @@ module Control.StateMachine
     ( StateMachine
     , StateMachineL
     , runStateMachine
-    , emit
     , setFinishState
     , addTransition
     , addConditionalTransition
-    , entryDo
-    , transitionDo
+    , staticalDo
     , exitDo
+    , exitWithEventDo
+    , transitionDo
+    , entryWithEventDo
+    , entryDo
+    , emit
     , just
     ) where
 
@@ -18,6 +21,7 @@ import           Universum
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.STM.TChan
 import qualified Data.Set as S
+import qualified Data.Map as M
 
 import           Control.StateMachine.Language      as L
 import           Control.StateMachine.Interpreter   as I
@@ -30,6 +34,9 @@ eventAnalize, stateAnalize, stateMachineWorker :: IORef R.StateMaschineData -> S
 eventAnalize stateMachineRef (StateMachine chan) = do
     event       <- atomically $ readTChan chan
     machineData <- readIORef stateMachineRef
+
+    R.applyEvent (machineData ^. R.currentState) event (machineData ^. R.staticalDo)
+    
     whenJust (R.takeTransition event machineData) $
         \(R.Transition currentState newState) -> do
             R.applyTransitionActions machineData currentState event newState

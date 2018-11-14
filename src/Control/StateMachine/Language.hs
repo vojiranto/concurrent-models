@@ -11,6 +11,7 @@ data StateMachineF next where
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
     AddConditionalTransition    :: MachineState -> EventType -> (MachineEvent -> Maybe MachineState) -> (() -> next) -> StateMachineF next
     -- Addition handlers to states and transitions of state mashine
+    StaticalDo                  :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     EntryDo                     :: MachineState -> IO () -> (() -> next) -> StateMachineF next
     EntryWithEventDo            :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     TransitionDo                :: MachineState -> MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
@@ -45,6 +46,10 @@ entryWithEventDo
     :: (Typeable state, Typeable action)
     => state -> (action -> IO ()) -> StateMachineL ()
 entryWithEventDo state action = liftF $ EntryWithEventDo
+    (toMachineState state) (actionToType action) (action . fromMachineEvent) id
+
+staticalDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
+staticalDo state action = liftF $ StaticalDo
     (toMachineState state) (actionToType action) (action . fromMachineEvent) id
 
 transitionDo

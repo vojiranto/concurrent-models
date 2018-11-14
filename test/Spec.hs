@@ -37,11 +37,14 @@ stateMachinExemple = do
         addTransition On  TakeOff Off
         addTransition Off TakeOn  On
 
-        entryDo On  $ putTextLn "Now the room1 is bright."
-        entryDo Off $ putTextLn "Now the room1 is dark."
+        entryDo On     $ putTextLn "Now the room1 is bright."
+        entryDo Off    $ putTextLn "Now the room1 is dark."
+        staticalDo On  $ \TakeOn  -> putTextLn "The light is already on."
+        staticalDo Off $ \TakeOff -> putTextLn "The light is already off."
 
     emit sm1 TakeOn
     emit sm1 TakeOn
+    emit sm1 TakeOff
     emit sm1 TakeOff
 
     threadDelay 10000
