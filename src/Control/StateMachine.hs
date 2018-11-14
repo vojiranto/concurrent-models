@@ -29,9 +29,11 @@ eventAnalize stateMachineRef (StateMachine chan) = do
     machineData <- readIORef stateMachineRef
     whenJust (R.takeTransition event machineData) $
         \(R.Transition currentState newState) -> do
-            R.applyExitAction  machineData currentState
-            R.applyTransition  machineData currentState event newState 
-            R.applyEntryAction machineData newState
+            R.applyExitAction       machineData currentState
+            R.applyExitWithEventDo  machineData currentState event
+            R.applyTransition       machineData currentState event newState
+            R.applyEntryWithEventDo machineData newState event
+            R.applyEntryAction      machineData newState
             modifyIORef stateMachineRef $ R.currentState .~ newState
     stateAnalize stateMachineRef (StateMachine chan)
 
