@@ -70,4 +70,4 @@ exitDo :: Typeable state => state -> IO () -> StateMachineL ()
 exitDo state action = liftF $ ExitDo (toMachineState state) action id
 
 just :: Typeable state => state -> Maybe MachineState
-just state = Just $ toMachineState state
+just = Just . toMachineState
