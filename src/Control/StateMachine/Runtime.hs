@@ -28,9 +28,6 @@ makeLenses ''StateMaschineData
 emptyData :: MachineState -> StateMaschineData
 emptyData initState = StateMaschineData mempty mempty initState mempty mempty mempty mempty mempty mempty
 
-addTransitionToMap :: MachineState -> MachineEvent -> MachineState -> TransitionMap -> TransitionMap
-addTransitionToMap state1 event = M.insert (state1, eventToType event)
-
 apply :: MachineState -> M.Map MachineState (IO ()) -> IO ()
 apply state ioHandlers = whenJust (state `M.lookup` ioHandlers) id
 
