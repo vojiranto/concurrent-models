@@ -9,6 +9,7 @@ import           Control.StateMachine.Runtime  as R
 import           Control.StateMachine.Domain   as D
 
 interpretStateMachineL :: IORef R.StateMaschineData -> L.StateMachineF a -> IO a
+interpretStateMachineL m (L.InitialiseAction action next) = next <$> action
 interpretStateMachineL m (L.SetFinishState st next) =
     next <$> modifyIORef m (R.finishStates %~ S.insert st)
 interpretStateMachineL m (L.AddTransition st1 ev st2 next) =

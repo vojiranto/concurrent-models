@@ -1,11 +1,13 @@
-{-# Language DeriveFunctor #-}
+{-# Language TemplateHaskell #-}
 module Control.StateMachine.Language where
 
 import           Universum
+import           Language.Haskell.TH.MakeFunctor
 import           Control.Monad.Free
 import           Control.StateMachine.Domain
 
 data StateMachineF next where
+    InitialiseAction            :: IO a -> (a -> next) -> StateMachineF next
     -- Construction of state mashine struct
     SetFinishState              :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
@@ -17,9 +19,12 @@ data StateMachineF next where
     TransitionDo                :: MachineState -> MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     ExitWithEventDo             :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     ExitDo                      :: MachineState -> IO () -> (() -> next) -> StateMachineF next
-    deriving (Functor)
+makeFunctorInstance ''StateMachineF
 
 type StateMachineL = Free StateMachineF
+
+initialiseAction :: IO a -> StateMachineL a
+initialiseAction action = liftF $ InitialiseAction action id
 
 setFinishState :: Typeable state => state -> StateMachineL ()
 setFinishState state = liftF $ SetFinishState (toMachineState state) id

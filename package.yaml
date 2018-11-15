@@ -29,6 +29,8 @@ default-extensions:
 dependencies:
 - base >= 4.7 && < 5
 - universum
+- template-haskell
+- th-abstraction
 - free
 - text
 - containers

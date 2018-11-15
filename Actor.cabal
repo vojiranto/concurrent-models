@@ -1,0 +1,77 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 6fb4d24df67600ae31bf67cea326df8878c6825510280782a896fc8ef947b80f
+
+name:           Actor
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/Actor#readme>
+homepage:       https://github.com/githubuser/Actor#readme
+bug-reports:    https://github.com/githubuser/Actor/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2018 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/Actor
+
+library
+  exposed-modules:
+      Control.Actor
+      Control.Actor.Handler.Interpreter
+      Control.Actor.Handler.Language
+      Control.Actor.Message
+      Control.StateMachine
+      Control.StateMachine.Domain
+      Control.StateMachine.Interpreter
+      Control.StateMachine.Language
+      Control.StateMachine.Runtime
+      Language.Haskell.TH.MakeFunctor
+  other-modules:
+      Paths_Actor
+  hs-source-dirs:
+      src
+  default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , free
+    , lens
+    , stm
+    , template-haskell
+    , text
+    , th-abstraction
+    , universum
+  default-language: Haskell2010
+
+test-suite Actor-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_Actor
+  hs-source-dirs:
+      test
+  default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Actor
+    , base >=4.7 && <5
+    , containers
+    , free
+    , lens
+    , stm
+    , template-haskell
+    , text
+    , th-abstraction
+    , universum
+  default-language: Haskell2010

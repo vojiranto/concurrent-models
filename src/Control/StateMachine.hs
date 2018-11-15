@@ -3,6 +3,7 @@ module Control.StateMachine
     ( StateMachine
     , StateMachineL
     , runStateMachine
+    , initialiseAction
     , setFinishState
     , addTransition
     , addConditionalTransition
