@@ -28,31 +28,31 @@ import qualified Control.StateMachine.Runtime       as R
 import           Control.StateMachine.Domain        as D
 
 newtype StateMachine = StateMachine (MVar D.MachineEvent)
-newtype Loger        = Loger Bool
+type Loger = Text -> IO ()
 
 eventAnalize, stateAnalize, stateMachineWorker :: Loger -> IORef R.StateMaschineData -> StateMachine -> IO ()
-eventAnalize (Loger loger) stateMachineRef (StateMachine eventVar) = do
+eventAnalize loger stateMachineRef (StateMachine eventVar) = do
     event       <- takeMVar  eventVar
     machineData <- readIORef stateMachineRef
  
     mTransition <- R.takeTransition event machineData
     unless (isJust mTransition) $ do
-        when loger $ putTextLn $ "[SM] [event] [" <> toText event <> "]"
+        loger $ "[SM] [event] [" <> toText event <> "]"
         R.applyEvent (machineData ^. R.currentState) event (machineData ^. R.staticalDo)
     whenJust mTransition $ \(R.Transition currentState newState) -> do
-        when loger $ putTextLn $ showTransition currentState event newState
+        loger $ showTransition currentState event newState
         R.applyTransitionActions machineData currentState event newState
         modifyIORef stateMachineRef $ R.currentState .~ newState
-    stateAnalize (Loger loger) stateMachineRef (StateMachine eventVar)
+    stateAnalize loger stateMachineRef (StateMachine eventVar)
 
-stateAnalize (Loger loger) stateMachineRef stateMachine = do
+stateAnalize loger stateMachineRef stateMachine = do
     machineData <- readIORef stateMachineRef
     let currentState = machineData ^. R.currentState
     if R.isFinish machineData currentState
         then do
-            when loger $ putTextLn $ "[SM] [finish state] [" <> toText currentState <> "]" 
+            loger $ "[SM] [finish state] [" <> toText currentState <> "]" 
             R.apply currentState (machineData ^. R.exitDo)
-        else eventAnalize (Loger loger) stateMachineRef stateMachine
+        else eventAnalize loger stateMachineRef stateMachine
 
 showTransition :: MachineState -> MachineEvent -> MachineState -> Text
 showTransition st1 ev st2 =
@@ -60,23 +60,23 @@ showTransition st1 ev st2 =
 stateMachineWorker = stateAnalize
 
 runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
-runStateMachine (Loger loger) (toMachineState -> initState) machineDescriptione = do
+runStateMachine loger (toMachineState -> initState) machineDescriptione = do
     eventVar <- newEmptyMVar
     let stateMachine = StateMachine eventVar
     void $ forkIO $ do
-        stateMachineData <- makeStateMachineData initState machineDescriptione
+        stateMachineData <- makeStateMachineData loger initState machineDescriptione
         stateMachineRef  <- newIORef stateMachineData
         
-        when loger $ putTextLn $ "[SM] [init state] [" <> toText initState <> "]"
+        loger $ "[SM] [init state] [" <> toText initState <> "]"
         R.apply initState (stateMachineData ^. R.entryDo)
-        stateMachineWorker (Loger loger) stateMachineRef stateMachine
+        stateMachineWorker loger stateMachineRef stateMachine
     pure stateMachine
 
 emit :: Typeable a => StateMachine -> a -> IO ()
 emit (StateMachine eventVar) = putMVar eventVar . D.toMachineEvent
 
 logToConsole :: Loger
-logToConsole = Loger True
+logToConsole = putTextLn
 
 logOff :: Loger
-logOff = Loger False
+logOff _ = pure ()
