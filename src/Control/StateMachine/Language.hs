@@ -1,4 +1,6 @@
-{-# Language TemplateHaskell #-}
+{-# Language TemplateHaskell       #-}
+{-# Language FlexibleInstances     #-}
+{-# Language MultiParamTypeClasses #-}
 module Control.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
@@ -16,7 +18,7 @@ module Control.StateMachine.Language
     , nothing
     ) where
 
-import           Universum
+import           Universum hiding (ToText (..))
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Monad.Free
 import           Control.StateMachine.Domain
@@ -57,21 +59,21 @@ addConditionalTransition
 addConditionalTransition currentState condition = liftF $ AddConditionalTransition
     (toMachineState currentState)
     (conditionToType condition)
-    (toSafeCondition condition)
+    (toSafe condition)
     id
 
 entryDo :: Typeable state => state -> IO () -> StateMachineL ()
-entryDo newState action = liftF $ EntryDo (toMachineState newState) action id
+entryDo newState action = liftF $ EntryDo (toMachineState newState) (toSafe action) id
 
 entryWithEventDo
     :: (Typeable state, Typeable action)
     => state -> (action -> IO ()) -> StateMachineL ()
 entryWithEventDo newState action = liftF $ EntryWithEventDo
-    (toMachineState newState) (actionToType action) (toSafeAction action) id
+    (toMachineState newState) (actionToType action) (toSafe action) id
 
 staticalDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
 staticalDo currentState action = liftF $ StaticalDo
-    (toMachineState currentState) (actionToType action) (toSafeAction action) id
+    (toMachineState currentState) (actionToType action) (toSafe action) id
 
 transitionDo
     :: (Typeable state1, Typeable state2, Typeable event)
@@ -80,15 +82,15 @@ transitionDo state1 state2 action = liftF $ TransitionDo
     (toMachineState state1)
     (toMachineState state2)
     (actionToType action)
-    (toSafeAction action)
+    (toSafe action)
     id
 
 exitWithEventDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
 exitWithEventDo oldState action = liftF $ ExitWithEventDo
-    (toMachineState oldState) (actionToType action) (toSafeAction action) id
+    (toMachineState oldState) (actionToType action) (toSafe action) id
 
 exitDo :: Typeable state => state -> IO () -> StateMachineL ()
-exitDo oldState action = liftF $ ExitDo (toMachineState oldState) action id
+exitDo oldState action = liftF $ ExitDo (toMachineState oldState) (toSafe action) id
 
 just :: Typeable state => state -> IO (Maybe MachineState)
 just = pure . Just . toMachineState
@@ -96,11 +98,17 @@ just = pure . Just . toMachineState
 nothing :: IO (Maybe MachineState)
 nothing = pure Nothing
 
-toSafeAction :: Typeable event => (event -> IO ()) -> MachineEvent -> IO ()
-toSafeAction action event = catchAny (action $ fromMachineEvent event) (\_ -> pure ())
+class ToSafe a b where
+    toSafe :: a -> b
 
-toSafeCondition
-    :: Typeable event
-    => (event -> IO (Maybe MachineState)) -> MachineEvent -> IO (Maybe MachineState)
-toSafeCondition condition event =
-    catchAny (condition $ fromMachineEvent event) (\_ -> pure Nothing)
+instance Typeable event => ToSafe (event -> IO ()) (MachineEvent -> IO ()) where
+    toSafe action event = catchAny (action $ fromMachineEvent event) $ \ex ->
+        putTextLn $ "[error] " <> show ex <> " in action with event " <> toText (actionToType action)
+
+instance Typeable event => ToSafe (event -> IO (Maybe MachineState)) (MachineEvent -> IO (Maybe MachineState)) where
+    toSafe condition event = catchAny (condition $ fromMachineEvent event) $ \ex -> do
+        putTextLn $ "[error] " <> show ex <> " in condition with event " <> toText (conditionToType condition)
+        pure Nothing
+
+instance ToSafe (IO ()) (IO ()) where
+    toSafe action = catchAny action $ \ex -> putTextLn $ "[error] " <> show ex <> " in action."

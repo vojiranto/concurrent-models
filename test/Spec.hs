@@ -1,6 +1,5 @@
 import           Universum
 import           Test.Hspec.Extra
-import           Control.Concurrent
 import           Control.Actor
 import           Control.StateMachine
 
@@ -14,58 +13,58 @@ main = do
 
 actorPingPongTest :: IO Bool
 actorPingPongTest = finishFor 1000 $ do
-    qSem <- newQSem 1
-    actor1 <- makeActor (handlers qSem)
-    actor2 <- makeActor (handlers qSem)
+    sem    <- newEmptyMVar
+    actor1 <- makeActor (handlers sem)
+    actor2 <- makeActor (handlers sem)
     notify actor2 $ Ping actor1 10
-    waitQSem qSem
+    takeMVar sem
 
 data Ping = Ping Actor Int
 data Pong = Pong Actor Int
 
-ping :: QSem -> Actor -> Ping -> IO ()
-ping qSem _      (Ping _     0) = signalQSem qSem
+ping :: MVar () -> Actor -> Ping -> IO ()
+ping sem  _      (Ping _     0) = putMVar sem ()
 ping _    myLink (Ping actor n) = notify actor $ Pong myLink (n-1)
 
-pong :: QSem -> Actor -> Pong -> IO ()
-pong qSem _      (Pong _     0) = signalQSem qSem
+pong :: MVar () -> Actor -> Pong -> IO ()
+pong sem  _      (Pong _     0) = putMVar sem ()
 pong _    myLink (Pong actor n) = notify actor $ Ping myLink (n-1)
 
-handlers :: QSem -> Actor -> HandlerL ()
+handlers :: MVar () -> Actor -> HandlerL ()
 handlers qSem myLink = do
     math $ ping qSem myLink
     math $ pong qSem myLink
 
 stateMachinTest1 :: IO Bool
-stateMachinTest1 = finishFor 1000 $ do
-    qSem <- newQSem 1
-    sm   <- runStateMachine Off $ do
-        addTransition On   TakeOff Off
-        entryDo       On $ signalQSem qSem
+stateMachinTest1 = finishFor 100000 $ do
+    sem <- newEmptyMVar
+    sm   <- runStateMachine logOff Off $ do
+        addTransition  Off   TakeOn On
+        addTransition  On    TakeOff Off
+        setFinishState On
+        entryDo       On $ putMVar sem ()
     emit sm TakeOn
-    waitQSem qSem
+    takeMVar sem
+
+data TakeOn  = TakeOn
+data TakeOff = TakeOff
 
 stateMachinTest2 :: IO Bool
 stateMachinTest2 = finishFor 1000 $ do
-    qSem <- newQSem 1
-    sm   <- runStateMachine Off $ do
+    sem <- newEmptyMVar
+    sm   <- runStateMachine logOff Off $ do
         addConditionalTransition Off $
             \pressing -> if pressing == StrongPress then just On else nothing 
         addConditionalTransition On $
             \pressing -> if pressing == StrongPress then just Off else nothing
 
-        transitionDo On Off $ \(_ :: Press) -> signalQSem qSem
+        transitionDo On Off $ \(_ :: Press) -> putMVar sem ()
 
     emit sm StrongPress
     emit sm StrongPress
-    waitQSem qSem
+    takeMVar sem
 
 data Press = StrongPress | WeaklyPress deriving Eq
 
 data On  = On
 data Off = Off
-
-data TakeOn = TakeOn
-data TakeOff = TakeOff
-
-
