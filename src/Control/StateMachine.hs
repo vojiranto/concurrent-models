@@ -14,6 +14,7 @@ module Control.StateMachine
     , entryDo
     , emit
     , just
+    , nothing
     ) where
 
 import           Universum
@@ -35,12 +36,12 @@ eventAnalize stateMachineRef (StateMachine chan) = do
     event       <- atomically $ readTChan chan
     machineData <- readIORef stateMachineRef
 
-    R.applyEvent (machineData ^. R.currentState) event (machineData ^. R.staticalDo)
-    
-    whenJust (R.takeTransition event machineData) $
-        \(R.Transition currentState newState) -> do
-            R.applyTransitionActions machineData currentState event newState
-            modifyIORef stateMachineRef $ R.currentState .~ newState
+    mTransition <- R.takeTransition event machineData
+    unless (isJust mTransition) $
+        R.applyEvent (machineData ^. R.currentState) event (machineData ^. R.staticalDo)
+    whenJust mTransition $ \(R.Transition currentState newState) -> do
+        R.applyTransitionActions machineData currentState event newState
+        modifyIORef stateMachineRef $ R.currentState .~ newState
     stateAnalize stateMachineRef (StateMachine chan)
 
 stateAnalize stateMachineRef (StateMachine chan) = do

@@ -8,13 +8,14 @@ import           Control.StateMachine.Domain
 import qualified Data.Map as M
 import qualified Data.Set as S
 
-type TransitionMap     = M.Map (MachineState, EventType) MachineState
-type TransitionActions = M.Map (MachineState, EventType, MachineState) (MachineEvent -> IO ())
-data Transition        = Transition MachineState MachineState
+type TransitionMap          = M.Map (MachineState, EventType) MachineState
+type ConditionalTransitions = M.Map (MachineState, EventType) (MachineEvent -> IO (Maybe MachineState))
+type TransitionActions      = M.Map (MachineState, EventType, MachineState) (MachineEvent -> IO ())
+data Transition             = Transition MachineState MachineState
 
 data StateMaschineData = StateMaschineData
     { _transitions              :: TransitionMap
-    , _conditionalTransitions   :: M.Map (MachineState, EventType) (MachineEvent -> Maybe MachineState)
+    , _conditionalTransitions   :: ConditionalTransitions
     , _currentState             :: MachineState
     , _finishStates             :: S.Set MachineState
     , _staticalDo               :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
@@ -30,15 +31,17 @@ emptyData :: MachineState -> StateMaschineData
 emptyData initState =
     StateMaschineData mempty mempty initState mempty mempty mempty mempty mempty mempty mempty
 
-takeTransition :: MachineEvent -> StateMaschineData -> Maybe Transition
+takeTransition :: MachineEvent -> StateMaschineData -> IO (Maybe Transition)
 takeTransition event maschineData =
     case lookupByEvent transitionMap of
-        Just newState -> Just $ Transition currentState' newState
+        Just newState -> pure . Just $ Transition currentState' newState
         Nothing       -> case lookupByEvent conditionals of
-            Just condition -> case condition event of
-                Just newState -> Just $ Transition currentState' newState
-                Nothing       -> Nothing
-            Nothing        -> Nothing
+            Just condition -> do
+                mNewState <- condition event
+                case mNewState of
+                    Just newState -> pure . Just $ Transition currentState' newState
+                    Nothing       -> pure Nothing
+            Nothing        -> pure Nothing
     where
         lookupByEvent :: M.Map (MachineState, EventType) a -> Maybe a 
         lookupByEvent = M.lookup (currentState', eventToType event)
@@ -49,7 +52,7 @@ takeTransition event maschineData =
         transitionMap :: TransitionMap
         transitionMap = maschineData ^. transitions
 
-        conditionals :: M.Map (MachineState, EventType) (MachineEvent -> Maybe MachineState)
+        conditionals :: ConditionalTransitions
         conditionals = maschineData ^. conditionalTransitions
 
 apply :: MachineState -> M.Map MachineState (IO ()) -> IO ()

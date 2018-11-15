@@ -51,9 +51,9 @@ stateMachinExemple = do
     putTextLn ""
     sm2 <- runStateMachine Off $ do
         addConditionalTransition Off $
-            \pressing -> if pressing == StrongPress then just On else Nothing 
+            \pressing -> if pressing == StrongPress then just On else nothing 
         addConditionalTransition On $
-            \pressing -> if pressing == StrongPress then just Off else Nothing 
+            \pressing -> if pressing == StrongPress then just Off else nothing
 
         entryDo On  $ putTextLn "Now the room2 is bright."
         entryDo Off $ putTextLn "Now the room2 is dark."

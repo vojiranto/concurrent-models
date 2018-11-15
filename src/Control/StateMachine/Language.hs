@@ -9,7 +9,7 @@ data StateMachineF next where
     -- Construction of state mashine struct
     SetFinishState              :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
-    AddConditionalTransition    :: MachineState -> EventType -> (MachineEvent -> Maybe MachineState) -> (() -> next) -> StateMachineF next
+    AddConditionalTransition    :: MachineState -> EventType -> (MachineEvent -> IO (Maybe MachineState)) -> (() -> next) -> StateMachineF next
     -- Addition handlers to states and transitions of state mashine
     StaticalDo                  :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     EntryDo                     :: MachineState -> IO () -> (() -> next) -> StateMachineF next
@@ -32,7 +32,7 @@ addTransition state1 event state2 =
 
 addConditionalTransition
     :: (Typeable state, Typeable event)
-    => state -> (event -> Maybe MachineState) -> StateMachineL ()
+    => state -> (event -> IO (Maybe MachineState)) -> StateMachineL ()
 addConditionalTransition state condition = liftF $ AddConditionalTransition
     (toMachineState state)
     (conditionToType condition)
@@ -69,5 +69,8 @@ exitWithEventDo state action = liftF $ ExitWithEventDo
 exitDo :: Typeable state => state -> IO () -> StateMachineL ()
 exitDo state action = liftF $ ExitDo (toMachineState state) action id
 
-just :: Typeable state => state -> Maybe MachineState
-just = Just . toMachineState
+just :: Typeable state => state -> IO (Maybe MachineState)
+just = pure . Just . toMachineState
+
+nothing :: IO (Maybe MachineState)
+nothing = pure Nothing

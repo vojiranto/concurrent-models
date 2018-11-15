@@ -25,5 +25,5 @@ eventToType (MachineEvent event) = EventType (dynTypeRep event)
 actionToType :: Typeable a => (a -> IO ()) -> EventType
 actionToType action = EventType (head . snd . splitTyConApp . typeOf $ action)
 
-conditionToType :: Typeable a => (a -> Maybe MachineState) -> EventType
+conditionToType :: Typeable a => (a -> IO (Maybe MachineState)) -> EventType
 conditionToType action = EventType (head . snd . splitTyConApp . typeOf $ action)
