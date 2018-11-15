@@ -38,7 +38,7 @@ handlers qSem myLink = do
 stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 100000 $ do
     sem <- newEmptyMVar
-    sm   <- runStateMachine logOff Off $ do
+    sm  <- runStateMachine logOff Off $ do
         addTransition  Off   TakeOn On
         addTransition  On    TakeOff Off
         setFinishState On
@@ -52,7 +52,7 @@ data TakeOff = TakeOff
 stateMachinTest2 :: IO Bool
 stateMachinTest2 = finishFor 1000 $ do
     sem <- newEmptyMVar
-    sm   <- runStateMachine logOff Off $ do
+    sm  <- runStateMachine logOff Off $ do
         addConditionalTransition Off $
             \pressing -> if pressing == StrongPress then just On else nothing 
         addConditionalTransition On $

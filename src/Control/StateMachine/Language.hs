@@ -41,7 +41,7 @@ makeFunctorInstance ''StateMachineF
 type StateMachineL = Free StateMachineF
 
 initialiseAction :: IO a -> StateMachineL a
-initialiseAction action = liftF $ InitialiseAction action id
+initialiseAction action = liftF $ InitialiseAction (toSafe action) id
 
 setFinishState :: Typeable state => state -> StateMachineL ()
 setFinishState finishState = liftF $
