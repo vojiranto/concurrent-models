@@ -5,6 +5,12 @@ import           Data.Typeable
 import           Data.Dynamic
 import           Universum.Unsafe
 
+data Event = FastEvent MachineEvent | WaitEvent MachineEvent (MVar ())
+
+getEvent :: Event -> IO MachineEvent
+getEvent (FastEvent event)     = pure event
+getEvent (WaitEvent event var) = putMVar var () >> pure event
+
 newtype MachineState = MachineState TypeRep deriving (Eq, Ord, Show)
 newtype MachineEvent = MachineEvent Dynamic
 newtype EventType    = EventType    TypeRep deriving (Eq, Ord, Show)

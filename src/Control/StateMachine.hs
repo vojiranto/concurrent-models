@@ -5,6 +5,7 @@ module Control.StateMachine
     , runStateMachine
     , initialiseAction
     , setFinishState
+    , myLink
     , addTransition
     , addConditionalTransition
     , staticalDo
@@ -14,6 +15,7 @@ module Control.StateMachine
     , entryWithEventDo
     , entryDo
     , emit
+    , waitEmit
     , just
     , nothing
     , logToConsole
@@ -22,17 +24,17 @@ module Control.StateMachine
 
 import           Universum hiding (ToText(..))
 import           Control.Concurrent (forkIO)
+import           Control.Concurrent.Chan
 import           Control.StateMachine.Language      as L
 import           Control.StateMachine.Interpreter   as I
 import qualified Control.StateMachine.Runtime       as R
 import           Control.StateMachine.Domain        as D
 
-newtype StateMachine = StateMachine (MVar D.MachineEvent)
 type Loger = Text -> IO ()
 
 eventAnalize, stateAnalize, stateMachineWorker :: Loger -> IORef R.StateMaschineData -> StateMachine -> IO ()
 eventAnalize loger stateMachineRef (StateMachine eventVar) = do
-    event       <- takeMVar  eventVar
+    event       <- getEvent =<< readChan eventVar
     machineData <- readIORef stateMachineRef
  
     mTransition <- R.takeTransition event machineData
@@ -61,10 +63,10 @@ stateMachineWorker = stateAnalize
 
 runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
 runStateMachine loger (toMachineState -> initState) machineDescriptione = do
-    eventVar <- newEmptyMVar
+    eventVar <- newChan
     let stateMachine = StateMachine eventVar
     void $ forkIO $ do
-        stateMachineData <- makeStateMachineData loger initState machineDescriptione
+        stateMachineData <- makeStateMachineData loger initState stateMachine machineDescriptione
         stateMachineRef  <- newIORef stateMachineData
         
         loger $ "[SM] [init state] [" <> toText initState <> "]"
@@ -73,7 +75,13 @@ runStateMachine loger (toMachineState -> initState) machineDescriptione = do
     pure stateMachine
 
 emit :: Typeable a => StateMachine -> a -> IO ()
-emit (StateMachine eventVar) = putMVar eventVar . D.toMachineEvent
+emit (StateMachine eventVar) = writeChan eventVar . D.FastEvent . D.toMachineEvent
+
+waitEmit :: Typeable a => StateMachine -> a -> IO ()
+waitEmit (StateMachine eventVar) event = do
+    var <- newEmptyMVar
+    writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) var
+    takeMVar var
 
 logToConsole :: Loger
 logToConsole = putTextLn

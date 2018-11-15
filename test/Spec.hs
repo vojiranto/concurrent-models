@@ -24,16 +24,16 @@ data Pong = Pong Actor Int
 
 ping :: MVar () -> Actor -> Ping -> IO ()
 ping sem  _      (Ping _     0) = putMVar sem ()
-ping _    myLink (Ping actor n) = notify actor $ Pong myLink (n-1)
+ping _    link (Ping actor n) = notify actor $ Pong link (n-1)
 
 pong :: MVar () -> Actor -> Pong -> IO ()
 pong sem  _      (Pong _     0) = putMVar sem ()
-pong _    myLink (Pong actor n) = notify actor $ Ping myLink (n-1)
+pong _    link (Pong actor n) = notify actor $ Ping link (n-1)
 
 handlers :: MVar () -> Actor -> HandlerL ()
-handlers qSem myLink = do
-    math $ ping qSem myLink
-    math $ pong qSem myLink
+handlers qSem link = do
+    math $ ping qSem link
+    math $ pong qSem link
 
 stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 100000 $ do

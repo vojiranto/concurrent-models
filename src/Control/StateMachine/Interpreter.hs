@@ -11,40 +11,42 @@ import           Control.StateMachine.Language as L
 import           Control.StateMachine.Runtime  as R
 import           Control.StateMachine.Domain   as D
 
-interpretStateMachineL :: (Text -> IO ()) -> IORef R.StateMaschineData -> L.StateMachineF a -> IO a
-interpretStateMachineL _ _ (L.InitialiseAction action next) = next <$> action
+interpretStateMachineL :: (Text -> IO ()) -> IORef R.StateMaschineData -> L.StateMachine -> L.StateMachineF a -> IO a
+interpretStateMachineL _ _ _ (L.InitialiseAction action next) = next <$> action
 
-interpretStateMachineL _ m (L.SetFinishState st next) =
+interpretStateMachineL _ _ link (L.MyLink next) = pure $ next link
+
+interpretStateMachineL _ m _ (L.SetFinishState st next) =
     next <$> modifyIORef m (R.finishStates %~ S.insert st)
 
-interpretStateMachineL _ m (L.AddTransition st1 ev st2 next) =
+interpretStateMachineL _ m _ (L.AddTransition st1 ev st2 next) =
     next <$> modifyIORef m (R.transitions %~ M.insert (st1, eventToType ev) st2)    
 
-interpretStateMachineL loger m (L.AddConditionalTransition st1 ev condtition next) =
+interpretStateMachineL loger m _ (L.AddConditionalTransition st1 ev condtition next) =
     next <$> modifyIORef m (R.conditionalTransitions %~ M.insert (st1, ev) (toSafe loger ev condtition))
 
-interpretStateMachineL loger m (L.EntryDo st action next) =
+interpretStateMachineL loger m _ (L.EntryDo st action next) =
     next <$> modifyIORef m (R.entryDo %~ M.insert st (toSafeAction loger action))
 
-interpretStateMachineL loger m (L.TransitionDo st1 st2 eventType action next) =
+interpretStateMachineL loger m _ (L.TransitionDo st1 st2 eventType action next) =
     next <$> modifyIORef m (R.transitionDo %~ M.insert (st1, eventType, st2) (toSafe loger eventType action))    
 
-interpretStateMachineL loger m (L.EntryWithEventDo st1 eventType action next) =
+interpretStateMachineL loger m _ (L.EntryWithEventDo st1 eventType action next) =
     next <$> modifyIORef m (R.entryWithEventDo %~ M.insert (st1, eventType) (toSafe loger eventType action))
 
-interpretStateMachineL loger m (L.StaticalDo st1 eventType action next) =
+interpretStateMachineL loger m _ (L.StaticalDo st1 eventType action next) =
     next <$> modifyIORef m (R.staticalDo %~ M.insert (st1, eventType) (toSafe loger eventType  action))
 
-interpretStateMachineL loger m (L.ExitWithEventDo st1  eventType action next) =
+interpretStateMachineL loger m _ (L.ExitWithEventDo st1  eventType action next) =
     next <$> modifyIORef m (R.exitWithEventDo %~ M.insert (st1, eventType) (toSafe loger eventType action))    
 
-interpretStateMachineL loger m (L.ExitDo st action next) =
+interpretStateMachineL loger m _ (L.ExitDo st action next) =
     next <$> modifyIORef m (R.exitDo %~ M.insert st (toSafeAction loger action))
 
-makeStateMachineData :: (Text -> IO ()) -> D.MachineState -> L.StateMachineL a-> IO R.StateMaschineData
-makeStateMachineData loger initState h = do
+makeStateMachineData :: (Text -> IO ()) -> D.MachineState -> L.StateMachine -> L.StateMachineL a-> IO R.StateMaschineData
+makeStateMachineData loger initState stateMachine h = do
     m <- newIORef $ emptyData initState
-    void $ foldFree (interpretStateMachineL loger m) h
+    void $ foldFree (interpretStateMachineL loger m stateMachine) h
     readIORef m
 
 class ToSafe t a where

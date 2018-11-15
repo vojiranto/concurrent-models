@@ -2,7 +2,9 @@
 module Control.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
+    , StateMachine(..)
     , initialiseAction
+    , myLink
     , setFinishState
     , addTransition
     , addConditionalTransition
@@ -18,11 +20,15 @@ module Control.StateMachine.Language
 
 import           Universum
 import           Language.Haskell.TH.MakeFunctor
+import           Control.Concurrent.Chan
 import           Control.Monad.Free
 import           Control.StateMachine.Domain
 
+newtype StateMachine = StateMachine (Chan Event)
+
 data StateMachineF next where
     InitialiseAction            :: IO a -> (a -> next) -> StateMachineF next
+    MyLink                      :: (StateMachine -> next) -> StateMachineF next
     -- Construction of state mashine struct
     SetFinishState              :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
@@ -40,6 +46,9 @@ type StateMachineL = Free StateMachineF
 
 initialiseAction :: IO a -> StateMachineL a
 initialiseAction action = liftF $ InitialiseAction action id
+
+myLink :: StateMachineL StateMachine
+myLink = liftF $ MyLink id
 
 setFinishState :: Typeable state => state -> StateMachineL ()
 setFinishState finishState = liftF $
