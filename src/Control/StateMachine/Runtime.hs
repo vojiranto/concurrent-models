@@ -56,10 +56,10 @@ takeTransition event maschineData =
         conditionals = maschineData ^. conditionalTransitions
 
 apply :: MachineState -> M.Map MachineState (IO ()) -> IO ()
-apply state actionMap = whenJust (state `M.lookup` actionMap) id
+apply state' actionMap = whenJust (state' `M.lookup` actionMap) id
 
 applyEvent :: MachineState -> MachineEvent -> M.Map (MachineState, EventType) (MachineEvent -> IO ()) -> IO ()
-applyEvent state event actionMap = whenJust ((state, eventToType event) `M.lookup` actionMap) ($ event)
+applyEvent state' event actionMap = whenJust ((state', eventToType event) `M.lookup` actionMap) ($ event)
 
 applyTransitionActions :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
 applyTransitionActions machineData state1 event state2 = do
@@ -71,4 +71,5 @@ applyTransitionActions machineData state1 event state2 = do
     apply state2 (machineData ^. entryDo)
 
 isFinish :: StateMaschineData -> MachineState -> Bool
-isFinish machineData state = S.member state (machineData ^. finishStates)
+isFinish machineData currentState' =
+    S.member currentState' (machineData ^. finishStates)

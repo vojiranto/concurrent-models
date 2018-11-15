@@ -27,7 +27,8 @@ initialiseAction :: IO a -> StateMachineL a
 initialiseAction action = liftF $ InitialiseAction action id
 
 setFinishState :: Typeable state => state -> StateMachineL ()
-setFinishState state = liftF $ SetFinishState (toMachineState state) id
+setFinishState finishState = liftF $
+    SetFinishState (toMachineState finishState) id
 
 addTransition
     :: (Typeable state1, Typeable event, Typeable state2)
@@ -38,24 +39,24 @@ addTransition state1 event state2 =
 addConditionalTransition
     :: (Typeable state, Typeable event)
     => state -> (event -> IO (Maybe MachineState)) -> StateMachineL ()
-addConditionalTransition state condition = liftF $ AddConditionalTransition
-    (toMachineState state)
+addConditionalTransition currentState condition = liftF $ AddConditionalTransition
+    (toMachineState currentState)
     (conditionToType condition)
     (condition . fromMachineEvent)
     id
 
 entryDo :: Typeable state => state -> IO () -> StateMachineL ()
-entryDo state action = liftF $ EntryDo (toMachineState state) action id
+entryDo newState action = liftF $ EntryDo (toMachineState newState) action id
 
 entryWithEventDo
     :: (Typeable state, Typeable action)
     => state -> (action -> IO ()) -> StateMachineL ()
-entryWithEventDo state action = liftF $ EntryWithEventDo
-    (toMachineState state) (actionToType action) (action . fromMachineEvent) id
+entryWithEventDo newState action = liftF $ EntryWithEventDo
+    (toMachineState newState) (actionToType action) (action . fromMachineEvent) id
 
 staticalDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
-staticalDo state action = liftF $ StaticalDo
-    (toMachineState state) (actionToType action) (action . fromMachineEvent) id
+staticalDo currentState action = liftF $ StaticalDo
+    (toMachineState currentState) (actionToType action) (action . fromMachineEvent) id
 
 transitionDo
     :: (Typeable state1, Typeable state2, Typeable event)
@@ -68,11 +69,11 @@ transitionDo state1 state2 action = liftF $ TransitionDo
     id
 
 exitWithEventDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
-exitWithEventDo state action = liftF $ ExitWithEventDo
-    (toMachineState state) (actionToType action) (action . fromMachineEvent) id
+exitWithEventDo oldState action = liftF $ ExitWithEventDo
+    (toMachineState oldState) (actionToType action) (action . fromMachineEvent) id
 
 exitDo :: Typeable state => state -> IO () -> StateMachineL ()
-exitDo state action = liftF $ ExitDo (toMachineState state) action id
+exitDo oldState action = liftF $ ExitDo (toMachineState oldState) action id
 
 just :: Typeable state => state -> IO (Maybe MachineState)
 just = pure . Just . toMachineState

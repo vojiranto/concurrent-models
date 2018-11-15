@@ -4,7 +4,6 @@ import           Universum hiding (head)
 import           Data.Typeable
 import           Data.Dynamic
 import           Universum.Unsafe
-import qualified Data.Text     as T
 
 newtype MachineState = MachineState TypeRep deriving (Eq, Ord, Show)
 newtype MachineEvent = MachineEvent Dynamic

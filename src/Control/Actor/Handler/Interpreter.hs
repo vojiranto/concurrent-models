@@ -15,5 +15,5 @@ interpretHandlerL m (MakeHandler messageType handler next) =
 makeHandlerMap :: HandlerL a-> IO HandlerMap
 makeHandlerMap h = do
     m <- newIORef mempty
-    foldFree (interpretHandlerL m) h
+    void $ foldFree (interpretHandlerL m) h
     readIORef m

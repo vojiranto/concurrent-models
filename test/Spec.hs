@@ -1,67 +1,64 @@
 import           Universum
+import           Test.Hspec.Extra
 import           Control.Concurrent
 import           Control.Actor
 import           Control.StateMachine
 
 main :: IO ()
-main = stateMachinExemple
+main = do
+    putTextLn ""
+    hspec $ do
+        it "Actor ping pong test"     $ isOk actorPingPongTest
+        it "Test 1 for state machine" $ isOk stateMachinTest1
+        it "Test 2 for state machine" $ isOk stateMachinTest2
 
-actorExemple :: IO ()
-actorExemple = do
-    actor1 <- makeActor handlers
-    actor2 <- makeActor handlers
+actorPingPongTest :: IO Bool
+actorPingPongTest = finishFor 1000 $ do
+    qSem <- newQSem 1
+    actor1 <- makeActor (handlers qSem)
+    actor2 <- makeActor (handlers qSem)
     notify actor2 $ Ping actor1 10
-    threadDelay 10000
+    waitQSem qSem
 
 data Ping = Ping Actor Int
 data Pong = Pong Actor Int
 
-ping :: Actor -> Ping -> IO ()
-ping myLink (Ping actor 0) = notify actor ("!@&#$!" :: Text)
-ping myLink (Ping actor n) = notify actor $ Pong myLink (n-1)
+ping :: QSem -> Actor -> Ping -> IO ()
+ping qSem _      (Ping _     0) = signalQSem qSem
+ping _    myLink (Ping actor n) = notify actor $ Pong myLink (n-1)
 
-pong :: Actor -> Pong -> IO ()
-pong myLink (Pong actor 0) = notify actor ("!@&#$!" :: Text)
-pong myLink (Pong actor n) = notify actor $ Ping myLink (n-1)
+pong :: QSem -> Actor -> Pong -> IO ()
+pong qSem _      (Pong _     0) = signalQSem qSem
+pong _    myLink (Pong actor n) = notify actor $ Ping myLink (n-1)
 
-handlers :: Actor -> HandlerL ()
-handlers myLink = do
-    math          $ ping myLink
-    math          $ pong myLink
-    otherwiseMath $ \_ -> putTextLn "\nActor success!\n"
+handlers :: QSem -> Actor -> HandlerL ()
+handlers qSem myLink = do
+    math $ ping qSem myLink
+    math $ pong qSem myLink
 
-stateMachinExemple :: IO ()
-stateMachinExemple = do
-    putTextLn ""
-    sm1 <- runStateMachine Off $ do
-        addTransition On  TakeOff Off
-        addTransition Off TakeOn  On
+stateMachinTest1 :: IO Bool
+stateMachinTest1 = finishFor 1000 $ do
+        qSem <- newQSem 1
+        sm   <- runStateMachine Off $ do
+            addTransition On   TakeOff Off
+            entryDo       On $ signalQSem qSem
+        emit sm TakeOn
+        waitQSem qSem
 
-        entryDo On     $ putTextLn "Now the room1 is bright."
-        entryDo Off    $ putTextLn "Now the room1 is dark."
-        staticalDo On  $ \TakeOn  -> putTextLn "The light is already on."
-        staticalDo Off $ \TakeOff -> putTextLn "The light is already off."
-
-    emit sm1 TakeOn
-    emit sm1 TakeOn
-    emit sm1 TakeOff
-    emit sm1 TakeOff
-
-    threadDelay 10000
-    putTextLn ""
-    sm2 <- runStateMachine Off $ do
+stateMachinTest2 :: IO Bool
+stateMachinTest2 = finishFor 1000 $ do
+    qSem <- newQSem 1
+    sm   <- runStateMachine Off $ do
         addConditionalTransition Off $
             \pressing -> if pressing == StrongPress then just On else nothing 
         addConditionalTransition On $
             \pressing -> if pressing == StrongPress then just Off else nothing
 
-        entryDo On  $ putTextLn "Now the room2 is bright."
-        entryDo Off $ putTextLn "Now the room2 is dark."
+        transitionDo On Off $ \(_ :: Press) -> signalQSem qSem
 
-    emit sm2 StrongPress
-    emit sm2 WeaklyPress
-    emit sm2 StrongPress
-    threadDelay 10000
+    emit sm StrongPress
+    emit sm StrongPress
+    waitQSem qSem
 
 data Press = StrongPress | WeaklyPress deriving Eq
 

@@ -1,6 +1,6 @@
 module Control.Actor.Message
     ( ActorMessage
-    , TypeRep(..)
+    , TypeRep
     , MessageType
     , otherwiseType
     , toActorMessage

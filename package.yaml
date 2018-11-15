@@ -1,6 +1,6 @@
-name:                Actor
+name:                concurrent-models
 version:             0.1.0.0
-github:              "githubuser/Actor"
+github:              "vojiranto/concurrent-models"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
@@ -39,14 +39,21 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options:
+  - -Wall
+  - -Werror
 
 tests:
   Actor-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
+    - -Wall
+    - -Werror
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - Actor
+    - concurrent-models
+    - async
+    - nanospec

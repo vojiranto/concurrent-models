@@ -4,13 +4,13 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6fb4d24df67600ae31bf67cea326df8878c6825510280782a896fc8ef947b80f
+-- hash: 49b1343be9ef3f3da8183c43be4f768dd6fd91d937635ec9302297a56c512b02
 
-name:           Actor
+name:           concurrent-models
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/Actor#readme>
-homepage:       https://github.com/githubuser/Actor#readme
-bug-reports:    https://github.com/githubuser/Actor/issues
+homepage:       https://github.com/vojiranto/concurrent-models#readme
+bug-reports:    https://github.com/vojiranto/concurrent-models/issues
 author:         Author name here
 maintainer:     example@example.com
 copyright:      2018 Author name here
@@ -23,7 +23,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/Actor
+  location: https://github.com/vojiranto/concurrent-models
 
 library
   exposed-modules:
@@ -38,10 +38,11 @@ library
       Control.StateMachine.Runtime
       Language.Haskell.TH.MakeFunctor
   other-modules:
-      Paths_Actor
+      Paths_concurrent_models
   hs-source-dirs:
       src
   default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
+  ghc-options: -Wall -Werror
   build-depends:
       base >=4.7 && <5
     , containers
@@ -58,17 +59,20 @@ test-suite Actor-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_Actor
+      Test.Hspec.Extra
+      Paths_concurrent_models
   hs-source-dirs:
       test
   default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      Actor
+      async
     , base >=4.7 && <5
+    , concurrent-models
     , containers
     , free
     , lens
+    , nanospec
     , stm
     , template-haskell
     , text

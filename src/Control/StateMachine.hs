@@ -21,8 +21,6 @@ module Control.StateMachine
 import           Universum
 
 import           Control.Concurrent (forkIO)
-import qualified Data.Set as S
-import qualified Data.Map as M
 
 import           Control.StateMachine.Language      as L
 import           Control.StateMachine.Interpreter   as I
