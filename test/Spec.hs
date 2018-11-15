@@ -38,12 +38,12 @@ handlers qSem myLink = do
 
 stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 1000 $ do
-        qSem <- newQSem 1
-        sm   <- runStateMachine Off $ do
-            addTransition On   TakeOff Off
-            entryDo       On $ signalQSem qSem
-        emit sm TakeOn
-        waitQSem qSem
+    qSem <- newQSem 1
+    sm   <- runStateMachine Off $ do
+        addTransition On   TakeOff Off
+        entryDo       On $ signalQSem qSem
+    emit sm TakeOn
+    waitQSem qSem
 
 stateMachinTest2 :: IO Bool
 stateMachinTest2 = finishFor 1000 $ do
