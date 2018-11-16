@@ -1,3 +1,4 @@
+{-# Language TemplateHaskell #-}
 import           Universum
 import           Test.Hspec.Extra
 
@@ -5,15 +6,6 @@ import           Data.Flag
 import           Control.Loger
 import           Control.Actor
 import           Control.StateMachine
-
-
-main :: IO ()
-main = do
-    putTextLn ""
-    hspec $ do
-        it "Actor ping pong test"     $ isOk actorPingPongTest
-        it "Test 1 for state machine" $ isOk stateMachinTest1
-        it "Test 2 for state machine" $ isOk stateMachinTest2
 
 actorPingPongTest :: IO Bool
 actorPingPongTest = finishFor 1000 $ do
@@ -39,9 +31,9 @@ handlers qSem link = do
     math $ ping qSem link
     math $ pong qSem link
 
-data On      = On
-data Off     = Off
-data TakeOn  = TakeOn
+
+makeStates ["On", "Off"]
+makeEvents ["TakeOn"]
 
 stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 100 $ do
@@ -54,7 +46,6 @@ stateMachinTest1 = finishFor 100 $ do
         exitDo         On  $ pure ()
     emit sm TakeOn
     await success
-
 
 stateMachinTest2 :: IO Bool
 stateMachinTest2 = finishFor 1000 $ do
@@ -73,4 +64,42 @@ stateMachinTest2 = finishFor 1000 $ do
 
 data Press = StrongPress | WeaklyPress deriving Eq
 
+main :: IO ()
+main = do
+    putTextLn ""
+    hspec $ do
+        it "Actor ping pong test"     $ isOk actorPingPongTest
+        it "Test 1 for state machine" $ isOk stateMachinTest1
+        it "Test 2 for state machine" $ isOk stateMachinTest2
 
+
+
+
+{-
+makeStates ["S1", "S2", "S3"]
+makeEvents ["Cliked"]
+
+stateMachinTest3 :: IO StateMachine
+stateMachinTest3 = runStateMachine logOff S1 $ do
+    addTransition  S1 Cliked S2
+    addTransition  S2 Cliked S3
+    addTransition  S3 Cliked S1
+-}
+    {-
+
+QStateMachine machine;
+QState *s1 = new QState();
+QState *s2 = new QState();
+QState *s3 = new QState();
+
+s1->addTransition(button, SIGNAL(clicked()), s2);
+s2->addTransition(button, SIGNAL(clicked()), s3);
+s3->addTransition(button, SIGNAL(clicked()), s1);
+
+machine.addState(s1);
+machine.addState(s2);
+machine.addState(s3);
+machine.setInitialState(s1);
+
+machine.start();
+-}

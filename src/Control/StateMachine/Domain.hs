@@ -48,3 +48,8 @@ instance Describe MachineState where
 
 instance Describe EventType where
     describe (EventType a) = "[event " <> show a <> "]"
+
+infixr 6  <:
+
+(<:) :: Typeable a => a -> [MachineState] -> [MachineState]
+a <: b = toMachineState a : b

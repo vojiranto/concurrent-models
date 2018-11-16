@@ -2,6 +2,8 @@
 module Control.StateMachine
     ( StateMachine
     , StateMachineL
+    , makeStates
+    , makeEvents
     , runStateMachine
     , initialiseAction
     , setFinishState
@@ -20,6 +22,7 @@ module Control.StateMachine
     , nothing
     , takeState
     , is
+    , (<:)
     ) where
 
 import           Universum
@@ -28,6 +31,8 @@ import           Data.Describe
 import           Control.Loger
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan
+
+import           Control.StateMachine.TH
 import           Control.StateMachine.Language      as L
 import           Control.StateMachine.Interpreter   as I
 import qualified Control.StateMachine.Runtime       as R
