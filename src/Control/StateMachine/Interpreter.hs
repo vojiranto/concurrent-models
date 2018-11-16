@@ -1,7 +1,7 @@
 {-# Language FlexibleInstances     #-}
 {-# Language MultiParamTypeClasses #-}
 
-module Control.StateMachine.Interpreter where
+module Control.StateMachine.Interpreter (makeStateMachineData) where
 
 import           Universum
 import qualified Data.Map as M
@@ -12,6 +12,12 @@ import           Control.Monad.Free
 import           Control.StateMachine.Language as L
 import           Control.StateMachine.Runtime  as R
 import           Control.StateMachine.Domain   as D
+
+makeStateMachineData :: Loger -> D.MachineState -> L.StateMachine -> L.StateMachineL a-> IO R.StateMaschineData
+makeStateMachineData logerAction initState stateMachine h = do
+    m <- newIORef $ emptyData logerAction initState 
+    void $ foldFree (interpretStateMachineL logerAction m stateMachine) h
+    readIORef m
 
 interpretStateMachineL :: Loger -> IORef R.StateMaschineData -> L.StateMachine -> L.StateMachineF a -> IO a
 interpretStateMachineL toLog _ _ (L.InitialiseAction action next) = do
@@ -57,12 +63,6 @@ interpretStateMachineL toLog m _ (L.ExitWithEventDo st1 eventType action next) =
 interpretStateMachineL toLog m _ (L.ExitDo st action next) = do
     toLog $ "[set 'exit do' handler] " <> describe st
     next <$> modifyIORef m (R.exitDo %~ M.insert st (toSafeAction toLog action))
-
-makeStateMachineData :: (Text -> IO ()) -> D.MachineState -> L.StateMachine -> L.StateMachineL a-> IO R.StateMaschineData
-makeStateMachineData logerAction initState stateMachine h = do
-    m <- newIORef $ emptyData logerAction initState 
-    void $ foldFree (interpretStateMachineL logerAction m stateMachine) h
-    readIORef m
 
 class ToSafe t a where
     toSafe :: (Text -> IO ()) -> t -> a -> a

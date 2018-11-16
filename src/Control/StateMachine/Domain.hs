@@ -8,12 +8,13 @@ import           Universum.Unsafe
 import           Data.Typeable
 import           Data.Dynamic
 import           Data.Describe
+import           Data.Flag
 
-data Event = FastEvent MachineEvent | WaitEvent MachineEvent (MVar ())
+data Event = FastEvent MachineEvent | WaitEvent MachineEvent Flag
 
-getEvent :: Event -> IO MachineEvent
-getEvent (FastEvent event)     = pure event
-getEvent (WaitEvent event var) = putMVar var () >> pure event
+getEvent :: Event -> IO (MachineEvent, Maybe Flag)
+getEvent (FastEvent event)     = pure (event, Nothing)
+getEvent (WaitEvent event flag) = pure (event, Just flag)
 
 newtype MachineState = MachineState TypeRep deriving (Eq, Ord)
 newtype MachineEvent = MachineEvent Dynamic

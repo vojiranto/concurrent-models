@@ -31,7 +31,6 @@ handlers qSem link = do
     math $ ping qSem link
     math $ pong qSem link
 
-
 makeStates ["On", "Off"]
 makeEvents ["TakeOn"]
 
@@ -71,35 +70,3 @@ main = do
         it "Actor ping pong test"     $ isOk actorPingPongTest
         it "Test 1 for state machine" $ isOk stateMachinTest1
         it "Test 2 for state machine" $ isOk stateMachinTest2
-
-
-
-
-{-
-makeStates ["S1", "S2", "S3"]
-makeEvents ["Cliked"]
-
-stateMachinTest3 :: IO StateMachine
-stateMachinTest3 = runStateMachine logOff S1 $ do
-    addTransition  S1 Cliked S2
-    addTransition  S2 Cliked S3
-    addTransition  S3 Cliked S1
--}
-    {-
-
-QStateMachine machine;
-QState *s1 = new QState();
-QState *s2 = new QState();
-QState *s3 = new QState();
-
-s1->addTransition(button, SIGNAL(clicked()), s2);
-s2->addTransition(button, SIGNAL(clicked()), s3);
-s3->addTransition(button, SIGNAL(clicked()), s1);
-
-machine.addState(s1);
-machine.addState(s2);
-machine.addState(s3);
-machine.setInitialState(s1);
-
-machine.start();
--}

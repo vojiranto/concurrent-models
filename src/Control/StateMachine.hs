@@ -27,6 +27,7 @@ module Control.StateMachine
 
 import           Universum
 import           Data.TextId
+import           Data.Flag
 import           Data.Describe
 import           Control.Loger
 import           Control.Concurrent (forkIO)
@@ -41,19 +42,21 @@ import           Control.StateMachine.Domain        as D
 eventAnalize, stateAnalize, stateMachineWorker
     :: IORef R.StateMaschineData -> StateMachine -> IO ()
 eventAnalize stateMachineRef (StateMachine eventVar stateVar) = do
-    event       <- getEvent =<< readChan eventVar
-    machineData <- readIORef stateMachineRef
- 
-    mTransition <- R.takeTransition event machineData
+    (event, processed) <- getEvent =<< readChan eventVar
+    machineData        <- readIORef stateMachineRef
+
+    mTransition        <- R.takeTransition event machineData
     unless (isJust mTransition) $ do
         machineData ^. R.loger $ describe event
         R.applyStaticalDo machineData event
+
     whenJust mTransition $ \(R.Transition currentState newState) -> do
         machineData ^. R.loger $ showTransition currentState event newState
         void $ swapMVar stateVar newState
         modifyIORef stateMachineRef $ R.currentState .~ newState
         R.applyTransitionActions machineData currentState event newState
 
+    whenJust processed liftFlag
     stateAnalize stateMachineRef (StateMachine eventVar stateVar)
 
 stateAnalize stateMachineRef stateMachine = do
@@ -94,6 +97,6 @@ takeState (StateMachine _ stateVar) = readMVar stateVar
 
 emitAndWait :: Typeable a => StateMachine -> a -> IO ()
 emitAndWait (StateMachine eventVar _) event = do
-    var <- newEmptyMVar
-    writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) var
-    takeMVar var
+    processed <- newFlag
+    writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
+    await processed

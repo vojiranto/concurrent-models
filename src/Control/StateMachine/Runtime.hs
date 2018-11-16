@@ -61,6 +61,14 @@ takeTransition event maschineData =
         conditionals :: ConditionalTransitions
         conditionals = maschineData ^. conditionalTransitions
 
+applyTransitionActions :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
+applyTransitionActions machineData state1 event state2 = do
+    applyExitDo             machineData state1
+    applyExitWithEventDo    machineData state1 event
+    applyTransitionDo       machineData state1 event state2
+    applyEntryWithEventDo   machineData state2 event
+    applyEntryDo            machineData state2
+
 applyEntryDo :: StateMaschineData -> MachineState -> IO ()
 applyEntryDo machineData st =
     whenJust (machineData ^. entryDo . at st) $ \action -> do
@@ -97,18 +105,6 @@ applyStaticalDo machineData event = do
     whenJust (machineData ^. staticalDo . at2 st (eventToType event)) $ \action -> do
         machineData ^. loger $ "[statical do] " <> describe st <> describe event
         action event
-
-applyEvent :: MachineState -> MachineEvent -> M.Map (MachineState, EventType) (MachineEvent -> IO ()) -> IO ()
-applyEvent state' event actionMap =
-    whenJust (actionMap ^. at2 state' (eventToType event)) ($ event)
-
-applyTransitionActions :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
-applyTransitionActions machineData state1 event state2 = do
-    applyExitDo             machineData state1
-    applyExitWithEventDo    machineData state1 event
-    applyTransitionDo       machineData state1 event state2
-    applyEntryWithEventDo   machineData state2 event
-    applyEntryDo            machineData state2
 
 isFinish :: StateMaschineData -> MachineState -> Bool
 isFinish machineData currentState' =
