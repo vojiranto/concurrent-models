@@ -18,21 +18,18 @@ module Control.StateMachine
     , waitEmit
     , just
     , nothing
-    , logToConsole
-    , logOff
     ) where
 
-import           Universum hiding (ToText(..))
+import           Universum
 import           Data.TextId
 import           Data.Describe
+import           Control.Loger
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan
 import           Control.StateMachine.Language      as L
 import           Control.StateMachine.Interpreter   as I
 import qualified Control.StateMachine.Runtime       as R
 import           Control.StateMachine.Domain        as D
-
-type Loger = Text -> IO ()
 
 eventAnalize, stateAnalize, stateMachineWorker :: Loger -> IORef R.StateMaschineData -> StateMachine -> IO ()
 eventAnalize loger stateMachineRef (StateMachine eventVar) = do
@@ -86,9 +83,3 @@ waitEmit (StateMachine eventVar) event = do
     var <- newEmptyMVar
     writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) var
     takeMVar var
-
-logToConsole :: Loger
-logToConsole = putTextLn
-
-logOff :: Loger
-logOff _ = pure ()

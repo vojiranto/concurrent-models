@@ -7,28 +7,33 @@ module Control.Actor.Message
     , fromActorMessage
     , fromDataToMessageType
     , fromActorMessageToType
+    , fromActionToMessageType
     ) where
 
-import           Universum
+import           Universum hiding (head)
 import           Universum.Unsafe
 import           Data.Dynamic
 import           Data.Typeable
-import qualified Data.Text     as T
 
-type ActorMessage = Dynamic
-type MessageType  = Text
+data    Otherwise    = Otherwise 
+newtype ActorMessage = ActorMessage Dynamic
+newtype MessageType  = MessageType  TypeRep deriving (Ord, Eq)
+
 
 otherwiseType :: MessageType
-otherwiseType = "otherwise"
+otherwiseType = fromDataToMessageType Otherwise
 
 toActorMessage :: Typeable a => a -> ActorMessage
-toActorMessage = toDyn
+toActorMessage = ActorMessage . toDyn
 
 fromActorMessage :: Typeable a => ActorMessage -> a
-fromActorMessage = fromJust . fromDynamic
+fromActorMessage (ActorMessage message) = fromJust . fromDynamic $ message
 
 fromActorMessageToType :: ActorMessage -> MessageType
-fromActorMessageToType = T.pack . takeWhile (/= ' ') . show . dynTypeRep
+fromActorMessageToType (ActorMessage message) = MessageType . dynTypeRep $ message
 
 fromDataToMessageType :: Typeable a => a -> MessageType
-fromDataToMessageType = T.pack . takeWhile (/= ' ') . show . typeOf
+fromDataToMessageType = MessageType . typeOf
+
+fromActionToMessageType :: Typeable a => (a -> IO ()) -> MessageType
+fromActionToMessageType = MessageType . head . snd . splitTyConApp . typeOf

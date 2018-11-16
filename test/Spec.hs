@@ -1,5 +1,6 @@
 import           Universum
 import           Test.Hspec.Extra
+import           Control.Loger
 import           Control.Actor
 import           Control.StateMachine
 

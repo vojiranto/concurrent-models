@@ -16,7 +16,7 @@ data HandlerF next where
 type HandlerL = Free HandlerF
 
 math :: Typeable a => (a -> IO ()) -> HandlerL ()
-math f = liftF $ MakeHandler (fromDataToMessageType f) (f . fromActorMessage) id
+math f = liftF $ MakeHandler (fromActionToMessageType f) (f . fromActorMessage) id
 
 otherwiseMath :: ActorHandler -> HandlerL ()
 otherwiseMath f = liftF $ MakeHandler otherwiseType f id
