@@ -40,7 +40,7 @@ eventAnalize loger stateMachineRef (StateMachine eventVar) = do
     mTransition <- R.takeTransition event machineData
     unless (isJust mTransition) $ do
         loger $ describe event
-        R.applyEvent (machineData ^. R.currentState) event (machineData ^. R.staticalDo)
+        R.applyStaticalDo machineData event
     whenJust mTransition $ \(R.Transition currentState newState) -> do
         loger $ showTransition currentState event newState
         R.applyTransitionActions machineData currentState event newState
@@ -53,7 +53,7 @@ stateAnalize loger stateMachineRef stateMachine = do
     if R.isFinish machineData currentState
         then do
             loger $ "[finish state] " <> describe currentState
-            R.apply currentState (machineData ^. R.exitDo)
+            R.applyExitDo machineData currentState
         else eventAnalize loger stateMachineRef stateMachine
 
 showTransition :: MachineState -> MachineEvent -> MachineState -> Text
@@ -72,7 +72,7 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
         stateMachineRef  <- newIORef stateMachineData
         
         loger $ "[init state] " <> describe initState
-        R.apply initState (stateMachineData ^. R.entryDo)
+        R.applyEntryDo stateMachineData initState
         stateMachineWorker loger stateMachineRef stateMachine
     pure stateMachine
 

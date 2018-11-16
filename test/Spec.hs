@@ -1,8 +1,11 @@
 import           Universum
 import           Test.Hspec.Extra
+
+import           Data.Flag
 import           Control.Loger
 import           Control.Actor
 import           Control.StateMachine
+
 
 main :: IO ()
 main = do
@@ -14,56 +17,56 @@ main = do
 
 actorPingPongTest :: IO Bool
 actorPingPongTest = finishFor 1000 $ do
-    sem    <- newEmptyMVar
-    actor1 <- makeActor (handlers sem)
-    actor2 <- makeActor (handlers sem)
+    success <- newFlag
+    actor1  <- makeActor (handlers success)
+    actor2  <- makeActor (handlers success)
     notify actor2 $ Ping actor1 10
-    takeMVar sem
+    await success
 
 data Ping = Ping Actor Int
 data Pong = Pong Actor Int
 
-ping :: MVar () -> Actor -> Ping -> IO ()
-ping sem  _      (Ping _     0) = putMVar sem ()
+ping :: Flag -> Actor -> Ping -> IO ()
+ping sem  _      (Ping _     0) = liftFlag sem
 ping _    link (Ping actor n) = notify actor $ Pong link (n-1)
 
-pong :: MVar () -> Actor -> Pong -> IO ()
-pong sem  _      (Pong _     0) = putMVar sem ()
+pong :: Flag -> Actor -> Pong -> IO ()
+pong sem  _      (Pong _     0) = liftFlag sem
 pong _    link (Pong actor n) = notify actor $ Ping link (n-1)
 
-handlers :: MVar () -> Actor -> HandlerL ()
+handlers :: Flag -> Actor -> HandlerL ()
 handlers qSem link = do
     math $ ping qSem link
     math $ pong qSem link
 
 stateMachinTest1 :: IO Bool
-stateMachinTest1 = finishFor 100000 $ do
-    sem <- newEmptyMVar
-    sm  <- runStateMachine logOff Off $ do
+stateMachinTest1 = finishFor 100 $ do
+    success <- newFlag
+    sm  <- runStateMachine logToConsole Off $ do
         addTransition  Off   TakeOn On
-        addTransition  On    TakeOff Off
         setFinishState On
-        entryDo       On $ putMVar sem ()
+        entryDo       On  $ liftFlag success
+        exitDo        Off $ pure ()
+        exitDo        On  $ pure ()
     emit sm TakeOn
-    takeMVar sem
+    await success
 
 data TakeOn  = TakeOn
-data TakeOff = TakeOff
 
 stateMachinTest2 :: IO Bool
 stateMachinTest2 = finishFor 1000 $ do
-    sem <- newEmptyMVar
-    sm  <- runStateMachine logOff Off $ do
+    success <- newFlag
+    sm      <- runStateMachine logOff Off $ do
         addConditionalTransition Off $
             \pressing -> if pressing == StrongPress then just On else nothing 
         addConditionalTransition On $
             \pressing -> if pressing == StrongPress then just Off else nothing
 
-        transitionDo On Off $ \(_ :: Press) -> putMVar sem ()
+        transitionDo On Off $ \(_ :: Press) -> liftFlag success
 
     emit sm StrongPress
     emit sm StrongPress
-    takeMVar sem
+    await success
 
 data Press = StrongPress | WeaklyPress deriving Eq
 

@@ -1,8 +1,12 @@
 {-# Language TemplateHaskell #-}
+{-# Language RankNTypes      #-}
 
 module Control.StateMachine.Runtime where
 
 import           Universum
+import           Data.Describe
+import           Control.Loger
+import           Control.Lens.At (at, Index, IxValue, At)
 import           Control.Lens.TH
 import           Control.StateMachine.Domain
 import qualified Data.Map as M
@@ -24,12 +28,13 @@ data StateMaschineData = StateMaschineData
     , _transitionDo             :: TransitionActions
     , _exitWithEventDo          :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
     , _exitDo                   :: M.Map MachineState (IO ())
+    , _loger                    :: Loger
     }
 makeLenses ''StateMaschineData
 
-emptyData :: MachineState -> StateMaschineData
-emptyData initState =
-    StateMaschineData mempty mempty initState mempty mempty mempty mempty mempty mempty mempty
+emptyData :: Loger -> MachineState -> StateMaschineData
+emptyData loger' initState =
+    StateMaschineData mempty mempty initState mempty mempty mempty mempty mempty mempty mempty loger'
 
 takeTransition :: MachineEvent -> StateMaschineData -> IO (Maybe Transition)
 takeTransition event maschineData =
@@ -55,21 +60,61 @@ takeTransition event maschineData =
         conditionals :: ConditionalTransitions
         conditionals = maschineData ^. conditionalTransitions
 
-apply :: MachineState -> M.Map MachineState (IO ()) -> IO ()
-apply state' actionMap = whenJust (state' `M.lookup` actionMap) id
+applyEntryDo :: StateMaschineData -> MachineState -> IO ()
+applyEntryDo machineData st =
+    whenJust (machineData ^. entryDo . at st) $ \action -> do
+        machineData ^. loger $ "[entry do] " <> describe st
+        action
+
+applyExitDo :: StateMaschineData -> MachineState -> IO ()
+applyExitDo machineData st =
+    whenJust (machineData ^. exitDo . at st) $ \action -> do
+        machineData ^. loger $ "[exit do] " <> describe st
+        action
+
+applyExitWithEventDo :: StateMaschineData -> MachineState -> MachineEvent -> IO ()
+applyExitWithEventDo machineData st event =
+    whenJust (machineData ^. exitWithEventDo . at2 st (eventToType event)) $ \action -> do
+        machineData ^. loger $ "[exit with event do] " <> describe st <> " " <> describe event
+        action event
+
+applyEntryWithEventDo :: StateMaschineData -> MachineState -> MachineEvent -> IO ()
+applyEntryWithEventDo machineData st event =
+    whenJust (machineData ^. entryWithEventDo . at2 st (eventToType event)) $ \action -> do
+        machineData ^. loger $ "[entry with event do] " <> describe st <> " " <> describe event
+        action event
+
+applyTransitionDo :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
+applyTransitionDo machineData st1 event st2 =
+    whenJust (machineData ^. transitionDo . at3 st1 (eventToType event) st2) $ \action -> do
+        machineData ^. loger $ "[entry with event do] " <> describe st1 <> " -> " <> describe event <> describe st1
+        action event
+
+applyStaticalDo :: StateMaschineData -> MachineEvent -> IO ()
+applyStaticalDo machineData event = do
+    let st = machineData ^. currentState
+    whenJust (machineData ^. staticalDo . at2 st (eventToType event)) $ \action -> do
+        machineData ^. loger $ "[statical do] " <> describe st <> describe event
+        action event
 
 applyEvent :: MachineState -> MachineEvent -> M.Map (MachineState, EventType) (MachineEvent -> IO ()) -> IO ()
-applyEvent state' event actionMap = whenJust ((state', eventToType event) `M.lookup` actionMap) ($ event)
+applyEvent state' event actionMap =
+    whenJust (actionMap ^. at2 state' (eventToType event)) ($ event)
 
 applyTransitionActions :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
 applyTransitionActions machineData state1 event state2 = do
-    let eventType = eventToType event
-    apply state1 (machineData ^. exitDo)
-    applyEvent state1 event (machineData ^. exitWithEventDo)
-    whenJust ((state1, eventType, state2) `M.lookup` (machineData ^. transitionDo)) ($ event)    
-    applyEvent state2 event (machineData ^. entryWithEventDo)
-    apply state2 (machineData ^. entryDo)
+    applyExitDo             machineData state1
+    applyExitWithEventDo    machineData state1 event
+    applyTransitionDo       machineData state1 event state2
+    applyEntryWithEventDo   machineData state2 event
+    applyEntryDo            machineData state2
 
 isFinish :: StateMaschineData -> MachineState -> Bool
 isFinish machineData currentState' =
     S.member currentState' (machineData ^. finishStates)
+
+at2 :: (Index m ~ (a, b), At m) => a -> b -> Lens' m (Maybe (IxValue m))
+at2 x y = at (x, y)
+
+at3 :: (Index m ~ (a, b, c), At m) => a -> b -> c -> Lens' m (Maybe (IxValue m))
+at3 x y z = at (x, y, z)
