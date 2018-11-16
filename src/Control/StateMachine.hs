@@ -15,7 +15,7 @@ module Control.StateMachine
     , entryWithEventDo
     , entryDo
     , emit
-    , waitEmit
+    , emitAndWait
     , just
     , nothing
     ) where
@@ -31,7 +31,8 @@ import           Control.StateMachine.Interpreter   as I
 import qualified Control.StateMachine.Runtime       as R
 import           Control.StateMachine.Domain        as D
 
-eventAnalize, stateAnalize, stateMachineWorker :: Loger -> IORef R.StateMaschineData -> StateMachine -> IO ()
+eventAnalize, stateAnalize, stateMachineWorker
+    :: Loger -> IORef R.StateMaschineData -> StateMachine -> IO ()
 eventAnalize loger stateMachineRef (StateMachine eventVar) = do
     event       <- getEvent =<< readChan eventVar
     machineData <- readIORef stateMachineRef
@@ -78,8 +79,8 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
 emit :: Typeable a => StateMachine -> a -> IO ()
 emit (StateMachine eventVar) = writeChan eventVar . D.FastEvent . D.toMachineEvent
 
-waitEmit :: Typeable a => StateMachine -> a -> IO ()
-waitEmit (StateMachine eventVar) event = do
+emitAndWait :: Typeable a => StateMachine -> a -> IO ()
+emitAndWait (StateMachine eventVar) event = do
     var <- newEmptyMVar
     writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) var
     takeMVar var
