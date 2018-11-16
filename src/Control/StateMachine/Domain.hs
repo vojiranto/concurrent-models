@@ -1,9 +1,11 @@
 module Control.StateMachine.Domain where
 
-import           Universum hiding (head, ToText(..))
+import           Universum hiding (head)
+import           Universum.Unsafe
+
 import           Data.Typeable
 import           Data.Dynamic
-import           Universum.Unsafe
+import           Data.Describe
 
 data Event = FastEvent MachineEvent | WaitEvent MachineEvent (MVar ())
 
@@ -11,9 +13,9 @@ getEvent :: Event -> IO MachineEvent
 getEvent (FastEvent event)     = pure event
 getEvent (WaitEvent event var) = putMVar var () >> pure event
 
-newtype MachineState = MachineState TypeRep deriving (Eq, Ord, Show)
+newtype MachineState = MachineState TypeRep deriving (Eq, Ord)
 newtype MachineEvent = MachineEvent Dynamic
-newtype EventType    = EventType    TypeRep deriving (Eq, Ord, Show)
+newtype EventType    = EventType    TypeRep deriving (Eq, Ord)
 
 toMachineState :: Typeable a => a -> MachineState
 toMachineState = MachineState . typeOf
@@ -33,14 +35,11 @@ actionToType action = EventType (head . snd . splitTyConApp . typeOf $ action)
 conditionToType :: Typeable a => (a -> IO (Maybe MachineState)) -> EventType
 conditionToType action = EventType (head . snd . splitTyConApp . typeOf $ action)
 
-class ToText a where
-    toText :: a -> Text
+instance Describe MachineEvent where
+    describe (MachineEvent a) = "[event " <> show (dynTypeRep a) <> "]"
 
-instance ToText MachineEvent where
-    toText (MachineEvent a) = show (dynTypeRep a)
+instance Describe MachineState where
+    describe (MachineState a) = "[state " <> show a <> "]"
 
-instance ToText MachineState where
-    toText (MachineState a) = show a
-
-instance ToText EventType where
-    toText (EventType a) = show a
+instance Describe EventType where
+    describe (EventType a) = "[event " <> show a <> "]"

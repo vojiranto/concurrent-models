@@ -36,6 +36,9 @@ dependencies:
 - containers
 - lens
 - stm
+- unique
+- hashable
+- base58string
 
 library:
   source-dirs: src

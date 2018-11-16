@@ -5,7 +5,7 @@ module Control.StateMachine
     , runStateMachine
     , initialiseAction
     , setFinishState
-    , myLink
+    , getMyLink
     , addTransition
     , addConditionalTransition
     , staticalDo
@@ -23,6 +23,8 @@ module Control.StateMachine
     ) where
 
 import           Universum hiding (ToText(..))
+import           Data.TextId
+import           Data.Describe
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan
 import           Control.StateMachine.Language      as L
@@ -39,7 +41,7 @@ eventAnalize loger stateMachineRef (StateMachine eventVar) = do
  
     mTransition <- R.takeTransition event machineData
     unless (isJust mTransition) $ do
-        loger $ "[SM] [event] [" <> toText event <> "]"
+        loger $ describe event
         R.applyEvent (machineData ^. R.currentState) event (machineData ^. R.staticalDo)
     whenJust mTransition $ \(R.Transition currentState newState) -> do
         loger $ showTransition currentState event newState
@@ -52,24 +54,26 @@ stateAnalize loger stateMachineRef stateMachine = do
     let currentState = machineData ^. R.currentState
     if R.isFinish machineData currentState
         then do
-            loger $ "[SM] [finish state] [" <> toText currentState <> "]" 
+            loger $ "[finish state] " <> describe currentState
             R.apply currentState (machineData ^. R.exitDo)
         else eventAnalize loger stateMachineRef stateMachine
 
 showTransition :: MachineState -> MachineEvent -> MachineState -> Text
 showTransition st1 ev st2 =
-    "[SM] [transition] [" <> toText st1 <> "] -> [" <> toText ev <> "] -> [" <> toText st2  <> "]"
+    "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 stateMachineWorker = stateAnalize
 
 runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
-runStateMachine loger (toMachineState -> initState) machineDescriptione = do
+runStateMachine logerAction (toMachineState -> initState) machineDescriptione = do
     eventVar <- newChan
+    textId   <- newTextId
     let stateMachine = StateMachine eventVar
+    let loger txt = logerAction $ "[SM] " <> "[" <> textId  <> "] " <> txt
     void $ forkIO $ do
         stateMachineData <- makeStateMachineData loger initState stateMachine machineDescriptione
         stateMachineRef  <- newIORef stateMachineData
         
-        loger $ "[SM] [init state] [" <> toText initState <> "]"
+        loger $ "[init state] " <> describe initState
         R.apply initState (stateMachineData ^. R.entryDo)
         stateMachineWorker loger stateMachineRef stateMachine
     pure stateMachine

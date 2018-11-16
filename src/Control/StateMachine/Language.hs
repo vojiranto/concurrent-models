@@ -4,7 +4,7 @@ module Control.StateMachine.Language
     , StateMachineL
     , StateMachine(..)
     , initialiseAction
-    , myLink
+    , getMyLink
     , setFinishState
     , addTransition
     , addConditionalTransition
@@ -28,7 +28,7 @@ newtype StateMachine = StateMachine (Chan Event)
 
 data StateMachineF next where
     InitialiseAction            :: IO a -> (a -> next) -> StateMachineF next
-    MyLink                      :: (StateMachine -> next) -> StateMachineF next
+    GetMyLink                   :: (StateMachine -> next) -> StateMachineF next
     -- Construction of state mashine struct
     SetFinishState              :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
@@ -47,8 +47,8 @@ type StateMachineL = Free StateMachineF
 initialiseAction :: IO a -> StateMachineL a
 initialiseAction action = liftF $ InitialiseAction action id
 
-myLink :: StateMachineL StateMachine
-myLink = liftF $ MyLink id
+getMyLink :: StateMachineL StateMachine
+getMyLink = liftF $ GetMyLink id
 
 setFinishState :: Typeable state => state -> StateMachineL ()
 setFinishState finishState = liftF $
