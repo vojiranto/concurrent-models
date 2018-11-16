@@ -14,27 +14,28 @@ import qualified Data.Set as S
 
 type TransitionMap          = M.Map (MachineState, EventType) MachineState
 type ConditionalTransitions = M.Map (MachineState, EventType) (MachineEvent -> IO (Maybe MachineState))
-type TransitionActions      = M.Map (MachineState, EventType, MachineState) (MachineEvent -> IO ())
 data Transition             = Transition MachineState MachineState
 
 data StateMaschineData = StateMaschineData
     { _transitions              :: TransitionMap
     , _conditionalTransitions   :: ConditionalTransitions
-    , _currentState             :: MachineState
     , _finishStates             :: S.Set MachineState
+    , _currentState             :: MachineState
+    , _loger                    :: Loger
+    -- handlers
+
     , _staticalDo               :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
     , _entryDo                  :: M.Map MachineState (IO ())
     , _entryWithEventDo         :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
-    , _transitionDo             :: TransitionActions
+    , _transitionDo             :: M.Map (MachineState, EventType, MachineState) (MachineEvent -> IO ())
     , _exitWithEventDo          :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
     , _exitDo                   :: M.Map MachineState (IO ())
-    , _loger                    :: Loger
     }
 makeLenses ''StateMaschineData
 
 emptyData :: Loger -> MachineState -> StateMaschineData
 emptyData loger' initState =
-    StateMaschineData mempty mempty initState mempty mempty mempty mempty mempty mempty mempty loger'
+    StateMaschineData mempty mempty mempty initState loger' mempty mempty mempty mempty mempty mempty
 
 takeTransition :: MachineEvent -> StateMaschineData -> IO (Maybe Transition)
 takeTransition event maschineData =

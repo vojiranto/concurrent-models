@@ -39,19 +39,22 @@ handlers qSem link = do
     math $ ping qSem link
     math $ pong qSem link
 
+data On      = On
+data Off     = Off
+data TakeOn  = TakeOn
+
 stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 100 $ do
     success <- newFlag
-    sm  <- runStateMachine logToConsole Off $ do
-        addTransition  Off   TakeOn On
+    sm  <- runStateMachine logOff Off $ do
+        addTransition  Off TakeOn On
         setFinishState On
-        entryDo       On  $ liftFlag success
-        exitDo        Off $ pure ()
-        exitDo        On  $ pure ()
+        entryDo        On  $ liftFlag success
+        exitDo         Off $ pure ()
+        exitDo         On  $ pure ()
     emit sm TakeOn
     await success
 
-data TakeOn  = TakeOn
 
 stateMachinTest2 :: IO Bool
 stateMachinTest2 = finishFor 1000 $ do
@@ -70,5 +73,4 @@ stateMachinTest2 = finishFor 1000 $ do
 
 data Press = StrongPress | WeaklyPress deriving Eq
 
-data On  = On
-data Off = Off
+
