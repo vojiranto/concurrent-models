@@ -1,3 +1,5 @@
+{-# Language MultiParamTypeClasses #-}
+{-# Language FlexibleInstances     #-}
 module Control.StateMachine.Domain where
 
 import           Universum hiding (head)
@@ -16,6 +18,9 @@ getEvent (WaitEvent event var) = putMVar var () >> pure event
 newtype MachineState = MachineState TypeRep deriving (Eq, Ord)
 newtype MachineEvent = MachineEvent Dynamic
 newtype EventType    = EventType    TypeRep deriving (Eq, Ord)
+
+is :: Typeable a => a -> MachineState -> Bool
+a `is` b = toMachineState a == b
 
 toMachineState :: Typeable a => a -> MachineState
 toMachineState = MachineState . typeOf

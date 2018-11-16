@@ -24,7 +24,7 @@ import           Control.Concurrent.Chan
 import           Control.Monad.Free
 import           Control.StateMachine.Domain
 
-newtype StateMachine = StateMachine (Chan Event)
+data StateMachine = StateMachine (Chan Event) (MVar MachineState)
 
 data StateMachineF next where
     InitialiseAction            :: IO a -> (a -> next) -> StateMachineF next

@@ -18,6 +18,8 @@ module Control.StateMachine
     , emitAndWait
     , just
     , nothing
+    , takeState
+    , is
     ) where
 
 import           Universum
@@ -32,29 +34,31 @@ import qualified Control.StateMachine.Runtime       as R
 import           Control.StateMachine.Domain        as D
 
 eventAnalize, stateAnalize, stateMachineWorker
-    :: Loger -> IORef R.StateMaschineData -> StateMachine -> IO ()
-eventAnalize loger stateMachineRef (StateMachine eventVar) = do
+    :: IORef R.StateMaschineData -> StateMachine -> IO ()
+eventAnalize stateMachineRef (StateMachine eventVar stateVar) = do
     event       <- getEvent =<< readChan eventVar
     machineData <- readIORef stateMachineRef
  
     mTransition <- R.takeTransition event machineData
     unless (isJust mTransition) $ do
-        loger $ describe event
+        machineData ^. R.loger $ describe event
         R.applyStaticalDo machineData event
     whenJust mTransition $ \(R.Transition currentState newState) -> do
-        loger $ showTransition currentState event newState
-        R.applyTransitionActions machineData currentState event newState
+        machineData ^. R.loger $ showTransition currentState event newState
+        void $ swapMVar stateVar newState
         modifyIORef stateMachineRef $ R.currentState .~ newState
-    stateAnalize loger stateMachineRef (StateMachine eventVar)
+        R.applyTransitionActions machineData currentState event newState
 
-stateAnalize loger stateMachineRef stateMachine = do
+    stateAnalize stateMachineRef (StateMachine eventVar stateVar)
+
+stateAnalize stateMachineRef stateMachine = do
     machineData <- readIORef stateMachineRef
     let currentState = machineData ^. R.currentState
     if R.isFinish machineData currentState
         then do
-            loger $ "[finish state] " <> describe currentState
+            machineData ^. R.loger $ "[finish state] " <> describe currentState
             R.applyExitDo machineData currentState
-        else eventAnalize loger stateMachineRef stateMachine
+        else eventAnalize stateMachineRef stateMachine
 
 showTransition :: MachineState -> MachineEvent -> MachineState -> Text
 showTransition st1 ev st2 =
@@ -64,8 +68,9 @@ stateMachineWorker = stateAnalize
 runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
 runStateMachine logerAction (toMachineState -> initState) machineDescriptione = do
     eventVar <- newChan
+    stateVar <- newMVar initState
     textId   <- newTextId
-    let stateMachine = StateMachine eventVar
+    let stateMachine = StateMachine eventVar stateVar
     let loger txt = logerAction $ "[SM] " <> "[" <> textId  <> "] " <> txt
     void $ forkIO $ do
         stateMachineData <- makeStateMachineData loger initState stateMachine machineDescriptione
@@ -73,14 +78,17 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
         
         loger $ "[init state] " <> describe initState
         R.applyEntryDo stateMachineData initState
-        stateMachineWorker loger stateMachineRef stateMachine
+        stateMachineWorker stateMachineRef stateMachine
     pure stateMachine
 
 emit :: Typeable a => StateMachine -> a -> IO ()
-emit (StateMachine eventVar) = writeChan eventVar . D.FastEvent . D.toMachineEvent
+emit (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toMachineEvent
+
+takeState :: StateMachine -> IO MachineState
+takeState (StateMachine _ stateVar) = readMVar stateVar
 
 emitAndWait :: Typeable a => StateMachine -> a -> IO ()
-emitAndWait (StateMachine eventVar) event = do
+emitAndWait (StateMachine eventVar _) event = do
     var <- newEmptyMVar
     writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) var
     takeMVar var
