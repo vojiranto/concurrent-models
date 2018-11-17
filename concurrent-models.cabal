@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8a24b15dbc2371559ed95bb3b8c295222f96ea99a700f2c10eaf91577ebd78ef
+-- hash: ceeea6d8ff51469a3c2cba7188278aa5b37a031fd36c92df5c18167ffb41e6b6
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -53,6 +53,30 @@ library
   build-depends:
       base >=4.7 && <5
     , base58string
+    , containers
+    , free
+    , hashable
+    , lens
+    , stm
+    , template-haskell
+    , text
+    , th-abstraction
+    , unique
+    , universum
+  default-language: Haskell2010
+
+executable example
+  main-is: Main.hs
+  other-modules:
+      Paths_concurrent_models
+  hs-source-dirs:
+      examples
+  default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
+  ghc-options: -Wall -Werror
+  build-depends:
+      base >=4.7 && <5
+    , base58string
+    , concurrent-models
     , containers
     , free
     , hashable

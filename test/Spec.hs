@@ -51,3 +51,5 @@ main = do
     hspec $ do
         it "Actor ping pong test"     $ isOk actorPingPongTest
         it "Test 1 for state machine" $ isOk stateMachinTest1
+        it "Door exemmple"            $ isOk doorExemple
+
