@@ -18,9 +18,9 @@ data Transition             = Transition MachineState MachineState
 
 data StateMaschineData = StateMaschineData
     { _stateMachineStruct       :: StateMaschineStruct
+    , _handlers                 :: StateMaschineHandlers
     , _currentState             :: MachineState
     , _loger                    :: Loger
-    , _handlers                 :: StateMaschineHandlers
     }
 
 data StateMaschineStruct = StateMaschineStruct
@@ -50,7 +50,7 @@ emptyStruct = StateMaschineStruct mempty mempty mempty
 
 emptyData :: Loger -> MachineState -> StateMaschineData
 emptyData loger' initState =
-    StateMaschineData emptyStruct initState loger' emptyHandlers
+    StateMaschineData emptyStruct emptyHandlers initState loger'
 
 takeTransition :: MachineEvent -> StateMaschineData -> IO (Maybe Transition)
 takeTransition event maschineData =
