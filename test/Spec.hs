@@ -38,7 +38,7 @@ stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 100 $ do
     success <- newFlag
     sm  <- runStateMachine logToConsole Off $ do
-        addTransition  Off TakeOn On
+        addTransition  AnyState TakeOn On
         setFinishState On
         groupStates    AnyState $ On <: Off <: []
         entryDo        On  $ liftFlag success

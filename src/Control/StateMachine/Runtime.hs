@@ -39,7 +39,6 @@ applyTransitionActions machineData oldState event newState = do
     applyExitWithEventDo    (machineData ^. loger) (machineData ^. handlers) oldState event
     applyEntryWithEventDo   (machineData ^. loger) (machineData ^. handlers) newState event
     applyEntryDo            (machineData ^. loger) (machineData ^. handlers) newState
-        
 
 isFinish :: StateMaschineData -> Bool
 isFinish machineData =
