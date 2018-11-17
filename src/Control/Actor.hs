@@ -12,6 +12,9 @@ module Control.Actor
     ) where
 
 import           Universum
+import           Data.TextId
+import           Data.Describe
+import           Control.Loger
 import           Control.Actor.Handler.Language 
 import           Control.Actor.Handler.Interpreter
 import           Control.Actor.Message
@@ -34,28 +37,33 @@ analyzeMessage message
     | fromActorMessageToType message == stopType = StopNodeR
     | otherwise                                  = ApplyHandlerR
 
-applyHandler :: HandlerMap -> ActorMessage -> IO ()
-applyHandler handlerMap message = do
+applyHandler :: Loger -> HandlerMap -> ActorMessage -> IO ()
+applyHandler loger handlerMap message = do
     let messageType = fromActorMessageToType message
     case messageType `M.lookup` handlerMap of
         Just handler -> handler message
-        _            -> whenJust (otherwiseType `M.lookup` handlerMap) $
-                            \handler -> handler message
+        _            -> do
+            let mHandler = otherwiseType `M.lookup` handlerMap 
+            whenJust mHandler $ \handler -> handler message
+            unless (isJust mHandler) $ loger "[error] handler does not exist, msg is droped." 
 
-makeActor :: (Actor -> HandlerL a) -> IO Actor
-makeActor handler = do
+makeActor :: Loger -> (Actor -> HandlerL a) -> IO Actor
+makeActor logerAction handler = do
     chan     <- atomically newTChan
     threadId <- forkIO $ do
-        actor      <- Actor chan <$> myThreadId
-        handlerMap <- makeHandlerMap (handler actor)
-        mutex      <- newMVar True
+        textId          <- newTextId
+        let loger txt   = logerAction $ "[Actor] " <> "[" <> textId  <> "] " <> txt
+        actor           <- Actor chan <$> myThreadId
+        handlerMap      <- makeHandlerMap loger (handler actor)
+        mutex           <- newMVar True
         forever $ do
             void $ takeMVar mutex
             message <- atomically $ readTChan chan
+            loger $ "[message] " <> describe message
             case analyzeMessage message of
                 StopNodeR       -> killActor actor
                 ApplyHandlerR   -> do
-                    applyHandler handlerMap message
+                    applyHandler loger handlerMap message
                     putMVar mutex True
     pure $ Actor chan threadId
 

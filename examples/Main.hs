@@ -21,13 +21,13 @@ main = do
         entryDo        Open $ putTextLn "The door must be closed. OK?"
         exitDo         Open $ putTextLn "Door is now Closed"
     
-    readComand door
+    readDoorComand door
 
-readComand :: StateMachine -> IO ()
-readComand sm = do
+readDoorComand :: StateMachine -> IO ()
+readDoorComand sm = do
     ln <- getLine
     case ln of
-        "open"  -> emit sm Open  >> readComand sm 
-        "close" -> emit sm Close >> readComand sm 
+        "open"  -> emit sm Open  >> readDoorComand sm 
+        "close" -> emit sm Close >> readDoorComand sm 
         "exit"  -> pure ()
-        _       -> readComand sm
+        _       -> readDoorComand sm

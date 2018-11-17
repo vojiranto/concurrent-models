@@ -10,8 +10,8 @@ import           Control.StateMachine
 actorPingPongTest :: IO Bool
 actorPingPongTest = finishFor 1000 $ do
     success <- newFlag
-    actor1  <- makeActor (handlers success)
-    actor2  <- makeActor (handlers success)
+    actor1  <- makeActor logToConsole (handlers success)
+    actor2  <- makeActor logToConsole (handlers success)
     notify actor2 $ Ping actor1 10
     wait success
 
@@ -51,5 +51,4 @@ main = do
     hspec $ do
         it "Actor ping pong test"     $ isOk actorPingPongTest
         it "Test 1 for state machine" $ isOk stateMachinTest1
-        it "Door exemmple"            $ isOk doorExemple
 
