@@ -44,9 +44,6 @@ executables:
   example:
     main:                Main.hs
     source-dirs:         examples
-    ghc-options:
-    - -Wall
-    - -Werror
     dependencies:
     - concurrent-models
 

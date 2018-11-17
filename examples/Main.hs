@@ -7,8 +7,43 @@ import           Control.StateMachine
 makeStates ["Open", "Closed"]
 makeEvents ["Close"]
 
+makeStates ["Green", "Yellow", "YellowUp", "YellowDown", "Red"]
+makeEvents ["ChangeColor"]
+
+trafficLightExample1 :: IO StateMachine
+trafficLightExample1 = runStateMachine logToConsole Green $ do
+    addTransition Green         ChangeColor YellowUp
+    addTransition YellowUp      ChangeColor Red
+    addTransition Red           ChangeColor YellowDown
+    addTransition YellowDown    ChangeColor Green
+
+trafficLightExample2 :: IO StateMachine
+trafficLightExample2 = runStateMachine logToConsole Green $ do
+    addTransition Green  ChangeColor Yellow
+    addTransition Red    ChangeColor Yellow
+    
+    directionSM <- initialiseAction $ runStateMachine logToConsole Red $ do
+        addTransition Green  ChangeColor Red
+        addTransition Red    ChangeColor Green
+    
+    exitDo Red   $ emitAndWait directionSM ChangeColor
+    exitDo Green $ emitAndWait directionSM ChangeColor
+
+    addConditionalTransition Yellow $
+        \ChangeColor -> Just <$> takeState directionSM
+
+
 main :: IO ()
-main = do
+main = readLightCommand =<< trafficLightExample1
+
+readLightCommand :: StateMachine -> IO ()
+readLightCommand sm  = do
+    void getLine
+    emitAndWait sm ChangeColor
+    readLightCommand sm
+
+exampleDoor :: IO ()
+exampleDoor = do
     door <- runStateMachine logToConsole Closed $ do
         addTransition  Open   Close Closed
         addTransition  Closed Open  Open
@@ -31,3 +66,5 @@ readDoorComand sm = do
         "close" -> emit sm Close >> readDoorComand sm 
         "exit"  -> pure ()
         _       -> readDoorComand sm
+
+

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ceeea6d8ff51469a3c2cba7188278aa5b37a031fd36c92df5c18167ffb41e6b6
+-- hash: 3f147b0786a59c111e60b4c2174c554d857b9e06b4501e4ac80cb1d837c1fef9
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -72,7 +72,6 @@ executable example
   hs-source-dirs:
       examples
   default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
-  ghc-options: -Wall -Werror
   build-depends:
       base >=4.7 && <5
     , base58string
