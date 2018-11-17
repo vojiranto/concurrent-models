@@ -6,18 +6,27 @@ module Control.StateMachine.Interpreter (makeStateMachineData) where
 import           Universum
 import qualified Data.Map as M
 import qualified Data.Set as S
+import           Control.Lens.Getter (to)
 import           Control.Loger
 import           Data.Describe
 import           Control.Monad.Free
-import           Control.StateMachine.Language as L
-import           Control.StateMachine.Runtime  as R
-import           Control.StateMachine.Domain   as D
+import           Control.StateMachine.Language                      as L
+import           Control.StateMachine.Runtime                       as R
+import           Control.StateMachine.Runtime.StateMaschineStruct   as R
+import           Control.StateMachine.Runtime.StateMaschineHandlers as R
+import           Control.StateMachine.Domain                        as D
 
-makeStateMachineData :: Loger -> D.MachineState -> L.StateMachine -> L.StateMachineL a-> IO R.StateMaschineData
+data BuildingError = BuildingError deriving Show
+
+makeStateMachineData :: Loger -> D.MachineState -> L.StateMachine -> L.StateMachineL a-> IO (Either BuildingError R.StateMaschineData)
 makeStateMachineData logerAction initState stateMachine h = do
     m <- newIORef $ emptyData logerAction initState 
-    void $ foldFree (interpretStateMachineL logerAction m stateMachine) h
-    readIORef m
+    success <- tryAny $ foldFree (interpretStateMachineL logerAction m stateMachine) h
+    mData   <- readIORef m
+    pure $ case success of
+        Right _  | mData ^. stateMachineStruct . to checkStruct
+            -> Right mData
+        _   -> Left BuildingError
 
 interpretStateMachineL :: Loger -> IORef R.StateMaschineData -> L.StateMachine -> L.StateMachineF a -> IO a
 interpretStateMachineL toLog _ _ (L.InitialiseAction action next) = do
@@ -28,8 +37,17 @@ interpretStateMachineL toLog _ link (L.GetMyLink next) = do
     toLog "[get my link]"
     pure $ next link
 
-interpretStateMachineL toLog _ _ (L.GroupStates _ _ next) = do
-    toLog "[error] The functionality for groups isn't implemented."
+interpretStateMachineL toLog m _ (L.GroupStates g states next) = do
+    toLog $ "[make group] " <> describe g
+    modifyIORef m (R.stateMachineStruct . R.groups %~ S.insert g)
+    forM_ states $ \st -> do
+        toLog $ "[add states to group] " <> describe st
+        mData <- readIORef m   
+        -- The group tree structure is broken
+        when (st `M.member` (mData ^. R.stateMachineStruct . R.groupStruct)) $
+            throwM BuildExeption
+
+        modifyIORef m (R.stateMachineStruct . R.groupStruct %~ M.insert st g)
     pure $ next ()
 
 interpretStateMachineL toLog m _ (L.SetFinishState st next) = do
@@ -78,3 +96,6 @@ instance ToSafe EventType (MachineEvent -> IO (Maybe MachineState)) where
 
 toSafeAction :: (Text -> IO ()) -> IO () -> IO () 
 toSafeAction loger' action = catchAny action $ \ex -> loger' $ "[error] " <> show ex <> " in action."
+
+data BuildExeption = BuildExeption deriving Show
+instance Exception BuildExeption

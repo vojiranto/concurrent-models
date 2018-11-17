@@ -10,6 +10,7 @@ import           Data.Dynamic
 import           Data.Describe
 import           Data.Flag
 
+data Transition = Transition MachineState MachineState
 data Event = FastEvent MachineEvent | WaitEvent MachineEvent Flag
 
 getEvent :: Event -> IO (MachineEvent, Maybe Flag)
