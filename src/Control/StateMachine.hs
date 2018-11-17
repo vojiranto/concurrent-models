@@ -99,4 +99,4 @@ emitAndWait :: Typeable a => StateMachine -> a -> IO ()
 emitAndWait (StateMachine eventVar _) event = do
     processed <- newFlag
     writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
-    await processed
+    wait processed

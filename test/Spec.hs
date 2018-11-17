@@ -13,7 +13,7 @@ actorPingPongTest = finishFor 1000 $ do
     actor1  <- makeActor (handlers success)
     actor2  <- makeActor (handlers success)
     notify actor2 $ Ping actor1 10
-    await success
+    wait success
 
 data Ping = Ping Actor Int
 data Pong = Pong Actor Int
@@ -44,7 +44,7 @@ stateMachinTest1 = finishFor 100 $ do
         exitDo         Off $ pure ()
         exitDo         On  $ pure ()
     emit sm TakeOn
-    await success
+    wait success
 
 stateMachinTest2 :: IO Bool
 stateMachinTest2 = finishFor 1000 $ do
@@ -59,7 +59,7 @@ stateMachinTest2 = finishFor 1000 $ do
 
     emit sm StrongPress
     emit sm StrongPress
-    await success
+    wait success
 
 data Press = StrongPress | WeaklyPress deriving Eq
 

@@ -10,5 +10,5 @@ newFlag = Flag <$> newEmptyMVar
 liftFlag :: Flag -> IO ()
 liftFlag (Flag f) = void $ tryPutMVar f ()
 
-await :: Flag -> IO ()
-await (Flag f) = void $ readMVar f  
+wait :: Flag -> IO ()
+wait (Flag f) = void $ readMVar f  
