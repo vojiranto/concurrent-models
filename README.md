@@ -69,7 +69,7 @@ trafficLightExample = runStateMachine logToConsole Green $ do
     addTransition Red    ChangeColor Yellow
     
     -- during the construction of the FSN, you can use IO.
-    directionSM <- initialiseAction $ runStateMachine logToConsole Red $ do
+    directionSM <- liftIO $ runStateMachine logToConsole Red $ do
         addTransition Green  ChangeColor Red
         addTransition Red    ChangeColor Green
     

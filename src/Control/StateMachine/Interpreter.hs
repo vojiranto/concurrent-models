@@ -29,8 +29,8 @@ makeStateMachineData logerAction initState stateMachine h = do
         _   -> Left BuildingError
 
 interpretStateMachineL :: Loger -> IORef R.StateMaschineData -> L.StateMachine -> L.StateMachineF a -> IO a
-interpretStateMachineL toLog _ _ (L.InitialiseAction action next) = do
-    toLog "[initialise action]"
+interpretStateMachineL toLog _ _ (L.LiftIO action next) = do
+    toLog "[IO action]"
     next <$> action
 
 interpretStateMachineL toLog _ link (L.GetMyLink next) = do

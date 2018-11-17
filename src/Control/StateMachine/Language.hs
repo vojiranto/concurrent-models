@@ -1,9 +1,10 @@
 {-# Language TemplateHaskell       #-}
+{-# Language TypeSynonymInstances  #-}
+{-# Language FlexibleInstances     #-}
 module Control.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
     , StateMachine(..)
-    , initialiseAction
     , getMyLink
     , groupStates
     , setFinishState
@@ -27,7 +28,7 @@ import           Control.StateMachine.Domain
 data StateMachine = StateMachine (Chan Event) (MVar MachineState)
 
 data StateMachineF next where
-    InitialiseAction            :: IO a -> (a -> next) -> StateMachineF next
+    LiftIO                      :: IO a -> (a -> next) -> StateMachineF next
     GetMyLink                   :: (StateMachine -> next) -> StateMachineF next
     -- Construction of state mashine struct
     GroupStates                 :: MachineState -> [MachineState] -> (() -> next) -> StateMachineF next
@@ -44,8 +45,8 @@ makeFunctorInstance ''StateMachineF
 
 type StateMachineL = Free StateMachineF
 
-initialiseAction :: IO a -> StateMachineL a
-initialiseAction action = liftF $ InitialiseAction action id
+instance MonadIO StateMachineL where
+    liftIO action = liftF $ LiftIO action id
 
 getMyLink :: StateMachineL StateMachine
 getMyLink = liftF $ GetMyLink id

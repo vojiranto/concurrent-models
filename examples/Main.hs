@@ -22,7 +22,7 @@ trafficLightExample2 = runStateMachine logToConsole Green $ do
     addTransition Green  ChangeColor Yellow
     addTransition Red    ChangeColor Yellow
     
-    directionSM <- initialiseAction $ runStateMachine logToConsole Red $ do
+    directionSM <- liftIO $ runStateMachine logToConsole Red $ do
         addTransition Green  ChangeColor Red
         addTransition Red    ChangeColor Green
     

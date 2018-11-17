@@ -6,7 +6,6 @@ module Control.StateMachine
     , makeEvents
     , groupStates
     , runStateMachine
-    , initialiseAction
     , setFinishState
     , getMyLink
     , addTransition
