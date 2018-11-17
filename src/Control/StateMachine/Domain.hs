@@ -21,8 +21,14 @@ newtype MachineState = MachineState TypeRep deriving (Eq, Ord)
 newtype MachineEvent = MachineEvent Dynamic
 newtype EventType    = EventType    TypeRep deriving (Eq, Ord)
 
-is :: Typeable a => a -> MachineState -> Bool
-a `is` b = toMachineState a == b
+class Is a b where
+    is :: a -> b -> Bool
+
+instance Typeable a => Is a MachineState where
+    a `is` b = toMachineState a == b
+
+instance Typeable a => Is MachineState a where
+    a `is` b = a == toMachineState b
 
 toMachineState :: Typeable a => a -> MachineState
 toMachineState = MachineState . typeOf

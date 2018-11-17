@@ -6,15 +6,16 @@ import           Data.Flag
 import           Control.Loger
 import           Control.Actor
 import           Control.StateMachine
+import           Control.StateMachine.Domain
 
 actorPingPongTest :: IO Bool
 actorPingPongTest = finishFor 1000 $ do
     success <- newFlag
-    actor1  <- makeActor logToConsole $ do
+    actor1  <- makeActor logOff $ \link -> do
         math $ ping success link
         math $ pong success link
 
-    actor2  <- makeActor logToConsole $ do
+    actor2  <- makeActor logOff $ \link -> do
         math $ ping success link
         math $ pong success link
 
@@ -51,5 +52,7 @@ main = do
     putTextLn ""
     hspec $ do
         it "Actor ping pong test"     $ isOk actorPingPongTest
+        it "test1 for 'is'" $ (toMachineState On `is` On) `shouldBe` True
+        it "test2 for 'is'" $ (On `is` toMachineState On) `shouldBe` True
         it "Test 1 for state machine" $ isOk stateMachinTest1
 
