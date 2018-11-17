@@ -1,4 +1,6 @@
+
 # Actor
+
 What can the actors? Actors can: receive messages, send messages, create new actors, and change the internal state.
 
 ```haskell
@@ -45,7 +47,7 @@ pong _    link (Pong actor n) = notify actor $ Ping link (n-1)
 FSM is framework to build asynchronous FSM. What is supported?
 
 1. Initial state, final state, transitions by events.
-2. Dynamic selection of transitions by event and current state. 
+2. Dynamic selection of transitions by event and current state.
 3. State grouping and grouping of groups.
 4. Addition transition from goup.
 5. Handlers state and groups entry/exit.
@@ -60,19 +62,26 @@ import           Control.Loger
 import           Control.StateMachine
 import           Control.StateMachine.Domain
 
-makeStates ["Green", "Yellow", "Red"]
-makeEvents ["ChangeColor"]
+data Green       = Green
+data Yellow      = Yellow
+data Red         = Red
+data ChangeColor = ChangeColor
+-- or you can write
+-- makeStates ["Green", "Yellow", "Red"]
+-- makeEvents ["ChangeColor"]
+
+
 
 trafficLightExample :: IO StateMachine
 trafficLightExample = runStateMachine logToConsole Green $ do
     addTransition Green  ChangeColor Yellow
     addTransition Red    ChangeColor Yellow
-    
+
     -- during the construction of the FSN, you can use IO.
     directionSM <- liftIO $ runStateMachine logToConsole Red $ do
         addTransition Green  ChangeColor Red
         addTransition Red    ChangeColor Green
-    
+
     exitDo Red   $ emitAndWait directionSM ChangeColor
     exitDo Green $ emitAndWait directionSM ChangeColor
 
