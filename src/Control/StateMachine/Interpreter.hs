@@ -28,6 +28,10 @@ interpretStateMachineL toLog _ link (L.GetMyLink next) = do
     toLog "[get my link]"
     pure $ next link
 
+interpretStateMachineL toLog _ _ (L.GroupStates _ _ next) = do
+    toLog "[error] The functionality for groups isn't implemented."
+    pure $ next ()
+
 interpretStateMachineL toLog m _ (L.SetFinishState st next) = do
     toLog $ "[set finish state] " <> describe st
     next <$> modifyIORef m (R.stateMachineStruct . R.finishStates %~ S.insert st)
@@ -43,10 +47,6 @@ interpretStateMachineL toLog m _ (L.AddConditionalTransition st1 ev condtition n
 interpretStateMachineL toLog m _ (L.EntryDo st action next) = do
     toLog $ "[set 'entry do' handler] " <> describe st
     next <$> modifyIORef m (R.handlers . R.entryDo %~ M.insert st (toSafeAction toLog action))
-
-interpretStateMachineL toLog m _ (L.TransitionDo st1 st2 eventType action next) = do
-    toLog $ "[set 'transition do' handler] " <> describe st1 <> " -> " <> describe eventType <> " -> " <> describe st2
-    next <$> modifyIORef m (R.handlers . R.transitionDo %~ M.insert (st1, eventType, st2) (toSafe toLog eventType action))    
 
 interpretStateMachineL toLog m _ (L.EntryWithEventDo st1 eventType action next) = do
     toLog $ "[set 'entry with event do' handler] " <> describe st1 <> " " <> describe eventType

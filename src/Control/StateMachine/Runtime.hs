@@ -33,7 +33,6 @@ data StateMaschineHandlers = StateMaschineHandlers
     { _staticalDo               :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
     , _entryDo                  :: M.Map MachineState (IO ())
     , _entryWithEventDo         :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
-    , _transitionDo             :: M.Map (MachineState, EventType, MachineState) (MachineEvent -> IO ())
     , _exitWithEventDo          :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
     , _exitDo                   :: M.Map MachineState (IO ())
     }
@@ -43,7 +42,7 @@ makeLenses ''StateMaschineData
 makeLenses ''StateMaschineHandlers
 
 emptyHandlers :: StateMaschineHandlers
-emptyHandlers = StateMaschineHandlers mempty mempty mempty mempty mempty mempty
+emptyHandlers = StateMaschineHandlers mempty mempty mempty mempty mempty
 
 emptyStruct :: StateMaschineStruct
 emptyStruct = StateMaschineStruct mempty mempty mempty
@@ -77,12 +76,14 @@ takeTransition event maschineData =
         conditionals = maschineData ^. stateMachineStruct . conditionalTransitions
 
 applyTransitionActions :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
-applyTransitionActions machineData state1 event state2 = do
-    applyExitDo             machineData state1
-    applyExitWithEventDo    machineData state1 event
-    applyTransitionDo       machineData state1 event state2
-    applyEntryWithEventDo   machineData state2 event
-    applyEntryDo            machineData state2
+applyTransitionActions machineData oldState event newState = do
+    -- find exit groups
+    -- find entry groups
+    -- for all elems of groups do
+    applyExitDo             machineData oldState
+    applyExitWithEventDo    machineData oldState event
+    applyEntryWithEventDo   machineData newState event
+    applyEntryDo            machineData newState
 
 applyEntryDo :: StateMaschineData -> MachineState -> IO ()
 applyEntryDo machineData st =
@@ -106,12 +107,6 @@ applyEntryWithEventDo :: StateMaschineData -> MachineState -> MachineEvent -> IO
 applyEntryWithEventDo machineData st event =
     whenJust (machineData ^. handlers . entryWithEventDo . at2 st (eventToType event)) $ \action -> do
         machineData ^. loger $ "[entry with event do] " <> describe st <> " " <> describe event
-        action event
-
-applyTransitionDo :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
-applyTransitionDo machineData st1 event st2 =
-    whenJust (machineData ^. handlers . transitionDo . at3 st1 (eventToType event) st2) $ \action -> do
-        machineData ^. loger $ "[entry with event do] " <> describe st1 <> " -> " <> describe event <> describe st1
         action event
 
 applyStaticalDo :: StateMaschineData -> MachineEvent -> IO ()

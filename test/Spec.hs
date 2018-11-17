@@ -31,7 +31,7 @@ handlers qSem link = do
     math $ ping qSem link
     math $ pong qSem link
 
-makeStates ["On", "Off"]
+makeStates ["On", "Off", "AnyState"]
 makeEvents ["TakeOn"]
 
 stateMachinTest1 :: IO Bool
@@ -40,28 +40,12 @@ stateMachinTest1 = finishFor 100 $ do
     sm  <- runStateMachine logOff Off $ do
         addTransition  Off TakeOn On
         setFinishState On
+        groupStates    AnyState $ On <: Off <: []
         entryDo        On  $ liftFlag success
         exitDo         Off $ pure ()
         exitDo         On  $ pure ()
     emit sm TakeOn
     wait success
-
-stateMachinTest2 :: IO Bool
-stateMachinTest2 = finishFor 1000 $ do
-    success <- newFlag
-    sm      <- runStateMachine logOff Off $ do
-        addConditionalTransition Off $
-            \pressing -> if pressing == StrongPress then just On else nothing 
-        addConditionalTransition On $
-            \pressing -> if pressing == StrongPress then just Off else nothing
-
-        transitionDo On Off $ \(_ :: Press) -> liftFlag success
-
-    emit sm StrongPress
-    emit sm StrongPress
-    wait success
-
-data Press = StrongPress | WeaklyPress deriving Eq
 
 main :: IO ()
 main = do
@@ -69,4 +53,3 @@ main = do
     hspec $ do
         it "Actor ping pong test"     $ isOk actorPingPongTest
         it "Test 1 for state machine" $ isOk stateMachinTest1
-        it "Test 2 for state machine" $ isOk stateMachinTest2

@@ -4,6 +4,7 @@ module Control.StateMachine
     , StateMachineL
     , makeStates
     , makeEvents
+    , groupStates
     , runStateMachine
     , initialiseAction
     , setFinishState
@@ -13,7 +14,6 @@ module Control.StateMachine
     , staticalDo
     , exitDo
     , exitWithEventDo
-    , transitionDo
     , entryWithEventDo
     , entryDo
     , emit

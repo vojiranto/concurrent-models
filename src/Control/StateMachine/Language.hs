@@ -5,13 +5,13 @@ module Control.StateMachine.Language
     , StateMachine(..)
     , initialiseAction
     , getMyLink
+    , groupStates
     , setFinishState
     , addTransition
     , addConditionalTransition
     , staticalDo
     , entryDo
     , entryWithEventDo
-    , transitionDo
     , exitWithEventDo
     , exitDo
     , just
@@ -30,6 +30,7 @@ data StateMachineF next where
     InitialiseAction            :: IO a -> (a -> next) -> StateMachineF next
     GetMyLink                   :: (StateMachine -> next) -> StateMachineF next
     -- Construction of state mashine struct
+    GroupStates                 :: MachineState -> [MachineState] -> (() -> next) -> StateMachineF next
     SetFinishState              :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
     AddConditionalTransition    :: MachineState -> EventType -> (MachineEvent -> IO (Maybe MachineState)) -> (() -> next) -> StateMachineF next
@@ -37,7 +38,6 @@ data StateMachineF next where
     StaticalDo                  :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     EntryDo                     :: MachineState -> IO () -> (() -> next) -> StateMachineF next
     EntryWithEventDo            :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
-    TransitionDo                :: MachineState -> MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     ExitWithEventDo             :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     ExitDo                      :: MachineState -> IO () -> (() -> next) -> StateMachineF next
 makeFunctorInstance ''StateMachineF
@@ -53,6 +53,9 @@ getMyLink = liftF $ GetMyLink id
 setFinishState :: Typeable state => state -> StateMachineL ()
 setFinishState finishState = liftF $
     SetFinishState (toMachineState finishState) id
+
+groupStates :: Typeable group => group -> [MachineState] -> StateMachineL ()
+groupStates groupName states = liftF $ GroupStates (toMachineState groupName) states id
 
 addTransition
     :: (Typeable state1, Typeable event, Typeable state2)
@@ -81,16 +84,6 @@ entryWithEventDo newState action = liftF $ EntryWithEventDo
 staticalDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
 staticalDo currentState action = liftF $ StaticalDo
     (toMachineState currentState) (actionToType action) (action . fromMachineEvent) id
-
-transitionDo
-    :: (Typeable state1, Typeable state2, Typeable event)
-    => state1 -> state2 -> (event -> IO ()) -> StateMachineL ()
-transitionDo state1 state2 action = liftF $ TransitionDo
-    (toMachineState state1)
-    (toMachineState state2)
-    (actionToType action)
-    (action . fromMachineEvent)
-    id
 
 exitWithEventDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
 exitWithEventDo oldState action = liftF $ ExitWithEventDo
