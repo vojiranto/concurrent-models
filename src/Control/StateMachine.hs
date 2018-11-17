@@ -38,6 +38,7 @@ import           Control.StateMachine.Language                      as L
 import           Control.StateMachine.Interpreter                   as I
 import qualified Control.StateMachine.Runtime                       as R
 import           Control.StateMachine.Runtime.StateMaschineHandlers as R
+import           Control.StateMachine.Runtime.StateMaschineStruct   as R 
 import           Control.StateMachine.Domain                        as D
 
 eventAnalize, stateAnalize, stateMachineWorker
@@ -49,11 +50,11 @@ eventAnalize stateMachineRef (StateMachine eventVar stateVar) = do
     mTransition        <- R.takeTransition event machineData
     unless (isJust mTransition) $ do
         machineData ^. R.loger $ describe event
-        R.applyStaticalDo
-            (machineData ^. R.loger)
-            (machineData ^. R.handlers)
-            (machineData ^. R.currentState)
-            event
+        let stList = R.takeGroups
+                (machineData ^. R.stateMachineStruct)
+                (machineData ^. R.currentState)
+        forM_ stList $ \st ->
+            R.applyStaticalDo (machineData ^. R.loger) (machineData ^. R.handlers) st event
 
     whenJust mTransition $ \(D.Transition currentState newState) -> do
         machineData ^. R.loger $ showTransition currentState event newState
@@ -70,7 +71,10 @@ stateAnalize stateMachineRef stateMachine = do
         then do
             let currentState = machineData ^. R.currentState
             machineData ^. R.loger $ "[finish state] " <> describe currentState
-            R.applyExitDo (machineData ^. R.loger) (machineData ^. R.handlers) currentState
+            let stList = R.takeGroups
+                    (machineData ^. R.stateMachineStruct)
+                    (machineData ^. R.currentState)
+            forM_ stList (R.applyExitDo (machineData ^. R.loger) (machineData ^. R.handlers))
         else eventAnalize stateMachineRef stateMachine
 
 showTransition :: MachineState -> MachineEvent -> MachineState -> Text
@@ -92,7 +96,8 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
                 stateMachineRef  <- newIORef stateMachineData
                 
                 loger $ "[init state] " <> describe initState
-                R.applyEntryDo loger (stateMachineData ^. R.handlers) initState
+                let stList = R.takeGroups (stateMachineData ^. R.stateMachineStruct) initState
+                forM_ stList (R.applyEntryDo loger (stateMachineData ^. R.handlers))
                 stateMachineWorker stateMachineRef stateMachine
             Left err -> loger $ "[error] " <> show err
     pure stateMachine

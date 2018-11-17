@@ -59,7 +59,6 @@ checkTransition loger maschineData (Just (Transition st1 st2)) = do
     let err = S.member st2 (maschineData ^. groups)
     when err $ loger $ "[error trasition] " <> describe st1 <> " -> "<> describe st2 
     pure $ not err
-
 checkTransition _ _ _ = pure False
 
 makeTransition :: MachineState -> Maybe MachineState -> IO (Maybe Transition) -> IO (Maybe Transition)
@@ -67,6 +66,19 @@ makeTransition currentState mState def =
     case mState of
         Just newState -> pure . Just $ Transition currentState newState
         Nothing       -> def
+
+takeGroups :: StateMaschineStruct -> MachineState -> [MachineState]
+takeGroups maschineData st
+    | Just newSt <- maschineData ^. groupStruct . at st = st : takeGroups maschineData newSt
+    | otherwise                                         = [st]
+
+compareGroups :: [MachineState] -> [MachineState] -> ([MachineState], [MachineState])
+compareGroups l1 l2 = compareGroups' (reverse l1) (reverse l2)
+    where
+        compareGroups' :: Eq a => [a] -> [a] -> ([a], [a])
+        compareGroups' (x:xs) (y:ys)
+            | x == y    = compareGroups' xs ys
+        compareGroups' a b = (reverse a, reverse b)
 
 checkStruct :: StateMaschineStruct -> Bool
 checkStruct struct = allTransitionIsValid && structIsValid

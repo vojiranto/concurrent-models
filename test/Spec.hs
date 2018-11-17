@@ -37,13 +37,11 @@ makeEvents ["TakeOn"]
 stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 100 $ do
     success <- newFlag
-    sm  <- runStateMachine logToConsole Off $ do
-        addTransition  AnyState TakeOn On
-        setFinishState On
+    sm  <- runStateMachine logOff Off $ do
         groupStates    AnyState $ On <: Off <: []
-        entryDo        On  $ liftFlag success
-        exitDo         Off $ pure ()
-        exitDo         On  $ pure ()
+        addTransition  AnyState TakeOn On
+        entryDo        On $ liftFlag success
+        setFinishState On
     emit sm TakeOn
     wait success
 

@@ -32,13 +32,16 @@ takeTransition event maschineData = takeTransitionFromStruct
 
 applyTransitionActions :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
 applyTransitionActions machineData oldState event newState = do
-    -- find exit groups
-    -- find entry groups
-    -- for all elems of groups do
-    applyExitDo             (machineData ^. loger) (machineData ^. handlers) oldState
-    applyExitWithEventDo    (machineData ^. loger) (machineData ^. handlers) oldState event
-    applyEntryWithEventDo   (machineData ^. loger) (machineData ^. handlers) newState event
-    applyEntryDo            (machineData ^. loger) (machineData ^. handlers) newState
+    let oldGroups = takeGroups (machineData ^. stateMachineStruct) oldState
+    let newGroups = takeGroups (machineData ^. stateMachineStruct) newState
+    let (exitGroups, entryGroups) = compareGroups oldGroups newGroups
+    
+    forM_ exitGroups $ \oldGroup -> do
+        applyExitDo             (machineData ^. loger) (machineData ^. handlers) oldGroup
+        applyExitWithEventDo    (machineData ^. loger) (machineData ^. handlers) oldGroup event
+    forM_ entryGroups $ \newGroup -> do
+        applyEntryWithEventDo   (machineData ^. loger) (machineData ^. handlers) newGroup event
+        applyEntryDo            (machineData ^. loger) (machineData ^. handlers) newGroup
 
 isFinish :: StateMaschineData -> Bool
 isFinish machineData =
