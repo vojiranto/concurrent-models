@@ -54,6 +54,12 @@ FSM is framework to build asynchronous FSM. What is supported?
 8. Functions for working with internal types (emit, emitAndWait, is, <:, nothing, just...).
 
 ```haskell
+import           Universum
+
+import           Control.Loger
+import           Control.StateMachine
+import           Control.StateMachine.Domain
+
 makeStates ["Green", "Yellow", "Red"]
 makeEvents ["ChangeColor"]
 
