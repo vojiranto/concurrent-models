@@ -1,3 +1,4 @@
+For a complete list of features use `stack haddock` :) 
 
 # Actor
 
@@ -20,11 +21,13 @@ data Pong = Pong Actor Int
 actorPingPong :: IO ()
 actorPingPong = do
     success <- newFlag
-    actor1  <- runActor logOff $ \link -> do
+    actor1  <- runActor logOff $ do
+        link <- this
         math $ ping success link
         math $ pong success link
 
-    actor2  <- runActor logOff $ \link -> do
+    actor2  <- runActor logOff $ do
+        link <- this
         math $ ping success link
         math $ pong success link
 
@@ -42,9 +45,9 @@ pong _       link (Pong actor n) = notify actor $ Ping link (n-1)
 
 ```
 
-# SM
+# State machine
 
-Module Control.StateMachine is framework to build asynchronous FSM. What is supported?
+Module Control.StateMachine is a framework to build asynchronous FSMs. What is supported?
 
 Let's demonstrate with examples.
 
@@ -62,7 +65,7 @@ sequentialStateMachine = do
     sm     <- runStateMachine logToConsole S1 $ do
         addTransition  S1 Event S2
         addTransition  S2 Event S3
-        setFinishState S3
+        addFinalState S3
         exitDo S3 $ liftFlag stopSM
     sm `emit` Event
     sm `emit` Event
@@ -135,7 +138,7 @@ groupingStateMachine = do
         addTransition  G Exit FS
         exitDo         G $ pure ()
 
-        setFinishState FS
+        addFinalState FS
         exitDo FS $ liftFlag stopSM
 
     sm `emit` Move
@@ -163,5 +166,3 @@ groupingStateMachine = do
 [SM] [1118St6C9u] [finish state] [state FS]
 [SM] [1118St6C9u] [exit do] [state FS]
 ```
-
-For a complete list of features use `stack haddok` :)

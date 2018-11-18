@@ -34,7 +34,7 @@ interpretStateMachineL toLog _ _ (L.LiftIO action next) = do
     next <$> action
 
 interpretStateMachineL toLog _ link (L.This next) = do
-    toLog "[get my link]"
+    toLog "[get this *]"
     pure $ next link
 
 interpretStateMachineL toLog m _ (L.GroupStates g states next) = do
@@ -50,7 +50,7 @@ interpretStateMachineL toLog m _ (L.GroupStates g states next) = do
         modifyIORef m (R.stateMachineStruct . R.groupStruct %~ M.insert st g)
     pure $ next ()
 
-interpretStateMachineL toLog m _ (L.SetFinishState st next) = do
+interpretStateMachineL toLog m _ (L.AddFinalState st next) = do
     toLog $ "[set finish state] " <> describe st
     next <$> modifyIORef m (R.stateMachineStruct . R.finishStates %~ S.insert st)
 

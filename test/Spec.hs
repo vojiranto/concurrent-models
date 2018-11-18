@@ -22,7 +22,7 @@ stateMachinTest1 = finishFor 100 $ do
         groupStates    AnyState $ On <: Off <: []
         addTransition  AnyState TakeOn On
         entryDo        On $ liftFlag success
-        setFinishState On
+        addFinalState On
     emit sm TakeOn
     wait success
 

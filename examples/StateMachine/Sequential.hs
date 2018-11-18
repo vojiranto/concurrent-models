@@ -17,7 +17,7 @@ sequentialStateMachine = do
     sm     <- runStateMachine logOff S1 $ do
         addTransition  S1 Event S2
         addTransition  S2 Event S3
-        setFinishState S3
+        addFinalState S3
         exitDo S3 $ liftFlag stopSM
     sm `emit` Event
     sm `emit` Event

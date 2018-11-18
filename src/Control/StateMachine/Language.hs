@@ -1,13 +1,11 @@
 {-# Language TemplateHaskell       #-}
-{-# Language TypeSynonymInstances  #-}
-{-# Language FlexibleInstances     #-}
 module Control.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
     , StateMachine(..)
     , this
     , groupStates
-    , setFinishState
+    , addFinalState
     , addTransition
     , addConditionalTransition
     , staticalDo
@@ -23,6 +21,7 @@ import           Universum
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Concurrent.Chan
 import           Control.Monad.Free
+import           Data.This
 import           Control.StateMachine.Domain
 
 data StateMachine = StateMachine (Chan Event) (MVar MachineState)
@@ -32,7 +31,7 @@ data StateMachineF next where
     This                        :: (StateMachine -> next) -> StateMachineF next
     -- Construction of state mashine struct
     GroupStates                 :: MachineState -> [MachineState] -> (() -> next) -> StateMachineF next
-    SetFinishState              :: MachineState -> (() -> next) -> StateMachineF next
+    AddFinalState              :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
     AddConditionalTransition    :: MachineState -> EventType -> (MachineEvent -> IO (Maybe MachineState)) -> (() -> next) -> StateMachineF next
     -- Addition handlers to states and transitions of state mashine
@@ -48,14 +47,14 @@ type StateMachineL = Free StateMachineF
 instance MonadIO StateMachineL where
     liftIO action = liftF $ LiftIO action id
 
--- | Return link of current FSM.
-this :: StateMachineL StateMachine
-this = liftF $ This id
+instance This StateMachineL StateMachine where
+    -- | Return link of current FSM.
+    this = liftF $ This id
 
 -- | Add new finsh state to FSM. 
-setFinishState :: Typeable state => state -> StateMachineL ()
-setFinishState finishState = liftF $
-    SetFinishState (toMachineState finishState) id
+addFinalState :: Typeable state => state -> StateMachineL ()
+addFinalState finishState = liftF $
+    AddFinalState (toMachineState finishState) id
 
 -- | Group states, to be able to assign common handlers and transitions.
 --   You can combine groups into groups of higher order, if necessary.
