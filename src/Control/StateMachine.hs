@@ -1,27 +1,32 @@
 {-# Language ViewPatterns #-}
 module Control.StateMachine
-    ( StateMachine
+    ( 
+      StateMachine
     , StateMachineL
-    , makeStates
-    , makeEvents
-    , groupStates
     , runStateMachine
+    -- * Making of FSM struct
+    , this
     , setFinishState
-    , getMyLink
+    , groupStates
+    , (<:)
     , addTransition
     , addConditionalTransition
+    , just
+    , nothing
+    , is
+    -- * Addition of handlers
     , L.staticalDo
     , L.exitDo
     , L.exitWithEventDo
     , L.entryWithEventDo
     , L.entryDo
+    -- * Communication with working FSN
     , emit
     , emitAndWait
-    , just
-    , nothing
     , takeState
-    , is
-    , (<:)
+    -- * Templates
+    , makeStates
+    , makeEvents
     ) where
 
 import           Universum
@@ -81,6 +86,8 @@ showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 stateMachineWorker = stateAnalize
 
+-- | Build and run new state machine, interrupts the build if an error is
+--   detected in the machine description.
 runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
 runStateMachine logerAction (toMachineState -> initState) machineDescriptione = do
     eventVar <- newChan
@@ -101,14 +108,17 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
             Left err -> loger $ "[error] " <> show err
     pure stateMachine
 
+-- | Emit event to the FSN.
 emit :: Typeable a => StateMachine -> a -> IO ()
 emit (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toMachineEvent
 
-takeState :: StateMachine -> IO MachineState
-takeState (StateMachine _ stateVar) = readMVar stateVar
-
+-- | Emit event and wait finally of it proccesing by FSM.
 emitAndWait :: Typeable a => StateMachine -> a -> IO ()
 emitAndWait (StateMachine eventVar _) event = do
     processed <- newFlag
     writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
     wait processed
+
+-- | Take current state of the FSN.
+takeState :: StateMachine -> IO MachineState
+takeState (StateMachine _ stateVar) = readMVar stateVar

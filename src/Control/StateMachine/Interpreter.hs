@@ -33,7 +33,7 @@ interpretStateMachineL toLog _ _ (L.LiftIO action next) = do
     toLog "[IO action]"
     next <$> action
 
-interpretStateMachineL toLog _ link (L.GetMyLink next) = do
+interpretStateMachineL toLog _ link (L.This next) = do
     toLog "[get my link]"
     pure $ next link
 

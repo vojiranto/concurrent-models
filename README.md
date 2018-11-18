@@ -20,11 +20,11 @@ data Pong = Pong Actor Int
 actorPingPong :: IO ()
 actorPingPong = do
     success <- newFlag
-    actor1  <- makeActor logOff $ \link -> do
+    actor1  <- runActor logOff $ \link -> do
         math $ ping success link
         math $ pong success link
 
-    actor2  <- makeActor logOff $ \link -> do
+    actor2  <- runActor logOff $ \link -> do
         math $ ping success link
         math $ pong success link
 

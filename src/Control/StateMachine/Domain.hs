@@ -22,6 +22,8 @@ newtype MachineEvent = MachineEvent Dynamic
 newtype EventType    = EventType    TypeRep deriving (Eq, Ord)
 
 class Is a b where
+    -- | Wrapper for (==), if you want to compare the value and state of the machine.
+    -- if you have two states, use (==).
     is :: a -> b -> Bool
 
 instance Typeable a => Is a MachineState where
@@ -59,5 +61,6 @@ instance Describe EventType where
 
 infixr 6  <:
 
+-- | Add new state to list.
 (<:) :: Typeable a => a -> [MachineState] -> [MachineState]
 a <: b = toMachineState a : b

@@ -1,12 +1,13 @@
+{-# Language FlexibleInstances #-}
 module Control.Actor.Message
     ( ActorMessage
+    , ToType(..)
     , TypeRep
     , MessageType
     , otherwiseType
     , toActorMessage
     , fromActorMessage
-    , fromDataToMessageType
-    , fromActorMessageToType
+    , fromActorMessageUnsafe
     , fromActionToMessageType
     ) where
 
@@ -21,22 +22,30 @@ newtype ActorMessage = ActorMessage Dynamic
 newtype MessageType  = MessageType  TypeRep deriving (Ord, Eq)
 
 otherwiseType :: MessageType
-otherwiseType = fromDataToMessageType Otherwise
+otherwiseType = toType Otherwise
 
 toActorMessage :: Typeable a => a -> ActorMessage
 toActorMessage = ActorMessage . toDyn
 
-fromActorMessage :: Typeable a => ActorMessage -> a
-fromActorMessage (ActorMessage message) = fromJust . fromDynamic $ message
+-- | Unpack actor message.
+fromActorMessage :: Typeable a => ActorMessage -> Maybe a
+fromActorMessage (ActorMessage message) = fromDynamic message
 
-fromActorMessageToType :: ActorMessage -> MessageType
-fromActorMessageToType (ActorMessage message) = MessageType . dynTypeRep $ message
-
-fromDataToMessageType :: Typeable a => a -> MessageType
-fromDataToMessageType = MessageType . typeOf
+fromActorMessageUnsafe :: Typeable a => ActorMessage -> a
+fromActorMessageUnsafe (ActorMessage message) = fromJust . fromDynamic $ message
 
 fromActionToMessageType :: Typeable a => (a -> IO ()) -> MessageType
 fromActionToMessageType = MessageType . head . snd . splitTyConApp . typeOf
+
+-- | You can get to know out which type the message has to select a handler.
+class ToType a where
+    toType :: a -> MessageType
+
+instance {-# OVERLAPS #-} ToType ActorMessage where
+    toType (ActorMessage message) = MessageType . dynTypeRep $ message
+
+instance {-# OVERLAPPABLE #-} Typeable a => ToType a where
+    toType = MessageType . typeOf
 
 instance Describe ActorMessage where
     describe (ActorMessage a) = "[message " <> show (dynTypeRep a) <> "]"

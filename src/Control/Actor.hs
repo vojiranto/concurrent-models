@@ -1,14 +1,14 @@
 module Control.Actor
     ( Actor
     , ActorL
-    , makeActor
+    , runActor
     , stopActor
     , killActor
     , notify
     , math
     , otherwiseMath
-    , fromActorMessageToType
-    , fromDataToMessageType
+    , fromActorMessage
+    , ToType(..)
     ) where
 
 import           Universum
@@ -25,7 +25,7 @@ import qualified Data.Map           as M
 data StopActor = StopActor
 
 stopType :: MessageType
-stopType = fromDataToMessageType StopActor
+stopType = toType StopActor
 
 data Actor = Actor (TChan ActorMessage) ThreadId
 
@@ -34,12 +34,12 @@ data AnlyzeMessageResult = StopNodeR | ApplyHandlerR
 
 analyzeMessage :: ActorMessage -> AnlyzeMessageResult
 analyzeMessage message
-    | fromActorMessageToType message == stopType = StopNodeR
-    | otherwise                                  = ApplyHandlerR
+    | toType message == stopType = StopNodeR
+    | otherwise                  = ApplyHandlerR
 
 applyHandler :: Loger -> HandlerMap -> ActorMessage -> IO ()
 applyHandler loger handlerMap message = do
-    let messageType = fromActorMessageToType message
+    let messageType = toType message
     case messageType `M.lookup` handlerMap of
         Just handler -> handler message
         _            -> do
@@ -47,8 +47,9 @@ applyHandler loger handlerMap message = do
             whenJust mHandler $ \handler -> handler message
             unless (isJust mHandler) $ loger "[error] handler does not exist, msg is droped." 
 
-makeActor :: Loger -> (Actor -> ActorL a) -> IO Actor
-makeActor logerAction handler = do
+-- | Build and run new actor.
+runActor :: Loger -> (Actor -> ActorL a) -> IO Actor
+runActor logerAction handler = do
     chan     <- atomically newTChan
     threadId <- forkIO $ do
         textId          <- newTextId
@@ -67,11 +68,14 @@ makeActor logerAction handler = do
                     putMVar mutex True
     pure $ Actor chan threadId
 
+-- | Send msg to the actor.
 notify :: Typeable a => Actor -> a -> IO () 
 notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message
 
+-- | Send stop msg to the actor.
 stopActor :: Actor -> IO ()
 stopActor actor = notify actor StopActor
 
+-- | Send async exeption to the actor.
 killActor :: Actor -> IO ()
 killActor (Actor _ threadId) = killThread threadId
