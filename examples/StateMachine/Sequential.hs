@@ -22,16 +22,3 @@ sequentialStateMachine = do
     sm `emit` Event
     sm `emit` Event
     wait stopSM
-
-{-
--- log of example.
-[1118SuUnP1] [set transition] [state S1] -> [event Event] -> [state S2]
-[SM] [1118SuUnP1] [set transition] [state S2] -> [event Event] -> [state S3]
-[SM] [1118SuUnP1] [set finish state] [state S3]
-[SM] [1118SuUnP1] [set 'exit do' handler] [state S3]
-[SM] [1118SuUnP1] [init state] [state S1]
-[SM] [1118SuUnP1] [transition] [state S1] -> [event Event] -> [state S2]
-[SM] [1118SuUnP1] [transition] [state S2] -> [event Event] -> [state S3]
-[SM] [1118SuUnP1] [finish state] [state S3]
-[SM] [1118SuUnP1] [exit do] [state S3]
--}
