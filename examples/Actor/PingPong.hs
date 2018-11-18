@@ -25,9 +25,7 @@ actorPingPong = do
     notify actor2 $ Ping actor1 10
     wait success
 
--- Handlers are ordinary haskel functions with strong typing.
--- Thanks to io you can enjoy all the wealth of opportunities.
--- For example shoot yourself in the foot ;)
+-- Handlers are ordinary haskel functions.
 ping :: Flag -> Actor -> Ping -> IO ()
 ping sem  _    (Ping _     0) = liftFlag sem
 ping _    link (Ping actor n) = notify actor $ Pong link (n-1)
