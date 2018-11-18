@@ -1,3 +1,4 @@
+For a complete list of features use `stack haddock` :) 
 
 # Actor
 
@@ -44,9 +45,9 @@ pong _       link (Pong actor n) = notify actor $ Ping link (n-1)
 
 ```
 
-# SM
+# State machine
 
-Module Control.StateMachine is framework to build asynchronous FSM. What is supported?
+Module Control.StateMachine is a framework to build asynchronous FSMs. What is supported?
 
 Let's demonstrate with examples.
 
@@ -165,5 +166,3 @@ groupingStateMachine = do
 [SM] [1118St6C9u] [finish state] [state FS]
 [SM] [1118St6C9u] [exit do] [state FS]
 ```
-
-For a complete list of features use `stack haddok` :)
