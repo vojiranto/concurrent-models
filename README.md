@@ -42,18 +42,19 @@ pong _       link (Pong actor n) = notify actor $ Ping link (n-1)
 
 ```
 
-# FSM
+# SM
 
-FSM is framework to build asynchronous FSM. What is supported?
+Module Control.StateMachine is framework to build asynchronous FSM. What is supported?
 
-1. Initial state, final state, transitions by events.
-2. Dynamic selection of transitions by event and current state.
-3. State grouping and grouping of groups.
-4. Addition transition from goup.
-5. Handlers state and groups entry/exit.
-6. Handlers for events.
-7. Log of transitions, events and internal errors (You can direct it wherever you want.)
-8. Functions for working with internal types (emit, emitAndWait, is, <:, nothing, just...).
+1. Initial state, final state, transitions between any two states by events.
+2. The list of other states is based on the transition map.
+3. Dynamic selection of transitions by event and current state.
+4. State grouping, you can also group groups into higher order groups.
+5. Addition transition from goup.
+6. Handlers state and groups entry/exit.
+7. Handlers for events.
+8. Log of transitions, events and internal errors (You can direct it wherever you want.)
+9. Functions for working with internal types (emit, emitAndWait, is, <:, nothing, just...).
 
 ```haskell
 module StateMachine.TrafficLight where
