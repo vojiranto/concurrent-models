@@ -1,6 +1,6 @@
 module Control.Actor
     ( Actor
-    , HandlerL
+    , ActorL
     , makeActor
     , stopActor
     , killActor
@@ -15,8 +15,8 @@ import           Universum
 import           Data.TextId
 import           Data.Describe
 import           Control.Loger
-import           Control.Actor.Handler.Language 
-import           Control.Actor.Handler.Interpreter
+import           Control.Actor.Language 
+import           Control.Actor.Interpreter
 import           Control.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
@@ -47,7 +47,7 @@ applyHandler loger handlerMap message = do
             whenJust mHandler $ \handler -> handler message
             unless (isJust mHandler) $ loger "[error] handler does not exist, msg is droped." 
 
-makeActor :: Loger -> (Actor -> HandlerL a) -> IO Actor
+makeActor :: Loger -> (Actor -> ActorL a) -> IO Actor
 makeActor logerAction handler = do
     chan     <- atomically newTChan
     threadId <- forkIO $ do
