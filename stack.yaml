@@ -66,4 +66,4 @@ packages:
 build:
   haddock-arguments:
     haddock-args:
-    - "--odir=./.docs"
+    - "--odir=./docs"
