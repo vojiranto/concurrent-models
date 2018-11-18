@@ -6,7 +6,7 @@ module Control.StateMachine
     , runStateMachine
     -- * Making of FSM struct
     , this
-    , setFinishState
+    , addFinalState
     , groupStates
     , (<:)
     , addTransition

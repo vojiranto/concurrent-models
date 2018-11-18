@@ -26,7 +26,7 @@ groupingStateMachine = do
         addTransition  G Exit FS
         exitDo         G $ pure ()
 
-        setFinishState FS
+        addFinalState FS
         exitDo FS $ liftFlag stopSM
 
     sm `emit` Move

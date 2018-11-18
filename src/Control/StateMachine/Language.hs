@@ -7,7 +7,7 @@ module Control.StateMachine.Language
     , StateMachine(..)
     , this
     , groupStates
-    , setFinishState
+    , addFinalState
     , addTransition
     , addConditionalTransition
     , staticalDo
@@ -32,7 +32,7 @@ data StateMachineF next where
     This                        :: (StateMachine -> next) -> StateMachineF next
     -- Construction of state mashine struct
     GroupStates                 :: MachineState -> [MachineState] -> (() -> next) -> StateMachineF next
-    SetFinishState              :: MachineState -> (() -> next) -> StateMachineF next
+    AddFinalState              :: MachineState -> (() -> next) -> StateMachineF next
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
     AddConditionalTransition    :: MachineState -> EventType -> (MachineEvent -> IO (Maybe MachineState)) -> (() -> next) -> StateMachineF next
     -- Addition handlers to states and transitions of state mashine
@@ -53,9 +53,9 @@ this :: StateMachineL StateMachine
 this = liftF $ This id
 
 -- | Add new finsh state to FSM. 
-setFinishState :: Typeable state => state -> StateMachineL ()
-setFinishState finishState = liftF $
-    SetFinishState (toMachineState finishState) id
+addFinalState :: Typeable state => state -> StateMachineL ()
+addFinalState finishState = liftF $
+    AddFinalState (toMachineState finishState) id
 
 -- | Group states, to be able to assign common handlers and transitions.
 --   You can combine groups into groups of higher order, if necessary.
