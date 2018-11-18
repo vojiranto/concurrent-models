@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3f147b0786a59c111e60b4c2174c554d857b9e06b4501e4ac80cb1d837c1fef9
+-- hash: 96296d6353b1842c87b6f0c35616aa2e3d4d7cf8e822982f8ef8695767acceaf
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -68,9 +68,13 @@ library
 executable example
   main-is: Main.hs
   other-modules:
+      Actor.PingPong
+      StateMachine.Door
+      StateMachine.TrafficLight
       Paths_concurrent_models
   hs-source-dirs:
       examples
+      app
   default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   build-depends:
       base >=4.7 && <5
@@ -93,9 +97,13 @@ test-suite Actor-test
   main-is: Spec.hs
   other-modules:
       Test.Hspec.Extra
+      Actor.PingPong
+      StateMachine.Door
+      StateMachine.TrafficLight
       Paths_concurrent_models
   hs-source-dirs:
       test
+      examples
   default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:

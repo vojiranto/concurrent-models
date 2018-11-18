@@ -43,7 +43,10 @@ dependencies:
 executables:
   example:
     main:                Main.hs
-    source-dirs:         examples
+    source-dirs:
+    - examples
+    - app
+
     dependencies:
     - concurrent-models
 
@@ -56,7 +59,10 @@ library:
 tests:
   Actor-test:
     main:                Spec.hs
-    source-dirs:         test
+    source-dirs:
+    - test
+    - examples
+
     ghc-options:
     - -Wall
     - -Werror
