@@ -7,7 +7,6 @@ import           Test.Hspec.Extra
 import           Data.Flag
 import           Control.Loger
 import           Control.StateMachine
-import           Control.StateMachine.Domain
 import           Actor.PingPong
 
 makeStates ["On", "Off", "AnyState"]
@@ -29,6 +28,4 @@ main = do
     putTextLn ""
     hspec $ do
         it "Actor ping pong test"     $ isOk (finishFor 1000 actorPingPong)
-        it "test1 for 'is'" $ (toMachineState On `is` On) `shouldBe` True
-        it "test2 for 'is'" $ (On `is` toMachineState On) `shouldBe` True
         it "Test 1 for state machine" $ isOk stateMachinTest1

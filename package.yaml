@@ -52,6 +52,11 @@ executables:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - Control.StateMachine
+    - Control.Actor
+    - Control.Loger
+    - Data.Flag
   ghc-options:
   - -Wall
   - -Werror
