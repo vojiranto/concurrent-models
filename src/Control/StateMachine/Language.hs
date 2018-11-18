@@ -1,5 +1,6 @@
 {-# Language TemplateHaskell       #-}
 {-# Language TypeSynonymInstances  #-}
+{-# Language MultiParamTypeClasses #-}
 {-# Language FlexibleInstances     #-}
 module Control.StateMachine.Language
     ( StateMachineF(..)
@@ -23,6 +24,7 @@ import           Universum
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Concurrent.Chan
 import           Control.Monad.Free
+import           Data.This
 import           Control.StateMachine.Domain
 
 data StateMachine = StateMachine (Chan Event) (MVar MachineState)
@@ -48,9 +50,9 @@ type StateMachineL = Free StateMachineF
 instance MonadIO StateMachineL where
     liftIO action = liftF $ LiftIO action id
 
--- | Return link of current FSM.
-this :: StateMachineL StateMachine
-this = liftF $ This id
+instance This StateMachineL StateMachine where
+    -- | Return link of current FSM.
+    this = liftF $ This id
 
 -- | Add new finsh state to FSM. 
 addFinalState :: Typeable state => state -> StateMachineL ()

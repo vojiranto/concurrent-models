@@ -27,8 +27,6 @@ data StopActor = StopActor
 stopType :: MessageType
 stopType = toType StopActor
 
-data Actor = Actor (TChan ActorMessage) ThreadId
-
 data AnlyzeMessageResult = StopNodeR | ApplyHandlerR
     deriving Eq
 
