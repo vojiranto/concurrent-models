@@ -9,6 +9,7 @@ import           Control.Loger
 import           Control.StateMachine
 
 import           StateMachine.Sequential
+import           StateMachine.Grouping
 import           Actor.PingPong
 
 makeStates ["On", "Off", "AnyState"]
@@ -32,3 +33,4 @@ main = do
         it "Actor ping pong test"     $ isOk (finishFor 1000 actorPingPong)
         it "Test 1 for state machine" $ isOk stateMachinTest1
         it "Test 2 for state machine" $ isOk (finishFor 1000 sequentialStateMachine)
+        it "Test 2 for state machine" $ isOk (finishFor 1000 groupingStateMachine)

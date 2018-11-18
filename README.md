@@ -111,8 +111,57 @@ makeTrafficLight = runStateMachine logToConsole Green $ do
         \ChangeColor -> Just <$> takeState directionSM
 ```
 
-TODO: Code examle for items:
-4. State grouping, you can also group groups into higher order groups.
-5. Addition transition from goup.
-6. Handlers state and groups entry/exit.
-7. Handlers for events.
+You can collect states in groups and add to group common handlers and transitions to other states.
+
+```haskell
+data S1 = S1
+data S2 = S2
+data S3 = S3
+data G  = G
+data FS = FS
+
+data Move = Move
+data Exit = Exit
+
+groupingStateMachine :: IO ()
+groupingStateMachine = do
+    stopSM <- newFlag
+    sm     <- runStateMachine logToConsole S1 $ do
+        addTransition  S1 Move S2
+        addTransition  S2 Move S3
+        addTransition  S3 Move S1
+
+        groupStates    G $ S1 <: S2 <: S3 <: []
+        addTransition  G Exit FS
+        exitDo         G $ pure ()
+
+        setFinishState FS
+        exitDo FS $ liftFlag stopSM
+
+    sm `emit` Move
+    sm `emit` Exit
+
+    wait stopSM
+```
+
+```
+[SM] [1118St6C9u] [set transition] [state S1] -> [event Move] -> [state S2]
+[SM] [1118St6C9u] [set transition] [state S2] -> [event Move] -> [state S3]
+[SM] [1118St6C9u] [set transition] [state S3] -> [event Move] -> [state S1]
+[SM] [1118St6C9u] [make group] [state G]
+[SM] [1118St6C9u] [add states to group] [state S1]
+[SM] [1118St6C9u] [add states to group] [state S2]
+[SM] [1118St6C9u] [add states to group] [state S3]
+[SM] [1118St6C9u] [set transition] [state G] -> [event Exit] -> [state FS]
+[SM] [1118St6C9u] [set 'exit do' handler] [state G]
+[SM] [1118St6C9u] [set finish state] [state FS]
+[SM] [1118St6C9u] [set 'exit do' handler] [state FS]
+[SM] [1118St6C9u] [init state] [state S1]
+[SM] [1118St6C9u] [transition] [state S1] -> [event Move] -> [state S2]
+[SM] [1118St6C9u] [transition] [state S2] -> [event Exit] -> [state FS]
+[SM] [1118St6C9u] [exit do] [state G]
+[SM] [1118St6C9u] [finish state] [state FS]
+[SM] [1118St6C9u] [exit do] [state FS]
+```
+
+For a complete list of features use `stack haddok` :)
