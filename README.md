@@ -1,7 +1,7 @@
 
 # Actor
 
-What can the actors? Actors can: receive messages, send messages, create new actors, and change the internal state.
+What can actors do? They can: receive messages, send messages, create new actors and change their internal state.
 
 ```haskell
 import           Universum
@@ -29,7 +29,7 @@ actorPingPong = do
     notify actor2 $ Ping actor1 10
     wait success
 
--- Handlers are ordinary haskel functions with strong typing.
+-- Handlers are ordinary Haskell functions with strong typing.
 -- Thanks to io you can enjoy all the wealth of opportunities.
 -- For example shoot yourself in the foot ;)
 ping :: Flag -> Actor -> Ping -> IO ()
