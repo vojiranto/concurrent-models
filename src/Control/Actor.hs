@@ -5,6 +5,7 @@ module Control.Actor
     , stopActor
     , killActor
     , notify
+    , this
     , math
     , otherwiseMath
     , fromActorMessage
@@ -13,6 +14,7 @@ module Control.Actor
 
 import           Universum
 import           Data.TextId
+import           Data.This
 import           Data.Describe
 import           Control.Loger
 import           Control.Actor.Language 
@@ -46,14 +48,14 @@ applyHandler loger handlerMap message = do
             unless (isJust mHandler) $ loger "[error] handler does not exist, msg is droped." 
 
 -- | Build and run new actor.
-runActor :: Loger -> (Actor -> ActorL a) -> IO Actor
+runActor :: Loger -> ActorL a -> IO Actor
 runActor logerAction handler = do
     chan     <- atomically newTChan
     threadId <- forkIO $ do
         textId          <- newTextId
         let loger txt   = logerAction $ "[Actor] " <> "[" <> textId  <> "] " <> txt
         actor           <- Actor chan <$> myThreadId
-        handlerMap      <- makeHandlerMap loger (handler actor)
+        handlerMap      <- makeHandlerMap loger actor handler
         mutex           <- newMVar True
         forever $ do
             void $ takeMVar mutex

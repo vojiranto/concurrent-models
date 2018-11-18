@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5ec9f46a9d378f06b797798041684aceeba3c8dd6e943757b2d2606edaf6f4c8
+-- hash: ba01c6392c21c23757269a13b083e9576ade7bd654cc57ab8020ae52e6dc91f3
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -49,7 +49,7 @@ library
       Paths_concurrent_models
   hs-source-dirs:
       src
-  default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
+  default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   ghc-options: -Wall -Werror
   build-depends:
       base >=4.7 && <5
@@ -78,7 +78,7 @@ executable example
   hs-source-dirs:
       examples
       app
-  default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
+  default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   build-depends:
       base >=4.7 && <5
     , base58string
@@ -109,7 +109,7 @@ test-suite Actor-test
   hs-source-dirs:
       test
       examples
-  default-extensions: NoImplicitPrelude OverloadedStrings ScopedTypeVariables LambdaCase GADTs
+  default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       async

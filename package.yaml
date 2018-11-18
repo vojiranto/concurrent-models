@@ -21,6 +21,9 @@ description:         Please see the README on GitHub at <https://github.com/voji
 
 default-extensions:
 - NoImplicitPrelude
+- TypeSynonymInstances
+- FlexibleInstances
+- MultiParamTypeClasses
 - OverloadedStrings
 - ScopedTypeVariables
 - LambdaCase

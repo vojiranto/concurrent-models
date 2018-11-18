@@ -10,15 +10,19 @@ import           Data.Describe
 
 type HandlerMap = M.Map MessageType (ActorMessage -> IO ())
 
-interpretActorL :: Loger -> IORef HandlerMap -> ActorF a -> IO a
-interpretActorL loger m (Math messageType handler next) = do
+interpretActorL :: Loger -> Actor -> IORef HandlerMap -> ActorF a -> IO a
+interpretActorL loger _ m (Math messageType handler next) = do
     loger $ "[add handler] " <> describe messageType
     next <$> modifyIORef m (M.insert messageType (toSafe loger messageType handler))
 
-makeHandlerMap :: Loger -> ActorL a-> IO HandlerMap
-makeHandlerMap loger h = do
+interpretActorL loger link _ (This next) = do
+    loger "[get this *] "
+    pure $ next link
+
+makeHandlerMap :: Loger -> Actor -> ActorL a-> IO HandlerMap
+makeHandlerMap loger link h = do
     m <- newIORef mempty
-    void $ foldFree (interpretActorL loger m) h
+    void $ foldFree (interpretActorL loger link m) h
     readIORef m
 
 toSafe :: Loger -> MessageType -> (ActorMessage -> IO ()) -> ActorMessage -> IO ()

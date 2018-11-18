@@ -1,7 +1,4 @@
 {-# Language TemplateHaskell       #-}
-{-# Language TypeSynonymInstances  #-}
-{-# Language MultiParamTypeClasses #-}
-{-# Language FlexibleInstances     #-}
 module Control.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
