@@ -4,9 +4,11 @@
 What can actors do? They can: receive messages, send messages, create new actors and change their internal state.
 
 ```haskell
+module Actor.PingPong where
+
 import           Universum
 
-import           Data.Flag      -- To report about successful completion.
+import           Data.Flag        -- To report about successful completion.
 import           Control.Loger
 import           Control.Actor
 
@@ -29,16 +31,14 @@ actorPingPong = do
     notify actor2 $ Ping actor1 10
     wait success
 
--- Handlers are ordinary Haskell functions with strong typing.
--- Thanks to io you can enjoy all the wealth of opportunities.
--- For example shoot yourself in the foot ;)
+-- Handlers are ordinary Haskel functions.
 ping :: Flag -> Actor -> Ping -> IO ()
-ping sem  _    (Ping _     0) = liftFlag sem
-ping _    link (Ping actor n) = notify actor $ Pong link (n-1)
+ping success _    (Ping _     0) = liftFlag success
+ping _       link (Ping actor n) = notify actor $ Pong link (n-1)
 
 pong :: Flag -> Actor -> Pong -> IO ()
-pong sem  _    (Pong _     0) = liftFlag sem
-pong _    link (Pong actor n) = notify actor $ Ping link (n-1)
+pong success _    (Pong _     0) = liftFlag success
+pong _       link (Pong actor n) = notify actor $ Ping link (n-1)
 
 ```
 
@@ -56,24 +56,23 @@ FSM is framework to build asynchronous FSM. What is supported?
 8. Functions for working with internal types (emit, emitAndWait, is, <:, nothing, just...).
 
 ```haskell
-import           Universum
+module StateMachine.TrafficLight where
 
+import           Universum
 import           Control.Loger
 import           Control.StateMachine
-import           Control.StateMachine.Domain
 
+-- states for traffic light
 data Green       = Green
 data Yellow      = Yellow
 data Red         = Red
+
+-- event
 data ChangeColor = ChangeColor
--- or you can write
--- makeStates ["Green", "Yellow", "Red"]
--- makeEvents ["ChangeColor"]
 
-
-
-trafficLightExample :: IO StateMachine
-trafficLightExample = runStateMachine logToConsole Green $ do
+makeTrafficLight :: IO StateMachine
+makeTrafficLight = runStateMachine logToConsole Green $ do
+    -- add to fsm transitions from one states to another.
     addTransition Green  ChangeColor Yellow
     addTransition Red    ChangeColor Yellow
 
@@ -85,6 +84,17 @@ trafficLightExample = runStateMachine logToConsole Green $ do
     exitDo Red   $ emitAndWait directionSM ChangeColor
     exitDo Green $ emitAndWait directionSM ChangeColor
 
+    -- add context dependent transition
+    -- naturally, you can also use logical conditions for events.
     addConditionalTransition Yellow $
         \ChangeColor -> Just <$> takeState directionSM
+
+-- read lines have not yet read the "exit"
+readLightCommand :: StateMachine -> IO ()
+readLightCommand sm = do
+    line <- getLine
+    when (line /= "exit") $ do
+        emit sm ChangeColor
+        readLightCommand sm
+
 ```

@@ -25,11 +25,11 @@ actorPingPong = do
     notify actor2 $ Ping actor1 10
     wait success
 
--- Handlers are ordinary haskel functions.
+-- Handlers are ordinary Haskel functions.
 ping :: Flag -> Actor -> Ping -> IO ()
-ping sem  _    (Ping _     0) = liftFlag sem
-ping _    link (Ping actor n) = notify actor $ Pong link (n-1)
+ping success _    (Ping _     0) = liftFlag success
+ping _       link (Ping actor n) = notify actor $ Pong link (n-1)
 
 pong :: Flag -> Actor -> Pong -> IO ()
-pong sem  _    (Pong _     0) = liftFlag sem
-pong _    link (Pong actor n) = notify actor $ Ping link (n-1)
+pong success _    (Pong _     0) = liftFlag success
+pong _       link (Pong actor n) = notify actor $ Ping link (n-1)

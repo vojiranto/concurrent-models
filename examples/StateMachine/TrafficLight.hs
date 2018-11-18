@@ -48,5 +48,5 @@ readLightCommand :: StateMachine -> IO ()
 readLightCommand sm = do
     line <- getLine
     when (line /= "exit") $ do
-        emitAndWait sm ChangeColor
+        emit sm ChangeColor
         readLightCommand sm
