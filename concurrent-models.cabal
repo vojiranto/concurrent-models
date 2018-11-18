@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 656a159c9b23924438366b589832767a6aafa3fddb87a0bdeef9994fe20631f3
+-- hash: d5f1265624e2955af46f0ff1fec23af45e4c2c786661e56da702a7b051770d6e
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -70,6 +70,7 @@ executable example
   other-modules:
       Actor.PingPong
       StateMachine.Door
+      StateMachine.Sequential
       StateMachine.TrafficLight
       Paths_concurrent_models
   hs-source-dirs:
@@ -99,6 +100,7 @@ test-suite Actor-test
       Test.Hspec.Extra
       Actor.PingPong
       StateMachine.Door
+      StateMachine.Sequential
       StateMachine.TrafficLight
       Paths_concurrent_models
   hs-source-dirs:

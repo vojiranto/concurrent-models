@@ -46,30 +46,50 @@ pong _       link (Pong actor n) = notify actor $ Ping link (n-1)
 
 Module Control.StateMachine is framework to build asynchronous FSM. What is supported?
 
-1. Initial state, final state, transitions between any two states by events.
-2. The list of other states is based on the transition map.
-3. Dynamic selection of transitions by event and current state.
-4. State grouping, you can also group groups into higher order groups.
-5. Addition transition from goup.
-6. Handlers state and groups entry/exit.
-7. Handlers for events.
-8. Log of transitions, events and internal errors (You can direct it wherever you want.)
-9. Functions for working with internal types (emit, emitAndWait, is, <:, nothing, just...).
+Let's demonstrate with examples.
+
+The simplest example of a finite state machine. Three states, two transitions, one state initial, one final.
 
 ```haskell
-module StateMachine.TrafficLight where
+data S1 = S1
+data S2 = S2
+data S3 = S3
+data Event = Event
 
-import           Universum
-import           Control.Loger
-import           Control.StateMachine
+sequentialStateMachine :: IO ()
+sequentialStateMachine = do
+    stopSM <- newFlag
+    sm     <- runStateMachine logToConsole S1 $ do
+        addTransition  S1 Event S2
+        addTransition  S2 Event S3
+        setFinishState S3
+        exitDo S3 $ liftFlag stopSM
+    sm `emit` Event
+    sm `emit` Event
+    wait stopSM
+```
 
--- states for traffic light
-data Green       = Green
-data Yellow      = Yellow
-data Red         = Red
+The execution log for this state machine
 
--- event
-data ChangeColor = ChangeColor
+```
+[SM] [1118SuUnP1] [set transition] [state S1] -> [event Event] -> [state S2]
+[SM] [1118SuUnP1] [set transition] [state S2] -> [event Event] -> [state S3]
+[SM] [1118SuUnP1] [set finish state] [state S3]
+[SM] [1118SuUnP1] [set 'exit do' handler] [state S3]
+[SM] [1118SuUnP1] [init state] [state S1]
+[SM] [1118SuUnP1] [transition] [state S1] -> [event Event] -> [state S2]
+[SM] [1118SuUnP1] [transition] [state S2] -> [event Event] -> [state S3]
+[SM] [1118SuUnP1] [finish state] [state S3]
+[SM] [1118SuUnP1] [exit do] [state S3]
+```
+
+On the example of a traffic light, we show the dynamic choice of the transition.
+Request from the machine of its current state.
+As well as the use of IO actions during the construction of the machine.
+
+```haskell
+makeStates ["Green", "Yellow", "Red"]
+makeEvents ["ChangeColor"]
 
 makeTrafficLight :: IO StateMachine
 makeTrafficLight = runStateMachine logToConsole Green $ do
@@ -89,13 +109,10 @@ makeTrafficLight = runStateMachine logToConsole Green $ do
     -- naturally, you can also use logical conditions for events.
     addConditionalTransition Yellow $
         \ChangeColor -> Just <$> takeState directionSM
-
--- read lines have not yet read the "exit"
-readLightCommand :: StateMachine -> IO ()
-readLightCommand sm = do
-    line <- getLine
-    when (line /= "exit") $ do
-        emit sm ChangeColor
-        readLightCommand sm
-
 ```
+
+TODO: Code examle for items:
+4. State grouping, you can also group groups into higher order groups.
+5. Addition transition from goup.
+6. Handlers state and groups entry/exit.
+7. Handlers for events.
