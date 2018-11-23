@@ -1,5 +1,5 @@
 {-# Language ViewPatterns #-}
-module Control.StateMachine
+module Control.Concurrent.StateMachine
     ( 
       StateMachine
     , StateMachineL
@@ -33,17 +33,17 @@ import           Universum
 import           Data.TextId
 import           Data.Flag
 import           Data.Describe
-import           Control.Loger
+import           Control.Concurrent.Loger
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan
 
-import           Control.StateMachine.TH
-import           Control.StateMachine.Language                      as L
-import           Control.StateMachine.Interpreter                   as I
-import qualified Control.StateMachine.Runtime                       as R
-import           Control.StateMachine.Runtime.StateMaschineHandlers as R
-import           Control.StateMachine.Runtime.StateMaschineStruct   as R 
-import           Control.StateMachine.Domain                        as D
+import           Control.Concurrent.StateMachine.TH
+import           Control.Concurrent.StateMachine.Language                      as L
+import           Control.Concurrent.StateMachine.Interpreter                   as I
+import qualified Control.Concurrent.StateMachine.Runtime                       as R
+import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as R
+import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R 
+import           Control.Concurrent.StateMachine.Domain                        as D
 
 eventAnalize, stateAnalize, stateMachineWorker
     :: IORef R.StateMaschineData -> StateMachine -> IO ()

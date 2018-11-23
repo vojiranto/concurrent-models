@@ -1,4 +1,4 @@
-module Control.Actor
+module Control.Concurrent.Actor
     ( Actor
     , ActorL
     , runActor
@@ -16,10 +16,10 @@ import           Universum
 import           Data.TextId
 import           Data.This
 import           Data.Describe
-import           Control.Loger
-import           Control.Actor.Language 
-import           Control.Actor.Interpreter
-import           Control.Actor.Message
+import           Control.Concurrent.Loger
+import           Control.Concurrent.Actor.Language 
+import           Control.Concurrent.Actor.Interpreter
+import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 import qualified Data.Map           as M
@@ -67,6 +67,7 @@ runActor logerAction handler = do
                     applyHandler loger handlerMap message
                     putMVar mutex True
     pure $ Actor chan threadId
+
 
 -- | Send msg to the actor.
 notify :: Typeable a => Actor -> a -> IO () 

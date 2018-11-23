@@ -1,6 +1,6 @@
 {-# Language MultiParamTypeClasses #-}
 {-# Language FlexibleInstances     #-}
-module Control.StateMachine.Domain where
+module Control.Concurrent.StateMachine.Domain where
 
 import           Universum hiding (head)
 import           Universum.Unsafe

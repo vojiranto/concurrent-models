@@ -1,4 +1,4 @@
-module Control.Loger where
+module Control.Concurrent.Loger where
 
 import           Universum
 

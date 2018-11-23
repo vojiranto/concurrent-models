@@ -1,14 +1,14 @@
 {-# Language TemplateHaskell #-}
 {-# Language RankNTypes      #-}
 
-module Control.StateMachine.Runtime.StateMaschineHandlers where
+module Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers where
 
 import           Universum
 import           Data.Describe
-import           Control.Loger
+import           Control.Concurrent.Loger
 import           Control.Lens.At (at, Index, IxValue, At)
 import           Control.Lens.TH
-import           Control.StateMachine.Domain
+import           Control.Concurrent.StateMachine.Domain
 import qualified Data.Map as M
 
 data StateMaschineHandlers = StateMaschineHandlers

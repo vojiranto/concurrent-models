@@ -7,6 +7,11 @@
 
     TODO:
 
-    notify -> emit
+    notify         -> emit
+    io             -> mstate (my similar monad)
+    runtime errors -> warning
+    type strict actors
+    type strict fsm
+    multiple inheritance for states of fsn
 
 ## Unreleased changes

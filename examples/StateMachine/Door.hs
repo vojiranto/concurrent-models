@@ -1,8 +1,8 @@
 module StateMachine.Door where
 
 import           Universum
-import           Control.Loger
-import           Control.StateMachine
+import           Control.Concurrent.Loger
+import           Control.Concurrent.StateMachine
 
 data Open   = Open
 data Close  = Close

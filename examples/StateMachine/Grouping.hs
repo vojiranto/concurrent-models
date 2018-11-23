@@ -1,8 +1,8 @@
 module StateMachine.Grouping where
 
 import           Universum
-import           Control.Loger
-import           Control.StateMachine
+import           Control.Concurrent.Loger
+import           Control.Concurrent.StateMachine
 import           Data.Flag
 
 data S1 = S1

@@ -1,20 +1,20 @@
 {-# Language FlexibleInstances     #-}
 {-# Language MultiParamTypeClasses #-}
 
-module Control.StateMachine.Interpreter (makeStateMachineData) where
+module Control.Concurrent.StateMachine.Interpreter (makeStateMachineData) where
 
 import           Universum
 import qualified Data.Map as M
 import qualified Data.Set as S
 import           Control.Lens.Getter (to)
-import           Control.Loger
+import           Control.Concurrent.Loger
 import           Data.Describe
 import           Control.Monad.Free
-import           Control.StateMachine.Language                      as L
-import           Control.StateMachine.Runtime                       as R
-import           Control.StateMachine.Runtime.StateMaschineStruct   as R
-import           Control.StateMachine.Runtime.StateMaschineHandlers as R
-import           Control.StateMachine.Domain                        as D
+import           Control.Concurrent.StateMachine.Language                      as L
+import           Control.Concurrent.StateMachine.Runtime                       as R
+import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R
+import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as R
+import           Control.Concurrent.StateMachine.Domain                        as D
 
 data BuildingError = BuildingError deriving Show
 

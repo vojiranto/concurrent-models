@@ -1,12 +1,12 @@
 {-# Language DeriveFunctor    #-}
 {-# Language FlexibleContexts #-}
 
-module Control.Actor.Language where
+module Control.Concurrent.Actor.Language where
 
 import           Universum
 import           Data.This
 import           Control.Monad.Free
-import           Control.Actor.Message
+import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 

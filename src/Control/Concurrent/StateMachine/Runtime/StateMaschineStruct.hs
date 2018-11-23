@@ -1,14 +1,14 @@
 {-# Language TemplateHaskell #-}
 {-# Language RankNTypes      #-}
 
-module Control.StateMachine.Runtime.StateMaschineStruct where
+module Control.Concurrent.StateMachine.Runtime.StateMaschineStruct where
 
 import           Universum
 import           Control.Lens.At (at)
 import           Data.Describe
-import           Control.Loger
+import           Control.Concurrent.Loger
 import           Control.Lens.TH
-import           Control.StateMachine.Domain
+import           Control.Concurrent.StateMachine.Domain
 import qualified Data.Map as M
 import qualified Data.Set as S
 

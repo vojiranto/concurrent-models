@@ -1,4 +1,4 @@
-module Control.StateMachine.TH where
+module Control.Concurrent.StateMachine.TH where
 
 import           Universum
 import           Language.Haskell.TH

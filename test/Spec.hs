@@ -5,8 +5,8 @@ import           Universum
 import           Test.Hspec.Extra
 
 import           Data.Flag
-import           Control.Loger
-import           Control.StateMachine
+import           Control.Concurrent.Loger
+import           Control.Concurrent.StateMachine
 
 import           StateMachine.Sequential
 import           StateMachine.Grouping

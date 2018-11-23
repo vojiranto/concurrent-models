@@ -1,11 +1,11 @@
-module Control.Actor.Interpreter where
+module Control.Concurrent.Actor.Interpreter where
 
 import           Universum
 import qualified Data.Map as M
-import           Control.Loger
+import           Control.Concurrent.Loger
 import           Control.Monad.Free
-import           Control.Actor.Language
-import           Control.Actor.Message
+import           Control.Concurrent.Actor.Language
+import           Control.Concurrent.Actor.Message
 import           Data.Describe
 
 type HandlerMap = M.Map MessageType (ActorMessage -> IO ())
