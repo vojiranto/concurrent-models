@@ -23,7 +23,7 @@ stateMachinTest1 = finishFor 100 $ do
         addTransition  AnyState TakeOn On
         entryDo        On $ liftFlag success
         addFinalState On
-    emit sm TakeOn
+    notify sm TakeOn
     wait success
 
 main :: IO ()

@@ -1,4 +1,5 @@
 {-# Language ViewPatterns #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Control.Concurrent.StateMachine
     ( 
       StateMachine
@@ -21,8 +22,7 @@ module Control.Concurrent.StateMachine
     , L.entryWithEventDo
     , L.entryDo
     -- * Communication with working FSN
-    , emit
-    , emitAndWait
+    , Listener (..)
     , takeState
     -- * Templates
     , makeStates
@@ -37,6 +37,7 @@ import           Control.Concurrent.Loger
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan
 
+import           Control.Concurrent.Listener
 import           Control.Concurrent.StateMachine.TH
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Interpreter                   as I
@@ -109,15 +110,14 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
     pure stateMachine
 
 -- | Emit event to the FSN.
-emit :: Typeable a => StateMachine -> a -> IO ()
-emit (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toMachineEvent
 
--- | Emit event and wait finally of it proccesing by FSM.
-emitAndWait :: Typeable a => StateMachine -> a -> IO ()
-emitAndWait (StateMachine eventVar _) event = do
-    processed <- newFlag
-    writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
-    wait processed
+instance Typeable msg => Listener StateMachine msg where
+    notify (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toMachineEvent
+    notifyAndWait (StateMachine eventVar _) event = do
+        processed <- newFlag
+        writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
+        wait processed
+
 
 -- | Take current state of the FSN.
 takeState :: StateMachine -> IO MachineState

@@ -28,7 +28,7 @@ readDoorComands :: StateMachine -> IO ()
 readDoorComands sm = do
     ln <- getLine
     case ln of
-        "open"  -> emit sm Open  >> readDoorComands sm 
-        "close" -> emit sm Close >> readDoorComands sm 
+        "open"  -> notify sm Open  >> readDoorComands sm 
+        "close" -> notify sm Close >> readDoorComands sm 
         "exit"  -> pure ()
         _       -> readDoorComands sm

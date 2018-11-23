@@ -67,8 +67,8 @@ sequentialStateMachine = do
         addTransition  S2 Event S3
         addFinalState S3
         exitDo S3 $ liftFlag stopSM
-    sm `emit` Event
-    sm `emit` Event
+    sm `notify` Event
+    sm `notify` Event
     wait stopSM
 ```
 
@@ -105,8 +105,8 @@ makeTrafficLight = runStateMachine logToConsole Green $ do
         addTransition Green  ChangeColor Red
         addTransition Red    ChangeColor Green
 
-    exitDo Red   $ emitAndWait directionSM ChangeColor
-    exitDo Green $ emitAndWait directionSM ChangeColor
+    exitDo Red   $ notifyAndWait directionSM ChangeColor
+    exitDo Green $ notifyAndWait directionSM ChangeColor
 
     -- add context dependent transition
     -- naturally, you can also use logical conditions for events.
@@ -141,8 +141,8 @@ groupingStateMachine = do
         addFinalState FS
         exitDo FS $ liftFlag stopSM
 
-    sm `emit` Move
-    sm `emit` Exit
+    sm `notify` Move
+    sm `notify` Exit
 
     wait stopSM
 ```

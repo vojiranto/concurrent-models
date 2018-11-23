@@ -35,8 +35,8 @@ makeTrafficLight2 = runStateMachine logToConsole Green $ do
         addTransition Green  ChangeColor Red
         addTransition Red    ChangeColor Green
     
-    exitDo Red   $ emitAndWait directionSM ChangeColor
-    exitDo Green $ emitAndWait directionSM ChangeColor
+    exitDo Red   $ notifyAndWait directionSM ChangeColor
+    exitDo Green $ notifyAndWait directionSM ChangeColor
 
     -- add context dependent transition
     -- naturally, you can also use logical conditions for events.
@@ -48,5 +48,5 @@ readLightCommand :: StateMachine -> IO ()
 readLightCommand sm = do
     line <- getLine
     when (line /= "exit") $ do
-        emit sm ChangeColor
+        notify sm ChangeColor
         readLightCommand sm

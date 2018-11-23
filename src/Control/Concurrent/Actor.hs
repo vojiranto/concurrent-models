@@ -1,10 +1,12 @@
+{-# LANGUAGE FlexibleContexts     #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Control.Concurrent.Actor
     ( Actor
     , ActorL
     , runActor
     , stopActor
     , killActor
-    , notify
+    , Listener (..)
     , this
     , math
     , otherwiseMath
@@ -16,6 +18,7 @@ import           Universum
 import           Data.TextId
 import           Data.This
 import           Data.Describe
+import           Control.Concurrent.Listener
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.Language 
 import           Control.Concurrent.Actor.Interpreter
@@ -69,12 +72,11 @@ runActor logerAction handler = do
     pure $ Actor chan threadId
 
 
--- | Send msg to the actor.
-notify :: Typeable a => Actor -> a -> IO () 
-notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message
+instance Typeable msg => Listener Actor msg where
+    notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message
 
 -- | Send stop msg to the actor.
-stopActor :: Actor -> IO ()
+stopActor :: Listener actor StopActor => actor -> IO ()
 stopActor actor = notify actor StopActor
 
 -- | Send async exeption to the actor.

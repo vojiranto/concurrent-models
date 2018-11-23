@@ -7,7 +7,7 @@
 
     TODO:
 
-    notify         -> emit
+    notify         -> notify
     io             -> mstate (my similar monad)
     runtime errors -> warning
     type strict actors

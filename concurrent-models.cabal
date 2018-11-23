@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7eedac8c59851b7e9b2d7939cd02d6bc85951c68b718436a0bba5bcc62b0c5b6
+-- hash: 9a42d6491b459ffd050e6a333e673a727262653750b780b7c4b954f7d6c3a99d
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -35,6 +35,7 @@ library
       Control.Concurrent.Actor.Interpreter
       Control.Concurrent.Actor.Language
       Control.Concurrent.Actor.Message
+      Control.Concurrent.Listener
       Control.Concurrent.StateMachine.Domain
       Control.Concurrent.StateMachine.Interpreter
       Control.Concurrent.StateMachine.Language

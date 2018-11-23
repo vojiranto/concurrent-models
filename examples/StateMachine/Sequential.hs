@@ -19,6 +19,6 @@ sequentialStateMachine = do
         addTransition  S2 Event S3
         addFinalState S3
         exitDo S3 $ liftFlag stopSM
-    sm `emit` Event
-    sm `emit` Event
+    sm `notify` Event
+    sm `notify` Event
     wait stopSM

@@ -29,7 +29,7 @@ groupingStateMachine = do
         addFinalState FS
         exitDo FS $ liftFlag stopSM
 
-    sm `emit` Move
-    sm `emit` Exit
+    sm `notify` Move
+    sm `notify` Exit
 
     wait stopSM
