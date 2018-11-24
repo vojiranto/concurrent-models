@@ -86,25 +86,31 @@ showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 stateMachineWorker = stateAnalize
 
-newFsmRef :: MachineState -> IO StateMachine
-newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
 
-    -- | Build and run new state machine, interrupts the build if an error is
+-- | Build and run new state machine, interrupts the build if an error is
 --   detected in the machine description.
 runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
 runStateMachine logerAction (toMachineState -> initState) machineDescriptione = do
-    stateMachine <- newFsmRef initState  
-    void $ forkIO $ do
-        loger <- addTagToLoger logerAction "[SM]"
-        mStateMachineData <- makeStateMachineData loger initState stateMachine machineDescriptione
-        case mStateMachineData of
-            Right fsmData -> do 
-                entryInitState fsmData
-                stateMachineRef  <- newIORef fsmData
-                stateMachineWorker stateMachineRef stateMachine
-            Left err -> loger $ "[error] " <> show err
-    pure stateMachine
+    fsmRef <- newFsmRef initState  
+    initFsm logerAction fsmRef machineDescriptione
+    pure fsmRef
 
+
+initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
+initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
+    loger     <- addTagToLoger logerAction "[SM]"
+    initState <- takeState fsmRef
+    mStateMachineData <- makeStateMachineData loger initState fsmRef machineDescriptione
+    case mStateMachineData of
+        Right fsmData -> do 
+            entryInitState fsmData
+            stateMachineRef  <- newIORef fsmData
+            stateMachineWorker stateMachineRef fsmRef
+        Left err -> loger $ "[error] " <> show err
+
+
+newFsmRef :: MachineState -> IO StateMachine
+newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
 
 entryInitState :: R.StateMaschineData -> IO ()
 entryInitState fsmData = do
