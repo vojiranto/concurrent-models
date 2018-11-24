@@ -26,7 +26,10 @@ wrap decs = forM decs id
 makeFsmType :: String -> Q Dec
 makeFsmType typeName =
     -- newtype AppleGirl = AppleGirl StateMachine
-    newtypeD (cxt []) (mkName typeName) [] Nothing (normalC (mkName "StateMachine") []) []
+    newtypeD (cxt []) (mkName typeName) [] Nothing (normalC (mkName "AppleGirl")
+        [bangType banged (conT $ mkName "StateMachine") ]) []
+    where
+        banged = bang sourceNoUnpack noSourceStrictness
 
 makeFsmInstance :: String -> Q Dec
 makeFsmInstance typeName =
@@ -35,7 +38,6 @@ makeFsmInstance typeName =
         [ makeRunFsm typeName
         , makeReadState typeName
         ]
-
 
 --runFsm a1 a2 a3 = AppleGirl <$> runFsm a1 a2 a3
 makeRunFsm :: String -> Q Dec
@@ -51,10 +53,7 @@ makeRunFsm typeName = funD (mkName "runFsm") [clause patterns body []]
 
 -- readState (AppleGirl fsm) = readState fsm
 makeReadState :: String -> Q Dec
-makeReadState typeName = funD (mkName "readState") [clause [pattern] body []]
-    where
-        pattern = conP (mkName typeName) [varP $ mkName "fsm"]
-        body    = normalB (appE (varE $ mkName "readState") (varE $ mkName "fsm"))
+makeReadState = makeWraperFor "readState"
 
 makeListenerInstances :: String -> [String] -> [Q Dec]
 makeListenerInstances typeName eventNames =
@@ -76,12 +75,17 @@ makeListenerInstance typeName msgType =
 
 -- notify        (AppleGirl fsm) = notify        fsm
 makeNotify :: String -> Q Dec
-makeNotify        = error "undefined"
+makeNotify = makeWraperFor "notify"
 
 -- notifyAndWait (AppleGirl fsm) = notifyAndWait fsm
 makeNotifyAndWait :: String -> Q Dec
-makeNotifyAndWait = error "undefined"
+makeNotifyAndWait = makeWraperFor "notifyAndWait"
 
+makeWraperFor :: String -> String -> Q Dec
+makeWraperFor funcName typeName = funD (mkName funcName) [clause [pattern] body []]
+    where
+        pattern = conP (mkName typeName) [varP $ mkName "fsm"]
+        body    = normalB (appE (varE $ mkName funcName) (varE $ mkName "fsm"))
 
 foldApp :: [Q Exp] -> Q Exp
 foldApp = foldl1 appE

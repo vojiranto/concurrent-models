@@ -9,22 +9,7 @@ import           Data.Flag
 
 makeEvents ["Apple"]
 makeStates ["Hungry", "WellFed"]
--- TODO:
--- makeFSM "AppleGirl" ["Apple"]
-
--- begin make makeFSM
-newtype AppleGirl = AppleGirl StateMachine
-
-instance Fsm AppleGirl where
-    runFsm logerAction initState machineDescriptione =
-        AppleGirl <$> runFsm logerAction initState machineDescriptione
-
-    readState (AppleGirl fsm) = readState fsm
-
-instance Listener AppleGirl Apple where
-    notify        (AppleGirl fsm) = notify        fsm
-    notifyAndWait (AppleGirl fsm) = notifyAndWait fsm
--- end make makeFSM
+makeFsm "AppleGirl" ["Apple"]
 
 appleGirl :: IO ()
 appleGirl = do
