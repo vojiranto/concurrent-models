@@ -27,6 +27,7 @@ module Control.Concurrent.StateMachine
     -- * Templates
     , makeStates
     , makeEvents
+    , makeFsm
     ) where
 
 import           Universum
