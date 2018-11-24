@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 module StateMachine.AppleGirl where
 
 import           Universum
@@ -5,14 +6,30 @@ import           Control.Concurrent.Loger
 import           Control.Concurrent.StateMachine
 import           Data.Flag
 
-data Apple   = Apple
-data Hungry  = Hungry 
-data WellFed = WellFed
+
+makeEvents ["Apple"]
+makeStates ["Hungry", "WellFed"]
+-- TODO:
+-- makeFSM "AppleGirl" ["Apple"]
+
+-- begin make makeFSM
+newtype AppleGirl = AppleGirl StateMachine
+
+instance FSM AppleGirl where
+    runFsm logerAction initState machineDescriptione =
+        AppleGirl <$> runFsm logerAction initState machineDescriptione
+
+    readState (AppleGirl fsm) = readState fsm
+
+instance Listener AppleGirl Apple where
+    notify        (AppleGirl fsm) = notify        fsm
+    notifyAndWait (AppleGirl fsm) = notifyAndWait fsm
+-- end make makeFSM
 
 appleGirl :: IO ()
 appleGirl = do
     stopSM <- newFlag
-    girl <- runStateMachine logOff Hungry $ do
+    girl :: AppleGirl <- runFsm logOff Hungry $ do
         eatenApples <- makeAppleCounter
         staticalDo Hungry $ eatApple eatenApples
 
