@@ -15,17 +15,16 @@ module Control.Concurrent.Actor
     ) where
 
 import           Universum
-import           Data.Mutex
 import           Data.This
 import           Data.Describe
+import           Control.Lens.At (at)
 import           Control.Concurrent.Listener
 import           Control.Concurrent.Loger
-import           Control.Concurrent.Actor.Language 
-import           Control.Concurrent.Actor.Interpreter
+import           Control.Concurrent.Actor.ActorRuntime 
+import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
-import qualified Data.Map           as M
 
 data StopActor = StopActor
 
@@ -40,36 +39,39 @@ analyzeMessage message
     | toType message == stopType = StopNodeR
     | otherwise                  = ApplyHandlerR
 
-applyHandler :: Loger -> HandlerMap -> ActorMessage -> IO ()
-applyHandler loger handlerMap message = do
+applyHandler :: ActorRuntimeData -> ActorMessage -> IO ()
+applyHandler actRuntime message = do
     let messageType = toType message
-    case messageType `M.lookup` handlerMap of
+    case actRuntime ^. handlers .at messageType of
         Just handler -> handler message
         _            -> do
-            let mHandler = otherwiseType `M.lookup` handlerMap 
+            let mHandler = actRuntime ^. handlers . at otherwiseType 
             whenJust mHandler $ \handler -> handler message
-            unless (isJust mHandler) $ loger "[error] handler does not exist, msg is droped." 
+            unless (isJust mHandler) $ (actRuntime ^. loger) "[error] handler does not exist, msg is droped." 
 
 -- | Build and run new actor.
-runActor :: Loger -> ActorL a -> IO Actor
-runActor logerAction handler = do
+runActor :: Loger -> ActorL () -> IO Actor
+runActor logerAction handlerMap = do
     chan     <- atomically newTChan
-    threadId <- forkIO $ do
-        actor      <- Actor chan <$> myThreadId
-        actRuntime <- newActorRuntime logerAction actor handler
-
-        forever $ do
-            takeMutex (actRuntime ^. mutex)
-            message <- atomically $ readTChan chan
-            (actRuntime ^. loger) $ "[message] " <> describe message
-            case analyzeMessage message of
-                StopNodeR       -> killActor actor
-                ApplyHandlerR   -> do
-                    applyHandler loger (actRuntime ^. handlerMap) message
-                    putMutex (actRuntime ^. mutex)
+    threadId <- initActor logerAction chan handlerMap 
     pure $ Actor chan threadId
 
--- actorWorker actRuntime actor@(Actor chan _) = do
+
+initActor :: Loger -> TChan ActorMessage -> ActorL () -> IO ThreadId
+initActor logerAction chan handlerMap = forkIO $ do
+    actor      <- Actor chan <$> myThreadId
+    actRuntime <- newActorRuntime logerAction actor handlerMap
+    actorWorker actRuntime actor
+
+actorWorker :: ActorRuntimeData -> Actor -> IO ()
+actorWorker actRuntime actor@(Actor chan _) = do
+    message <- atomically $ readTChan chan
+    (actRuntime ^. loger) $ "[message] " <> describe message
+    case analyzeMessage message of
+        StopNodeR       -> killActor actor
+        ApplyHandlerR   -> do
+            applyHandler actRuntime message
+            actorWorker  actRuntime actor
 
 
 
