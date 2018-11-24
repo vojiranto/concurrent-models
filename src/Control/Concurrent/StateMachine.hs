@@ -30,7 +30,6 @@ module Control.Concurrent.StateMachine
     ) where
 
 import           Universum
-import           Data.TextId
 import           Data.Flag
 import           Data.Describe
 import           Control.Concurrent.Loger
@@ -87,16 +86,16 @@ showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 stateMachineWorker = stateAnalize
 
--- | Build and run new state machine, interrupts the build if an error is
+newFsmRef :: MachineState -> IO StateMachine
+newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
+
+    -- | Build and run new state machine, interrupts the build if an error is
 --   detected in the machine description.
 runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
 runStateMachine logerAction (toMachineState -> initState) machineDescriptione = do
-    eventVar <- newChan
-    stateVar <- newMVar initState
-    textId   <- newTextId
-    let stateMachine = StateMachine eventVar stateVar
-    let loger txt = logerAction $ "[SM] " <> "[" <> textId  <> "] " <> txt
+    stateMachine <- newFsmRef initState  
     void $ forkIO $ do
+        loger <- addTagToLoger logerAction "[SM]"
         mStateMachineData <- makeStateMachineData loger initState stateMachine machineDescriptione
         case mStateMachineData of
             Right fsmData -> do 
@@ -105,6 +104,7 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
                 stateMachineWorker stateMachineRef stateMachine
             Left err -> loger $ "[error] " <> show err
     pure stateMachine
+
 
 entryInitState :: R.StateMaschineData -> IO ()
 entryInitState fsmData = do
