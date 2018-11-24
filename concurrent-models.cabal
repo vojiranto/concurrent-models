@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 38b5ea4f9a113f21db2665d0f5616b14624007c97183657294b677ea6d1dd846
+-- hash: 630b2fd73bf039ac76087ccceca80cfa1b9de667823b51614781e638c9c740b8
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -46,6 +46,7 @@ library
       Data.Describe
       Data.TextId
       Data.This
+      Language.Haskell.TH.Extra
       Language.Haskell.TH.MakeFunctor
       Paths_concurrent_models
   hs-source-dirs:

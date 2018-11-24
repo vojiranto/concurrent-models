@@ -5,6 +5,7 @@ module Control.Concurrent.StateMachine.TH
     ) where
 
 import           Universum
+import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
 
 makeStates :: [String] -> Q [Dec]
@@ -80,12 +81,3 @@ makeNotify = makeWraperFor "notify"
 -- notifyAndWait (AppleGirl fsm) = notifyAndWait fsm
 makeNotifyAndWait :: String -> Q Dec
 makeNotifyAndWait = makeWraperFor "notifyAndWait"
-
-makeWraperFor :: String -> String -> Q Dec
-makeWraperFor funcName typeName = funD (mkName funcName) [clause [pattern] body []]
-    where
-        pattern = conP (mkName typeName) [varP $ mkName "fsm"]
-        body    = normalB (appE (varE $ mkName funcName) (varE $ mkName "fsm"))
-
-foldApp :: [Q Exp] -> Q Exp
-foldApp = foldl1 appE
