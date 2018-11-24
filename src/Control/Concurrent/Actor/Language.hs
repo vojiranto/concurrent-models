@@ -5,12 +5,15 @@ module Control.Concurrent.Actor.Language where
 
 import           Universum
 import           Data.This
+import qualified Data.Map as M
 import           Control.Monad.Free
 import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 
 data Actor = Actor (TChan ActorMessage) ThreadId
+
+type HandlerMap = M.Map MessageType (ActorMessage -> IO ())
 
 data ActorF next where
     Math :: MessageType -> (ActorMessage -> IO ()) -> (() -> next) -> ActorF next

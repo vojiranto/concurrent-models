@@ -15,7 +15,7 @@ module Control.Concurrent.Actor
     ) where
 
 import           Universum
-import           Data.TextId
+import           Data.Mutex
 import           Data.This
 import           Data.Describe
 import           Control.Concurrent.Listener
@@ -55,11 +55,10 @@ runActor :: Loger -> ActorL a -> IO Actor
 runActor logerAction handler = do
     chan     <- atomically newTChan
     threadId <- forkIO $ do
-        textId          <- newTextId
-        let loger txt   = logerAction $ "[Actor] " <> "[" <> textId  <> "] " <> txt
-        actor           <- Actor chan <$> myThreadId
-        handlerMap      <- makeHandlerMap loger actor handler
-        mutex           <- newMutex
+        loger      <- addTagToLoger logerAction "[Actor]"
+        actor      <- Actor chan <$> myThreadId
+        handlerMap <- makeHandlerMap loger actor handler
+        mutex      <- newMutex
         forever $ do
             takeMutex mutex
             message <- atomically $ readTChan chan
@@ -71,16 +70,8 @@ runActor logerAction handler = do
                     putMutex mutex
     pure $ Actor chan threadId
 
-newtype Mutex = Mutex (MVar ())
+--actorWorker mutex actor@(Actor chan _) loger handlerMap = 
 
-newMutex :: IO Mutex
-newMutex = Mutex <$> newMVar ()
-
-putMutex :: Mutex -> IO ()
-putMutex (Mutex mutex) = putMVar mutex ()
-
-takeMutex :: Mutex -> IO ()
-takeMutex (Mutex mutex) = takeMVar mutex ()
 
 instance Typeable msg => Listener Actor msg where
     notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message

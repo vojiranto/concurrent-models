@@ -8,8 +8,6 @@ import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Message
 import           Data.Describe
 
-type HandlerMap = M.Map MessageType (ActorMessage -> IO ())
-
 interpretActorL :: Loger -> Actor -> IORef HandlerMap -> ActorF a -> IO a
 interpretActorL loger _ m (Math messageType handler next) = do
     loger $ "[add handler] " <> describe messageType
