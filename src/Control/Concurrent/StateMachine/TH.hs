@@ -39,12 +39,13 @@ makeFsmInstance typeName =
 makeRunFsm :: String -> Q Dec
 makeRunFsm typeName = funD (mkName "runFsm") [clause patterns body []]
     where
-        patterns =
-            [ varP $ mkName "logerAction"
-            , varP $ mkName "initState"
-            , varP $ mkName "machineDescriptione"
-            ]
-        body = error "undefined"
+        patterns = [varP $ mkName v | v <- vars]
+
+        body     = normalB (uInfixE
+            (conE $ mkName typeName)
+            (varE $ mkName "<$>")
+            (foldApp [varE $ mkName v | v <- "runFsm" : vars]))
+        vars = ["a" <> show i | i <- [1..3 :: Int]]
 
 -- readState (AppleGirl fsm) = readState fsm
 makeReadState :: String -> Q Dec
@@ -90,5 +91,5 @@ makeFmapBody info = clause
 
 -}
 
-foldApp :: [Exp] -> Q Exp
-foldApp = pure . foldl1 AppE
+foldApp :: [Q Exp] -> Q Exp
+foldApp = foldl1 appE
