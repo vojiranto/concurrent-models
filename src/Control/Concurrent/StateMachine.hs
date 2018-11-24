@@ -114,28 +114,41 @@ stateAnalize stateMachineRef stateMachine = do
             forM_ stList (R.applyExitDo (machineData ^. R.loger) (machineData ^. R.handlers))
         else eventAnalize stateMachineRef stateMachine
 
-eventAnalize stateMachineRef (StateMachine eventVar stateVar) = do
-    (event, processed) <- getEvent =<< readChan eventVar
+eventAnalize stateMachineRef fsmRef@(StateMachine events _) = do
+    (event, processed) <- getEvent =<< readChan events
     machineData        <- readIORef stateMachineRef
 
     machineData ^. R.loger $ describe event
+    applyStatic machineData event
+    whenJustM (R.takeTransition event machineData)
+        (applyTransition stateMachineRef event fsmRef)
+
+    whenJust processed liftFlag
+
+    stateAnalize stateMachineRef fsmRef
+
+applyStatic :: R.StateMaschineData -> MachineEvent -> IO ()
+applyStatic machineData event = do
     let stList = R.takeGroups
             (machineData ^. R.stateMachineStruct)
             (machineData ^. R.currentState)
     forM_ stList $ \st ->
         R.applyStaticalDo (machineData ^. R.loger) (machineData ^. R.handlers) st event
 
-    mTransition        <- R.takeTransition event machineData
+applyTransition
+    :: IORef R.StateMaschineData -> MachineEvent -> StateMachine -> Transition -> IO ()
+applyTransition stateMachineRef event fsmRef (D.Transition currentState newState) = do
+    fsmData <- readIORef stateMachineRef
 
-    whenJust mTransition $ \(D.Transition currentState newState) -> do
-        machineData ^. R.loger $ showTransition currentState event newState
-        void $ swapMVar stateVar newState
-        modifyIORef stateMachineRef $ R.currentState .~ newState
-        R.applyTransitionActions machineData currentState event newState
-
-    whenJust processed liftFlag
-    stateAnalize stateMachineRef (StateMachine eventVar stateVar)
+    fsmData ^. R.loger $ showTransition currentState event newState
+    changeState stateMachineRef fsmRef newState
+    R.applyTransitionActions fsmData currentState event newState
 
 showTransition :: MachineState -> MachineEvent -> MachineState -> Text
 showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
+
+changeState :: IORef R.StateMaschineData -> StateMachine -> MachineState -> IO ()
+changeState stateMachineRef (StateMachine _ stateVar) newState = do
+    void $ swapMVar stateVar newState
+    modifyIORef stateMachineRef $ R.currentState .~ newState
