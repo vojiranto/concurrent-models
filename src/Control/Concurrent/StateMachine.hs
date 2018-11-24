@@ -95,7 +95,6 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
     initFsm logerAction fsmRef machineDescriptione
     pure fsmRef
 
-
 initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
 initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
     loger     <- addTagToLoger logerAction "[SM]"
@@ -106,8 +105,10 @@ initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
             entryInitState fsmData
             stateMachineRef  <- newIORef fsmData
             stateMachineWorker stateMachineRef fsmRef
-        Left err -> loger $ "[error] " <> show err
+        Left err -> printError loger err
 
+printError :: Show a => Loger -> a -> IO ()
+printError loger err = loger $ "[error] " <> show err
 
 newFsmRef :: MachineState -> IO StateMachine
 newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
