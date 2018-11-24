@@ -36,8 +36,8 @@ makeFsmInstance :: String -> Q Dec
 makeFsmInstance typeName =
     -- instance FSM AppleGirl where
     instanceD (cxt []) (appT (conT $ mkName "Fsm") (conT $ mkName typeName))
-        [ makeRunFsm typeName
-        , makeReadState typeName
+        [ makeRunFsm                typeName
+        , makeWraperFor "readState" typeName
         ]
 
 --runFsm a1 a2 a3 = AppleGirl <$> runFsm a1 a2 a3
@@ -52,10 +52,6 @@ makeRunFsm typeName = funD (mkName "runFsm") [clause patterns body []]
             (foldApp [varE $ mkName v | v <- "runFsm" : vars]))
         vars = ["a" <> show i | i <- [1..3 :: Int]]
 
--- readState (AppleGirl fsm) = readState fsm
-makeReadState :: String -> Q Dec
-makeReadState = makeWraperFor "readState"
-
 makeListenerInstances :: String -> [String] -> [Q Dec]
 makeListenerInstances typeName eventNames =
     makeListenerInstance typeName <$> eventNames
@@ -64,8 +60,8 @@ makeListenerInstance :: String -> String -> Q Dec
 makeListenerInstance typeName msgType =
     -- instance Listener AppleGirl Apple where
     instanceD (cxt []) instanceType
-        [ makeNotify        typeName
-        , makeNotifyAndWait typeName
+        [ makeWraperFor "notify"        typeName
+        , makeWraperFor "notifyAndWait" typeName
         ]
     where
         instanceType = appT
@@ -73,11 +69,3 @@ makeListenerInstance typeName msgType =
                 (conT $ mkName "Listener")
                 (conT $ mkName typeName))
             (conT $ mkName msgType)
-
--- notify        (AppleGirl fsm) = notify        fsm
-makeNotify :: String -> Q Dec
-makeNotify = makeWraperFor "notify"
-
--- notifyAndWait (AppleGirl fsm) = notifyAndWait fsm
-makeNotifyAndWait :: String -> Q Dec
-makeNotifyAndWait = makeWraperFor "notifyAndWait"
