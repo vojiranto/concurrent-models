@@ -5,6 +5,7 @@ module Control.Concurrent.StateMachine
       StateMachine
     , StateMachineL
     , FSM (..)
+    , runStateMachine
     -- * Making of FSM struct
     , this
     , addFinalState
@@ -47,17 +48,20 @@ import           Control.Concurrent.StateMachine.Domain                        a
 class FSM fsm where
     -- | Build and run new state machine, interrupts the build if an error is
     --   detected in the machine description.
-    runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO fsm
+    runFsm    :: Typeable a => Loger -> a -> StateMachineL () -> IO fsm
     -- | Take current state of the FSN.
     readState :: fsm -> IO MachineState
 
 instance FSM StateMachine where
-    runStateMachine logerAction (toMachineState -> initState) machineDescriptione = do
+    runFsm logerAction (toMachineState -> initState) machineDescriptione = do
         fsmRef <- newFsmRef initState  
         initFsm logerAction fsmRef machineDescriptione
         pure fsmRef
 
     readState = takeState
+
+runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
+runStateMachine = runFsm
 
 initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
 initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
