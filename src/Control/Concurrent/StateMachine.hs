@@ -116,8 +116,8 @@ stateAnalize stateMachineRef stateMachine = do
 
 eventAnalize stateMachineRef fsmRef@(StateMachine events _) = do
     (event, processed) <- getEvent =<< readChan events
-    machineData        <- readIORef stateMachineRef
 
+    machineData        <- readIORef stateMachineRef
     machineData ^. R.loger $ describe event
     applyStatic machineData event
     whenJustM (R.takeTransition event machineData)
@@ -126,6 +126,7 @@ eventAnalize stateMachineRef fsmRef@(StateMachine events _) = do
     whenJust processed liftFlag
 
     stateAnalize stateMachineRef fsmRef
+
 
 applyStatic :: R.StateMaschineData -> MachineEvent -> IO ()
 applyStatic machineData event = do
@@ -139,7 +140,6 @@ applyTransition
     :: IORef R.StateMaschineData -> MachineEvent -> StateMachine -> Transition -> IO ()
 applyTransition stateMachineRef event fsmRef (D.Transition currentState newState) = do
     fsmData <- readIORef stateMachineRef
-
     fsmData ^. R.loger $ showTransition currentState event newState
     changeState stateMachineRef fsmRef newState
     R.applyTransitionActions fsmData currentState event newState

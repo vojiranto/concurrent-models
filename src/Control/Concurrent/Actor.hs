@@ -59,18 +59,28 @@ runActor logerAction handler = do
         let loger txt   = logerAction $ "[Actor] " <> "[" <> textId  <> "] " <> txt
         actor           <- Actor chan <$> myThreadId
         handlerMap      <- makeHandlerMap loger actor handler
-        mutex           <- newMVar True
+        mutex           <- newMutex
         forever $ do
-            void $ takeMVar mutex
+            takeMutex mutex
             message <- atomically $ readTChan chan
             loger $ "[message] " <> describe message
             case analyzeMessage message of
                 StopNodeR       -> killActor actor
                 ApplyHandlerR   -> do
                     applyHandler loger handlerMap message
-                    putMVar mutex True
+                    putMutex mutex
     pure $ Actor chan threadId
 
+newtype Mutex = Mutex (MVar ())
+
+newMutex :: IO Mutex
+newMutex = Mutex <$> newMVar ()
+
+putMutex :: Mutex -> IO ()
+putMutex (Mutex mutex) = putMVar mutex ()
+
+takeMutex :: Mutex -> IO ()
+takeMutex (Mutex mutex) = takeMVar mutex ()
 
 instance Typeable msg => Listener Actor msg where
     notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message
