@@ -15,7 +15,7 @@ makeStates ["Hungry", "WellFed"]
 -- begin make makeFSM
 newtype AppleGirl = AppleGirl StateMachine
 
-instance FSM AppleGirl where
+instance Fsm AppleGirl where
     runFsm logerAction initState machineDescriptione =
         AppleGirl <$> runFsm logerAction initState machineDescriptione
 

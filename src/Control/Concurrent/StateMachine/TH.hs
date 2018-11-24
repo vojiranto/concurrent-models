@@ -20,22 +20,35 @@ makeFsm typeName eventNames = wrap
 wrap :: [Q Dec] -> Q [Dec] 
 wrap decs = forM decs id
 
-{-
--- makeFsm "AppleGirl" ["Apple"]
-newtype AppleGirl = AppleGirl StateMachine
--}
 makeFsmType :: String -> Q Dec
 makeFsmType typeName =
+    -- newtype AppleGirl = AppleGirl StateMachine
     newtypeD (cxt []) (mkName typeName) [] Nothing (normalC (mkName "StateMachine") []) []
-{-
-instance FSM AppleGirl where
-    runFsm logerAction initState machineDescriptione =
-        AppleGirl <$> runFsm logerAction initState machineDescriptione
 
-    readState (AppleGirl fsm) = readState fsm
--}
 makeFsmInstance :: String -> Q Dec
-makeFsmInstance = error "undefined"
+makeFsmInstance typeName =
+    -- instance FSM AppleGirl where
+    instanceD (cxt []) (appT (conT $ mkName "Fsm") (conT $ mkName typeName))
+        [ makeRunFsm typeName
+        , makeReadState typeName
+        ]
+
+
+--runFsm logerAction initState machineDescriptione =
+--    AppleGirl <$> runFsm logerAction initState machineDescriptione
+makeRunFsm :: String -> Q Dec
+makeRunFsm typeName = funD (mkName "runFsm") [clause patterns body []]
+    where
+        patterns =
+            [ varP $ mkName "logerAction"
+            , varP $ mkName "initState"
+            , varP $ mkName "machineDescriptione"
+            ]
+        body = error "undefined"
+
+-- readState (AppleGirl fsm) = readState fsm
+makeReadState :: String -> Q Dec
+makeReadState = error "undefined"
 
 makeListenerInstances :: String -> [String] -> [Q Dec]
 makeListenerInstances typeName eventNames =
@@ -52,9 +65,6 @@ makeListenerInstance = error "undefined"
 
 
 {-
-makeFunctorInstance :: Name -> Q [Dec]
-makeFunctorInstance name =
-    forM [1 :: Int] $ \_ -> instanceD (cxt []) (appT (conT $ mkName "Functor") (conT name)) [makeFmap name]
 
 makeFmap :: Name -> Q Dec
 makeFmap name = do
