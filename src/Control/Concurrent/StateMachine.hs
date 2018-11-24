@@ -46,12 +46,23 @@ import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers a
 import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R 
 import           Control.Concurrent.StateMachine.Domain                        as D
 
+-- | Emit event to the FSN.
+instance Typeable msg => Listener StateMachine msg where
+    notify (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toMachineEvent
+    notifyAndWait (StateMachine eventVar _) event = do
+        processed <- newFlag
+        writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
+        wait processed
+
 class Fsm fsm where
     -- | Build and run new state machine, interrupts the build if an error is
     --   detected in the machine description.
     runFsm    :: Typeable a => Loger -> a -> StateMachineL () -> IO fsm
     -- | Take current state of the FSN.
     readState :: fsm -> IO MachineState
+
+runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
+runStateMachine = runFsm
 
 instance Fsm StateMachine where
     runFsm logerAction (toMachineState -> initState) machineDescriptione = do
@@ -61,8 +72,8 @@ instance Fsm StateMachine where
 
     readState = takeState
 
-runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
-runStateMachine = runFsm
+newFsmRef :: MachineState -> IO StateMachine
+newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
 
 initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
 initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
@@ -70,16 +81,13 @@ initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
     eFsm  <- makeStateMachineData loger fsmRef machineDescriptione
     either (printError loger) (startFsm fsmRef) eFsm
 
-startFsm :: StateMachine -> IORef R.StateMaschineData -> IO ()
-startFsm fsmRef fsmDataRef = do 
-    entryInitState fsmDataRef
-    stateMachineWorker fsmDataRef fsmRef
-
 printError :: Show a => Loger -> a -> IO ()
 printError loger err = loger $ "[error] " <> show err
 
-newFsmRef :: MachineState -> IO StateMachine
-newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
+startFsm :: StateMachine -> IORef R.StateMaschineData -> IO ()
+startFsm fsmRef fsmDataRef = do 
+    entryInitState     fsmDataRef
+    stateMachineWorker fsmDataRef fsmRef
 
 entryInitState :: IORef R.StateMaschineData -> IO ()
 entryInitState fsmDataRef = do
@@ -128,13 +136,4 @@ showTransition :: MachineState -> MachineEvent -> MachineState -> Text
 showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 stateMachineWorker = stateAnalize
-
-
--- | Emit event to the FSN.
-instance Typeable msg => Listener StateMachine msg where
-    notify (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toMachineEvent
-    notifyAndWait (StateMachine eventVar _) event = do
-        processed <- newFlag
-        writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
-        wait processed
 
