@@ -55,22 +55,22 @@ runActor :: Loger -> ActorL a -> IO Actor
 runActor logerAction handler = do
     chan     <- atomically newTChan
     threadId <- forkIO $ do
-        loger      <- addTagToLoger logerAction "[Actor]"
         actor      <- Actor chan <$> myThreadId
-        handlerMap <- makeHandlerMap loger actor handler
-        mutex      <- newMutex
+        actRuntime <- newActorRuntime logerAction actor handler
+
         forever $ do
-            takeMutex mutex
+            takeMutex (actRuntime ^. mutex)
             message <- atomically $ readTChan chan
-            loger $ "[message] " <> describe message
+            (actRuntime ^. loger) $ "[message] " <> describe message
             case analyzeMessage message of
                 StopNodeR       -> killActor actor
                 ApplyHandlerR   -> do
-                    applyHandler loger handlerMap message
-                    putMutex mutex
+                    applyHandler loger (actRuntime ^. handlerMap) message
+                    putMutex (actRuntime ^. mutex)
     pure $ Actor chan threadId
 
---actorWorker mutex actor@(Actor chan _) loger handlerMap = 
+-- actorWorker actRuntime actor@(Actor chan _) = do
+
 
 
 instance Typeable msg => Listener Actor msg where
