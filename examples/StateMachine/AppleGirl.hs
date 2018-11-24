@@ -25,8 +25,8 @@ appleGirl = do
         addFinalState WellFed
         exitDo WellFed $ liftFlag stopSM
 
-    forM_ [1..3 :: Int] $ \_ -> girl `notify` Apple
-    
+    replicateM_ 3 $ girl `notify` Apple
+
     wait stopSM
 
 makeAppleCounter :: StateMachineL (IORef Integer)

@@ -11,3 +11,6 @@ makeWraperFor funcName typeName = funD (mkName funcName) [clause [pattern] body 
 
 foldApp :: [Q Exp] -> Q Exp
 foldApp = foldl1 appE
+
+wrap :: [Q Dec] -> Q [Dec] 
+wrap decs = forM decs id

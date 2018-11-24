@@ -21,9 +21,6 @@ makeFsm typeName eventNames = wrap
     : makeFsmInstance typeName
     : makeListenerInstances typeName eventNames
 
-wrap :: [Q Dec] -> Q [Dec] 
-wrap decs = forM decs id
-
 makeFsmType :: String -> Q Dec
 makeFsmType typeName =
     -- newtype AppleGirl = AppleGirl StateMachine
