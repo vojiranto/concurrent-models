@@ -3,9 +3,8 @@
 module Control.Concurrent.Actor
     ( Actor
     , ActorL
+    , Role(..)
     , runActor
-    , stopActor
-    , killActor
     , Listener (..)
     , this
     , math
@@ -26,10 +25,42 @@ import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 
-data StopActor = StopActor
+class Role actor where
+    -- | Build and run new actor.
+    runRole  :: Loger -> ActorL () -> IO actor
+    -- | Send stop msg to the actor.
+    stopRole :: actor -> IO ()
+    -- | Send async exeption to the actor.
+    killRole :: actor -> IO ()
 
-stopType :: MessageType
-stopType = toType StopActor
+-- | Build and run new actor.
+runActor :: Loger -> ActorL () -> IO Actor
+runActor = runRole
+
+instance Role Actor where
+    runRole logerAction handlerMap = do
+        chan     <- atomically newTChan
+        threadId <- initActor logerAction chan handlerMap 
+        pure $ Actor chan threadId
+
+    stopRole actor = notify actor StopActor
+    killRole (Actor _ threadId) = killThread threadId
+
+initActor :: Loger -> TChan ActorMessage -> ActorL () -> IO ThreadId
+initActor logerAction chan handlerMap = forkIO $ do
+    actor      <- Actor chan <$> myThreadId
+    actRuntime <- newActorRuntime logerAction actor handlerMap
+    actorWorker actRuntime actor
+
+actorWorker :: ActorRuntimeData -> Actor -> IO ()
+actorWorker actRuntime actor@(Actor chan _) = do
+    message <- atomically $ readTChan chan
+    (actRuntime ^. loger) $ "[message] " <> describe message
+    case analyzeMessage message of
+        StopNodeR       -> killRole actor
+        ApplyHandlerR   -> do
+            applyHandler actRuntime message
+            actorWorker  actRuntime actor
 
 data AnlyzeMessageResult = StopNodeR | ApplyHandlerR
     deriving Eq
@@ -49,39 +80,10 @@ applyHandler actRuntime message = do
             whenJust mHandler $ \handler -> handler message
             unless (isJust mHandler) $ (actRuntime ^. loger) "[error] handler does not exist, msg is droped." 
 
--- | Build and run new actor.
-runActor :: Loger -> ActorL () -> IO Actor
-runActor logerAction handlerMap = do
-    chan     <- atomically newTChan
-    threadId <- initActor logerAction chan handlerMap 
-    pure $ Actor chan threadId
-
-
-initActor :: Loger -> TChan ActorMessage -> ActorL () -> IO ThreadId
-initActor logerAction chan handlerMap = forkIO $ do
-    actor      <- Actor chan <$> myThreadId
-    actRuntime <- newActorRuntime logerAction actor handlerMap
-    actorWorker actRuntime actor
-
-actorWorker :: ActorRuntimeData -> Actor -> IO ()
-actorWorker actRuntime actor@(Actor chan _) = do
-    message <- atomically $ readTChan chan
-    (actRuntime ^. loger) $ "[message] " <> describe message
-    case analyzeMessage message of
-        StopNodeR       -> killActor actor
-        ApplyHandlerR   -> do
-            applyHandler actRuntime message
-            actorWorker  actRuntime actor
-
-
-
 instance Typeable msg => Listener Actor msg where
     notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message
 
--- | Send stop msg to the actor.
-stopActor :: Listener actor StopActor => actor -> IO ()
-stopActor actor = notify actor StopActor
+data StopActor = StopActor
 
--- | Send async exeption to the actor.
-killActor :: Actor -> IO ()
-killActor (Actor _ threadId) = killThread threadId
+stopType :: MessageType
+stopType = toType StopActor
