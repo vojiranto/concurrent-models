@@ -17,6 +17,11 @@ interpretActorL loger link _ (This next) = do
     loger "[get this *] "
     pure $ next link
 
+interpretActorL loger _ _ (LiftIO action next) = do
+    loger "[IO action]"
+    next <$> action
+    
+
 makeHandlerMap :: Loger -> Actor -> ActorL a-> IO HandlerMap
 makeHandlerMap loger link h = do
     m <- newIORef mempty

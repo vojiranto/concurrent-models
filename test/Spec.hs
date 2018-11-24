@@ -12,6 +12,7 @@ import           StateMachine.Sequential
 import           StateMachine.Grouping
 import           StateMachine.AppleGirl
 import           Actor.PingPong
+import           Actor.Postman
 
 makeStates ["On", "Off", "AnyState"]
 makeEvents ["TakeOn"]
@@ -32,6 +33,7 @@ main = do
     putTextLn ""
     hspec $ do
         it "Actor ping pong test"     $ isOk (finishFor 1000 actorPingPong)
+        it "Actor postman test"       $ isOk (finishFor 1000 postmanExample)
         it "Test 1 for state machine" $ isOk stateMachinTest1
         it "Test 2 for state machine" $ isOk (finishFor 1000 sequentialStateMachine)
         it "Test 3 for state machine" $ isOk (finishFor 1000 groupingStateMachine)

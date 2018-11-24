@@ -73,7 +73,7 @@ analyzeMessage message
 applyHandler :: ActorRuntimeData -> ActorMessage -> IO ()
 applyHandler actRuntime message = do
     let messageType = toType message
-    case actRuntime ^. handlers .at messageType of
+    case actRuntime ^. handlers . at messageType of
         Just handler -> handler message
         _            -> do
             let mHandler = actRuntime ^. handlers . at otherwiseType 
