@@ -101,11 +101,14 @@ initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
     initState <- takeState fsmRef
     mStateMachineData <- makeStateMachineData loger initState fsmRef machineDescriptione
     case mStateMachineData of
-        Right fsmData -> do 
-            entryInitState fsmData
-            stateMachineRef  <- newIORef fsmData
-            stateMachineWorker stateMachineRef fsmRef
+        Right fsmDataRef -> startFsm fsmRef fsmDataRef 
         Left err -> printError loger err
+
+
+startFsm :: StateMachine -> IORef R.StateMaschineData -> IO ()
+startFsm fsmRef fsmDataRef = do 
+    entryInitState fsmDataRef
+    stateMachineWorker fsmDataRef fsmRef
 
 printError :: Show a => Loger -> a -> IO ()
 printError loger err = loger $ "[error] " <> show err
@@ -113,8 +116,9 @@ printError loger err = loger $ "[error] " <> show err
 newFsmRef :: MachineState -> IO StateMachine
 newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
 
-entryInitState :: R.StateMaschineData -> IO ()
-entryInitState fsmData = do
+entryInitState :: IORef R.StateMaschineData -> IO ()
+entryInitState fsmDataRef = do
+    fsmData <- readIORef fsmDataRef
     fsmData ^. R.loger $ "[init state] " <> describe (fsmData ^. R.currentState)
     let stList = R.takeGroups (fsmData ^. R.stateMachineStruct) (fsmData ^. R.currentState)
     forM_ stList (R.applyEntryDo (fsmData ^. R.loger) (fsmData ^. R.handlers))

@@ -18,15 +18,20 @@ import           Control.Concurrent.StateMachine.Domain                        a
 
 data BuildingError = BuildingError deriving Show
 
-makeStateMachineData :: Loger -> D.MachineState -> L.StateMachine -> L.StateMachineL a-> IO (Either BuildingError R.StateMaschineData)
+makeStateMachineData
+    :: Loger
+    -> D.MachineState
+    -> L.StateMachine
+    -> L.StateMachineL a
+    -> IO (Either BuildingError (IORef R.StateMaschineData))
 makeStateMachineData logerAction initState stateMachine h = do
     m <- newIORef $ emptyData logerAction initState 
     success <- tryAny $ foldFree (interpretStateMachineL logerAction m stateMachine) h
     mData   <- readIORef m
-    pure $ case success of
-        Right _  | mData ^. stateMachineStruct . to checkStruct
-            -> Right mData
-        _   -> Left BuildingError
+    case success of
+        Right _  | mData ^. stateMachineStruct . to checkStruct ->
+            Right <$> newIORef mData
+        _   -> pure $ Left BuildingError
 
 interpretStateMachineL :: Loger -> IORef R.StateMaschineData -> L.StateMachine -> L.StateMachineF a -> IO a
 interpretStateMachineL toLog _ _ (L.LiftIO action next) = do
