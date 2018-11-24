@@ -51,7 +51,7 @@ applyEntryWithEventDo toLog machineData st event =
 applyStaticalDo :: Loger -> StateMaschineHandlers -> MachineState -> MachineEvent -> IO ()
 applyStaticalDo toLog machineData st event =
     whenJust (machineData ^. staticalDo . at2 st (eventToType event)) $ \action -> do
-        toLog $ "[statical do] " <> describe st <> describe event
+        toLog $ "[statical do] " <> describe st <> " "<> describe event
         action event
 
 at2 :: (Index m ~ (a, b), At m) => a -> b -> Lens' m (Maybe (IxValue m))

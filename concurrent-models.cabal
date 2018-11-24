@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9a42d6491b459ffd050e6a333e673a727262653750b780b7c4b954f7d6c3a99d
+-- hash: 38b5ea4f9a113f21db2665d0f5616b14624007c97183657294b677ea6d1dd846
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -71,6 +71,7 @@ executable example
   main-is: Main.hs
   other-modules:
       Actor.PingPong
+      StateMachine.AppleGirl
       StateMachine.Door
       StateMachine.Grouping
       StateMachine.Sequential
@@ -102,6 +103,7 @@ test-suite Actor-test
   other-modules:
       Test.Hspec.Extra
       Actor.PingPong
+      StateMachine.AppleGirl
       StateMachine.Door
       StateMachine.Grouping
       StateMachine.Sequential

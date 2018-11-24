@@ -10,6 +10,7 @@ import           Control.Concurrent.StateMachine
 
 import           StateMachine.Sequential
 import           StateMachine.Grouping
+import           StateMachine.AppleGirl
 import           Actor.PingPong
 
 makeStates ["On", "Off", "AnyState"]
@@ -33,4 +34,5 @@ main = do
         it "Actor ping pong test"     $ isOk (finishFor 1000 actorPingPong)
         it "Test 1 for state machine" $ isOk stateMachinTest1
         it "Test 2 for state machine" $ isOk (finishFor 1000 sequentialStateMachine)
-        it "Test 2 for state machine" $ isOk (finishFor 1000 groupingStateMachine)
+        it "Test 3 for state machine" $ isOk (finishFor 1000 groupingStateMachine)
+        it "Test 4 for state machine" $ isOk (finishFor 1000 appleGirl)
