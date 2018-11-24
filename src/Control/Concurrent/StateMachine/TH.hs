@@ -25,7 +25,8 @@ wrap decs = forM decs id
 newtype AppleGirl = AppleGirl StateMachine
 -}
 makeFsmType :: String -> Q Dec
-makeFsmType = error "undefined"
+makeFsmType typeName =
+    newtypeD (cxt []) (mkName typeName) [] Nothing (normalC (mkName "StateMachine") []) []
 {-
 instance FSM AppleGirl where
     runFsm logerAction initState machineDescriptione =
@@ -51,14 +52,6 @@ makeListenerInstance = error "undefined"
 
 
 {-
-module Language.Haskell.TH.MakeFunctor where
-
-import           Enecuum.Prelude
--- import           Control.Monad
-import qualified Data.List as L
-import           Language.Haskell.TH
-import           Language.Haskell.TH.Datatype
-
 makeFunctorInstance :: Name -> Q [Dec]
 makeFunctorInstance name =
     forM [1 :: Int] $ \_ -> instanceD (cxt []) (appT (conT $ mkName "Functor") (conT name)) [makeFmap name]
@@ -85,6 +78,7 @@ makeFmapBody info = clause
     consName = constructorName info
     argNum   = length $ constructorFields info
 
+-}
+
 foldApp :: [Exp] -> Q Exp
 foldApp = pure . foldl1 AppE
--}
