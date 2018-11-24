@@ -12,7 +12,7 @@ data WellFed = WellFed
 appleGirl :: IO ()
 appleGirl = do
     stopSM <- newFlag
-    girl <- runStateMachine logOff Hungry $ do
+    girl :: StateMachine <- runStateMachine logOff Hungry $ do
         eatenApples <- makeAppleCounter
         staticalDo Hungry $ eatApple eatenApples
 

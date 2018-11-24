@@ -4,7 +4,7 @@ module Control.Concurrent.StateMachine
     ( 
       StateMachine
     , StateMachineL
-    , runStateMachine
+    , FSM (..)
     -- * Making of FSM struct
     , this
     , addFinalState
@@ -23,7 +23,6 @@ module Control.Concurrent.StateMachine
     , L.entryDo
     -- * Communication with working FSN
     , Listener (..)
-    , takeState
     -- * Templates
     , makeStates
     , makeEvents
@@ -44,6 +43,45 @@ import qualified Control.Concurrent.StateMachine.Runtime                       a
 import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as R
 import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R 
 import           Control.Concurrent.StateMachine.Domain                        as D
+
+class FSM fsm where
+    -- | Build and run new state machine, interrupts the build if an error is
+    --   detected in the machine description.
+    runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO fsm
+    -- | Take current state of the FSN.
+    readState :: fsm -> IO MachineState
+
+instance FSM StateMachine where
+    runStateMachine logerAction (toMachineState -> initState) machineDescriptione = do
+        fsmRef <- newFsmRef initState  
+        initFsm logerAction fsmRef machineDescriptione
+        pure fsmRef
+
+    readState = takeState
+
+initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
+initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
+    loger <- addTagToLoger logerAction "[SM]"
+    eFsm  <- makeStateMachineData loger fsmRef machineDescriptione
+    either (printError loger) (startFsm fsmRef) eFsm
+
+startFsm :: StateMachine -> IORef R.StateMaschineData -> IO ()
+startFsm fsmRef fsmDataRef = do 
+    entryInitState fsmDataRef
+    stateMachineWorker fsmDataRef fsmRef
+
+printError :: Show a => Loger -> a -> IO ()
+printError loger err = loger $ "[error] " <> show err
+
+newFsmRef :: MachineState -> IO StateMachine
+newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
+
+entryInitState :: IORef R.StateMaschineData -> IO ()
+entryInitState fsmDataRef = do
+    fsmData <- readIORef fsmDataRef
+    fsmData ^. R.loger $ "[init state] " <> describe (fsmData ^. R.currentState)
+    let stList = R.takeGroups (fsmData ^. R.stateMachineStruct) (fsmData ^. R.currentState)
+    forM_ stList (R.applyEntryDo (fsmData ^. R.loger) (fsmData ^. R.handlers))
 
 eventAnalize, stateAnalize, stateMachineWorker
     :: IORef R.StateMaschineData -> StateMachine -> IO ()
@@ -85,39 +123,6 @@ showTransition :: MachineState -> MachineEvent -> MachineState -> Text
 showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 stateMachineWorker = stateAnalize
-
-
--- | Build and run new state machine, interrupts the build if an error is
---   detected in the machine description.
-runStateMachine :: Typeable a => Loger -> a -> StateMachineL () -> IO StateMachine
-runStateMachine logerAction (toMachineState -> initState) machineDescriptione = do
-    fsmRef <- newFsmRef initState  
-    initFsm logerAction fsmRef machineDescriptione
-    pure fsmRef
-
-initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
-initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
-    loger <- addTagToLoger logerAction "[SM]"
-    eFsm  <- makeStateMachineData loger fsmRef machineDescriptione
-    either (printError loger) (startFsm fsmRef) eFsm
-
-startFsm :: StateMachine -> IORef R.StateMaschineData -> IO ()
-startFsm fsmRef fsmDataRef = do 
-    entryInitState fsmDataRef
-    stateMachineWorker fsmDataRef fsmRef
-
-printError :: Show a => Loger -> a -> IO ()
-printError loger err = loger $ "[error] " <> show err
-
-newFsmRef :: MachineState -> IO StateMachine
-newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
-
-entryInitState :: IORef R.StateMaschineData -> IO ()
-entryInitState fsmDataRef = do
-    fsmData <- readIORef fsmDataRef
-    fsmData ^. R.loger $ "[init state] " <> describe (fsmData ^. R.currentState)
-    let stList = R.takeGroups (fsmData ^. R.stateMachineStruct) (fsmData ^. R.currentState)
-    forM_ stList (R.applyEntryDo (fsmData ^. R.loger) (fsmData ^. R.handlers))
 
 
 -- | Emit event to the FSN.

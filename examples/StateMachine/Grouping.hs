@@ -17,7 +17,7 @@ data Exit = Exit
 groupingStateMachine :: IO ()
 groupingStateMachine = do
     stopSM <- newFlag
-    sm     <- runStateMachine logOff S1 $ do
+    sm :: StateMachine <- runStateMachine logOff S1 $ do
         addTransition  S1 Move S2
         addTransition  S2 Move S3
         addTransition  S3 Move S1

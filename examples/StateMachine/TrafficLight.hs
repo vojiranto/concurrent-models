@@ -31,7 +31,7 @@ makeTrafficLight2 = runStateMachine logToConsole Green $ do
     addTransition Red    ChangeColor Yellow
     
     -- during the construction of the FSN, you can use IO.
-    directionSM <- liftIO $ runStateMachine logToConsole Red $ do
+    directionSM :: StateMachine <- liftIO $ runStateMachine logToConsole Red $ do
         addTransition Green  ChangeColor Red
         addTransition Red    ChangeColor Green
     
@@ -41,7 +41,7 @@ makeTrafficLight2 = runStateMachine logToConsole Green $ do
     -- add context dependent transition
     -- naturally, you can also use logical conditions for events.
     addConditionalTransition Yellow $
-        \ChangeColor -> Just <$> takeState directionSM
+        \ChangeColor -> Just <$> readState directionSM
 
 -- read lines have not yet read the "exit"
 readLightCommand :: StateMachine -> IO ()
