@@ -52,14 +52,14 @@ eventAnalize stateMachineRef (StateMachine eventVar stateVar) = do
     (event, processed) <- getEvent =<< readChan eventVar
     machineData        <- readIORef stateMachineRef
 
+    machineData ^. R.loger $ describe event
+    let stList = R.takeGroups
+            (machineData ^. R.stateMachineStruct)
+            (machineData ^. R.currentState)
+    forM_ stList $ \st ->
+        R.applyStaticalDo (machineData ^. R.loger) (machineData ^. R.handlers) st event
+
     mTransition        <- R.takeTransition event machineData
-    unless (isJust mTransition) $ do
-        machineData ^. R.loger $ describe event
-        let stList = R.takeGroups
-                (machineData ^. R.stateMachineStruct)
-                (machineData ^. R.currentState)
-        forM_ stList $ \st ->
-            R.applyStaticalDo (machineData ^. R.loger) (machineData ^. R.handlers) st event
 
     whenJust mTransition $ \(D.Transition currentState newState) -> do
         machineData ^. R.loger $ showTransition currentState event newState
@@ -99,18 +99,21 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
     void $ forkIO $ do
         mStateMachineData <- makeStateMachineData loger initState stateMachine machineDescriptione
         case mStateMachineData of
-            Right stateMachineData -> do 
-                stateMachineRef  <- newIORef stateMachineData
-                
-                loger $ "[init state] " <> describe initState
-                let stList = R.takeGroups (stateMachineData ^. R.stateMachineStruct) initState
-                forM_ stList (R.applyEntryDo loger (stateMachineData ^. R.handlers))
+            Right fsmData -> do 
+                entryInitState fsmData
+                stateMachineRef  <- newIORef fsmData
                 stateMachineWorker stateMachineRef stateMachine
             Left err -> loger $ "[error] " <> show err
     pure stateMachine
 
--- | Emit event to the FSN.
+entryInitState :: R.StateMaschineData -> IO ()
+entryInitState fsmData = do
+    fsmData ^. R.loger $ "[init state] " <> describe (fsmData ^. R.currentState)
+    let stList = R.takeGroups (fsmData ^. R.stateMachineStruct) (fsmData ^. R.currentState)
+    forM_ stList (R.applyEntryDo (fsmData ^. R.loger) (fsmData ^. R.handlers))
 
+
+-- | Emit event to the FSN.
 instance Typeable msg => Listener StateMachine msg where
     notify (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toMachineEvent
     notifyAndWait (StateMachine eventVar _) event = do
