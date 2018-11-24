@@ -1,4 +1,8 @@
-module Control.Concurrent.StateMachine.TH where
+module Control.Concurrent.StateMachine.TH
+    ( makeStates
+    , makeEvents
+    , makeFsm
+    ) where
 
 import           Universum
 import           Language.Haskell.TH
@@ -9,7 +13,6 @@ makeStates names = forM names $ \name ->
 
 makeEvents :: [String] -> Q [Dec]
 makeEvents = makeStates
-
 
 makeFsm :: String -> [String] -> Q [Dec]
 makeFsm typeName eventNames = wrap
@@ -34,8 +37,7 @@ makeFsmInstance typeName =
         ]
 
 
---runFsm logerAction initState machineDescriptione =
---    AppleGirl <$> runFsm logerAction initState machineDescriptione
+--runFsm a1 a2 a3 = AppleGirl <$> runFsm a1 a2 a3
 makeRunFsm :: String -> Q Dec
 makeRunFsm typeName = funD (mkName "runFsm") [clause patterns body []]
     where
@@ -49,47 +51,37 @@ makeRunFsm typeName = funD (mkName "runFsm") [clause patterns body []]
 
 -- readState (AppleGirl fsm) = readState fsm
 makeReadState :: String -> Q Dec
-makeReadState = error "undefined"
+makeReadState typeName = funD (mkName "readState") [clause [pattern] body []]
+    where
+        pattern = conP (mkName typeName) [varP $ mkName "fsm"]
+        body    = normalB (appE (varE $ mkName "readState") (varE $ mkName "fsm"))
 
 makeListenerInstances :: String -> [String] -> [Q Dec]
 makeListenerInstances typeName eventNames =
     makeListenerInstance typeName <$> eventNames
 
-{-
-instance Listener AppleGirl Apple where
-    notify        (AppleGirl fsm) = notify        fsm
-    notifyAndWait (AppleGirl fsm) = notifyAndWait fsm
--}
-
 makeListenerInstance :: String -> String -> Q Dec
-makeListenerInstance = error "undefined"
+makeListenerInstance typeName msgType =
+    -- instance Listener AppleGirl Apple where
+    instanceD (cxt []) instanceType
+        [ makeNotify        typeName
+        , makeNotifyAndWait typeName
+        ]
+    where
+        instanceType = appT
+            (appT
+                (conT $ mkName "Listener")
+                (conT $ mkName typeName))
+            (conT $ mkName msgType)
 
+-- notify        (AppleGirl fsm) = notify        fsm
+makeNotify :: String -> Q Dec
+makeNotify        = error "undefined"
 
-{-
+-- notifyAndWait (AppleGirl fsm) = notifyAndWait fsm
+makeNotifyAndWait :: String -> Q Dec
+makeNotifyAndWait = error "undefined"
 
-makeFmap :: Name -> Q Dec
-makeFmap name = do
-    constructors <- datatypeCons <$> reifyDatatype name
-    funD (mkName "fmap") (makeFmapBody <$> constructors)
-
-makeFmapBody :: ConstructorInfo -> Q Clause
-makeFmapBody info = clause
-    [varP $ mkName "g", conP consName (varP <$> varNames)]
-    (normalB
-        (  foldApp
-        $  ConE consName
-        :  (VarE <$> L.init varNames)
-        ++ [UInfixE (VarE $ mkName "g") (VarE $ mkName ".") (VarE lastArg)]
-        )
-    )
-    []
-  where
-    lastArg  = last varNames
-    varNames = (\a -> mkName $ "a" <> show a) <$> [1 .. argNum]
-    consName = constructorName info
-    argNum   = length $ constructorFields info
-
--}
 
 foldApp :: [Q Exp] -> Q Exp
 foldApp = foldl1 appE
