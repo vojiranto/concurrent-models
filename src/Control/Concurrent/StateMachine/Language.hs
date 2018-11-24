@@ -13,6 +13,7 @@ module Control.Concurrent.StateMachine.Language
     , entryWithEventDo
     , exitWithEventDo
     , exitDo
+    , takeState
     , just
     , nothing
     ) where
@@ -25,6 +26,10 @@ import           Data.This
 import           Control.Concurrent.StateMachine.Domain
 
 data StateMachine = StateMachine (Chan Event) (MVar MachineState)
+
+-- | Take current state of the FSN.
+takeState :: StateMachine -> IO MachineState
+takeState (StateMachine _ stateVar) = readMVar stateVar
 
 data StateMachineF next where
     LiftIO                      :: IO a -> (a -> next) -> StateMachineF next

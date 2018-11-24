@@ -20,11 +20,11 @@ data BuildingError = BuildingError deriving Show
 
 makeStateMachineData
     :: Loger
-    -> D.MachineState
     -> L.StateMachine
     -> L.StateMachineL a
     -> IO (Either BuildingError (IORef R.StateMaschineData))
-makeStateMachineData logerAction initState stateMachine h = do
+makeStateMachineData logerAction stateMachine h = do
+    initState <- takeState stateMachine
     m <- newIORef $ emptyData logerAction initState 
     success <- tryAny $ foldFree (interpretStateMachineL logerAction m stateMachine) h
     mData   <- readIORef m

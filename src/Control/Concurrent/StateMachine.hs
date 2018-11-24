@@ -98,8 +98,7 @@ runStateMachine logerAction (toMachineState -> initState) machineDescriptione = 
 initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
 initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
     loger     <- addTagToLoger logerAction "[SM]"
-    initState <- takeState fsmRef
-    mStateMachineData <- makeStateMachineData loger initState fsmRef machineDescriptione
+    mStateMachineData <- makeStateMachineData loger fsmRef machineDescriptione
     case mStateMachineData of
         Right fsmDataRef -> startFsm fsmRef fsmDataRef 
         Left err -> printError loger err
@@ -132,7 +131,3 @@ instance Typeable msg => Listener StateMachine msg where
         writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
         wait processed
 
-
--- | Take current state of the FSN.
-takeState :: StateMachine -> IO MachineState
-takeState (StateMachine _ stateVar) = readMVar stateVar
