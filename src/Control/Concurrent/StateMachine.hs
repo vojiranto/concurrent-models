@@ -96,8 +96,24 @@ entryInitState fsmDataRef = do
     let stList = R.takeGroups (fsmData ^. R.stateMachineStruct) (fsmData ^. R.currentState)
     forM_ stList (R.applyEntryDo (fsmData ^. R.loger) (fsmData ^. R.handlers))
 
+
 eventAnalize, stateAnalize, stateMachineWorker
     :: IORef R.StateMaschineData -> StateMachine -> IO ()
+
+stateMachineWorker = stateAnalize
+
+stateAnalize stateMachineRef stateMachine = do
+    machineData <- readIORef stateMachineRef
+    if R.isFinish machineData
+        then do
+            let currentState = machineData ^. R.currentState
+            machineData ^. R.loger $ "[finish state] " <> describe currentState
+            let stList = R.takeGroups
+                    (machineData ^. R.stateMachineStruct)
+                    (machineData ^. R.currentState)
+            forM_ stList (R.applyExitDo (machineData ^. R.loger) (machineData ^. R.handlers))
+        else eventAnalize stateMachineRef stateMachine
+
 eventAnalize stateMachineRef (StateMachine eventVar stateVar) = do
     (event, processed) <- getEvent =<< readChan eventVar
     machineData        <- readIORef stateMachineRef
@@ -120,20 +136,6 @@ eventAnalize stateMachineRef (StateMachine eventVar stateVar) = do
     whenJust processed liftFlag
     stateAnalize stateMachineRef (StateMachine eventVar stateVar)
 
-stateAnalize stateMachineRef stateMachine = do
-    machineData <- readIORef stateMachineRef
-    if R.isFinish machineData
-        then do
-            let currentState = machineData ^. R.currentState
-            machineData ^. R.loger $ "[finish state] " <> describe currentState
-            let stList = R.takeGroups
-                    (machineData ^. R.stateMachineStruct)
-                    (machineData ^. R.currentState)
-            forM_ stList (R.applyExitDo (machineData ^. R.loger) (machineData ^. R.handlers))
-        else eventAnalize stateMachineRef stateMachine
-
 showTransition :: MachineState -> MachineEvent -> MachineState -> Text
 showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
-stateMachineWorker = stateAnalize
-
