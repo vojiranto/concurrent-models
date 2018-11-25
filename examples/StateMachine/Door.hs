@@ -13,8 +13,8 @@ exampleDoor = readDoorComands =<< makeDoor
 
 makeDoor :: IO StateMachine
 makeDoor = runStateMachine logToConsole Closed $ do
-    addTransition  Open   Close Closed
-    addTransition  Closed Open  Open
+    ifE Close $ Open   >-> Closed
+    ifE Open  $ Closed >-> Open
 
     staticalDo     Closed $ \Close -> putTextLn "Open door?"
     entryDo        Closed $ putTextLn "Open door?"

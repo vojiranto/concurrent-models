@@ -18,15 +18,15 @@ appleGirl = do
     wait girlIsWellFed
 
 runAppleGirl :: Flag -> IO AppleGirl
-runAppleGirl stopSM = runFsm logOff Hungry $ do
+runAppleGirl girlIsWellFed = runFsm logOff Hungry $ do
     hangryGirl
-    wellFedGirl stopSM
+    wellFedGirl girlIsWellFed
 
 hangryGirl :: StateMachineL ()
 hangryGirl = do
     eatenApples <- makeAppleCounter
-    staticalDo               Hungry $ eatApple  eatenApples
-    addConditionalTransition Hungry $ toWellFed eatenApples
+    staticalDo Hungry $ eatApple  eatenApples
+    Hungry >?> toWellFed eatenApples
 
 toWellFed :: IORef Integer -> Apple -> IO (Maybe MachineState)
 toWellFed eatenApples _ = do
@@ -40,9 +40,9 @@ eatApple :: (Num a, MonadIO m) => IORef a -> Apple -> m ()
 eatApple eatenApples Apple = modifyIORef eatenApples (+1)
         
 wellFedGirl :: Flag -> StateMachineL ()
-wellFedGirl stopSM = do
+wellFedGirl girlIsWellFed = do
     addFinalState WellFed
-    exitDo WellFed $ liftFlag stopSM
+    exitDo WellFed $ liftFlag girlIsWellFed
 
 feed :: AppleGirl -> Int -> Apple -> IO ()
 feed girl num apple = replicateM_ num $ girl `notify` apple
