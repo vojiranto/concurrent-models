@@ -4,6 +4,7 @@ module Control.Concurrent.StateMachine
     ( 
       StateMachine
     , StateMachineL
+    , MachineState
     , Fsm (..)
     , runStateMachine
     -- * Making of FSM struct
