@@ -18,8 +18,8 @@ makeListenerInstance :: String -> String -> Q Dec
 makeListenerInstance typeName msgType =
     -- instance Listener AppleGirl Apple where
     instanceD (cxt []) instanceType
-        [ makeWraperFor "notify"        typeName
-        , makeWraperFor "notifyAndWait" typeName
+        [ makeUnpackWraper "notify"        typeName
+        , makeUnpackWraper "notifyAndWait" typeName
         ]
     where
         instanceType = appT
