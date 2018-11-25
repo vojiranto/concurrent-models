@@ -11,6 +11,7 @@ module Control.Concurrent.Actor
     , otherwiseMath
     , fromActorMessage
     , ToType(..)
+    , makeAct
     ) where
 
 import           Universum
@@ -22,6 +23,7 @@ import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.ActorRuntime 
 import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Message
+import           Control.Concurrent.Actor.TH
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 
