@@ -13,12 +13,13 @@ data WSPost = WSPost
 postmanExample :: IO ()
 postmanExample = do
     postman       <- runPostman
+
     wsAccepted    <- newFlag
     subs1         <- runSubscriberWSPost wsAccepted
+    postman `notify` (Subscription (subs1 `notify`) :: Subscription WSPost)
+
     timesAccepted <- newFlag
     subs2         <- runSubscriberTimes timesAccepted
-
-    postman `notify` (Subscription (subs1 `notify`) :: Subscription WSPost)
     postman `notify` (Subscription (subs2 `notify`) :: Subscription Times)
 
     postman `notify` Times
