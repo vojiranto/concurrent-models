@@ -75,10 +75,16 @@ applyHandler actRuntime message = do
     let messageType = toType message
     case actRuntime ^. handlers . at messageType of
         Just handler -> handler message
-        _            -> do
-            let mHandler = actRuntime ^. handlers . at otherwiseType 
-            whenJust mHandler $ \handler -> handler message
-            unless (isJust mHandler) $ (actRuntime ^. loger) "[error] handler does not exist, msg is droped." 
+        _            -> applyOtherwiseHandler actRuntime message
+
+applyOtherwiseHandler :: ActorRuntimeData -> ActorMessage -> IO ()
+applyOtherwiseHandler actRuntime message = do
+    let printError = (actRuntime ^. loger) handlerNotExistMsg
+    maybe printError ($ message) $
+        actRuntime ^. handlers . at otherwiseType
+
+handlerNotExistMsg :: Text
+handlerNotExistMsg = "[error] handler does not exist, msg is droped."
 
 instance Typeable msg => Listener Actor msg where
     notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message
