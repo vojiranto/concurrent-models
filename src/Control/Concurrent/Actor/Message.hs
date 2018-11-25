@@ -1,5 +1,5 @@
 {-# Language FlexibleInstances #-}
-module Control.Actor.Message
+module Control.Concurrent.Actor.Message
     ( ActorMessage
     , ToType(..)
     , TypeRep

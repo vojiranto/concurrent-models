@@ -1,8 +1,8 @@
 module StateMachine.TrafficLight where
 
 import           Universum
-import           Control.Loger
-import           Control.StateMachine
+import           Control.Concurrent.Loger
+import           Control.Concurrent.StateMachine
 
 -- states for traffic light
 data Green      = Green
@@ -35,18 +35,18 @@ makeTrafficLight2 = runStateMachine logToConsole Green $ do
         addTransition Green  ChangeColor Red
         addTransition Red    ChangeColor Green
     
-    exitDo Red   $ emitAndWait directionSM ChangeColor
-    exitDo Green $ emitAndWait directionSM ChangeColor
+    exitDo Red   $ notifyAndWait directionSM ChangeColor
+    exitDo Green $ notifyAndWait directionSM ChangeColor
 
     -- add context dependent transition
     -- naturally, you can also use logical conditions for events.
     addConditionalTransition Yellow $
-        \ChangeColor -> Just <$> takeState directionSM
+        \ChangeColor -> Just <$> readState directionSM
 
 -- read lines have not yet read the "exit"
 readLightCommand :: StateMachine -> IO ()
 readLightCommand sm = do
     line <- getLine
     when (line /= "exit") $ do
-        emit sm ChangeColor
+        notify sm ChangeColor
         readLightCommand sm

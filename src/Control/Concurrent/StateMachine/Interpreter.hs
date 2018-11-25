@@ -1,32 +1,37 @@
 {-# Language FlexibleInstances     #-}
 {-# Language MultiParamTypeClasses #-}
 
-module Control.StateMachine.Interpreter (makeStateMachineData) where
+module Control.Concurrent.StateMachine.Interpreter (makeStateMachineData) where
 
 import           Universum
 import qualified Data.Map as M
 import qualified Data.Set as S
 import           Control.Lens.Getter (to)
-import           Control.Loger
+import           Control.Concurrent.Loger
 import           Data.Describe
 import           Control.Monad.Free
-import           Control.StateMachine.Language                      as L
-import           Control.StateMachine.Runtime                       as R
-import           Control.StateMachine.Runtime.StateMaschineStruct   as R
-import           Control.StateMachine.Runtime.StateMaschineHandlers as R
-import           Control.StateMachine.Domain                        as D
+import           Control.Concurrent.StateMachine.Language                      as L
+import           Control.Concurrent.StateMachine.Runtime                       as R
+import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R
+import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as R
+import           Control.Concurrent.StateMachine.Domain                        as D
 
 data BuildingError = BuildingError deriving Show
 
-makeStateMachineData :: Loger -> D.MachineState -> L.StateMachine -> L.StateMachineL a-> IO (Either BuildingError R.StateMaschineData)
-makeStateMachineData logerAction initState stateMachine h = do
+makeStateMachineData
+    :: Loger
+    -> L.StateMachine
+    -> L.StateMachineL a
+    -> IO (Either BuildingError (IORef R.StateMaschineData))
+makeStateMachineData logerAction stateMachine h = do
+    initState <- takeState stateMachine
     m <- newIORef $ emptyData logerAction initState 
     success <- tryAny $ foldFree (interpretStateMachineL logerAction m stateMachine) h
     mData   <- readIORef m
-    pure $ case success of
-        Right _  | mData ^. stateMachineStruct . to checkStruct
-            -> Right mData
-        _   -> Left BuildingError
+    case success of
+        Right _  | mData ^. stateMachineStruct . to checkStruct ->
+            Right <$> newIORef mData
+        _   -> pure $ Left BuildingError
 
 interpretStateMachineL :: Loger -> IORef R.StateMaschineData -> L.StateMachine -> L.StateMachineF a -> IO a
 interpretStateMachineL toLog _ _ (L.LiftIO action next) = do

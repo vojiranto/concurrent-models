@@ -3,8 +3,8 @@ module Actor.PingPong where
 import           Universum
 
 import           Data.Flag        -- To report about successful completion.
-import           Control.Loger
-import           Control.Actor
+import           Control.Concurrent.Loger
+import           Control.Concurrent.Actor
 
 -- You can send different types of messages to actors.
 -- If there is no suitable handler, then it will simply be droped.

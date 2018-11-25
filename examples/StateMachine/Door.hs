@@ -1,8 +1,8 @@
 module StateMachine.Door where
 
 import           Universum
-import           Control.Loger
-import           Control.StateMachine
+import           Control.Concurrent.Loger
+import           Control.Concurrent.StateMachine
 
 data Open   = Open
 data Close  = Close
@@ -28,7 +28,7 @@ readDoorComands :: StateMachine -> IO ()
 readDoorComands sm = do
     ln <- getLine
     case ln of
-        "open"  -> emit sm Open  >> readDoorComands sm 
-        "close" -> emit sm Close >> readDoorComands sm 
+        "open"  -> notify sm Open  >> readDoorComands sm 
+        "close" -> notify sm Close >> readDoorComands sm 
         "exit"  -> pure ()
         _       -> readDoorComands sm

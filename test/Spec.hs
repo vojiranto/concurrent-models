@@ -5,12 +5,14 @@ import           Universum
 import           Test.Hspec.Extra
 
 import           Data.Flag
-import           Control.Loger
-import           Control.StateMachine
+import           Control.Concurrent.Loger
+import           Control.Concurrent.StateMachine
 
 import           StateMachine.Sequential
 import           StateMachine.Grouping
+import           StateMachine.AppleGirl
 import           Actor.PingPong
+import           Actor.Postman
 
 makeStates ["On", "Off", "AnyState"]
 makeEvents ["TakeOn"]
@@ -18,12 +20,12 @@ makeEvents ["TakeOn"]
 stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 100 $ do
     success <- newFlag
-    sm  <- runStateMachine logOff Off $ do
+    sm <- runStateMachine logOff Off $ do
         groupStates    AnyState $ On <: Off <: []
         addTransition  AnyState TakeOn On
         entryDo        On $ liftFlag success
         addFinalState On
-    emit sm TakeOn
+    notify sm TakeOn
     wait success
 
 main :: IO ()
@@ -31,6 +33,8 @@ main = do
     putTextLn ""
     hspec $ do
         it "Actor ping pong test"     $ isOk (finishFor 1000 actorPingPong)
+        it "Actor postman test"       $ isOk (finishFor 1000 postmanExample)
         it "Test 1 for state machine" $ isOk stateMachinTest1
         it "Test 2 for state machine" $ isOk (finishFor 1000 sequentialStateMachine)
-        it "Test 2 for state machine" $ isOk (finishFor 1000 groupingStateMachine)
+        it "Test 3 for state machine" $ isOk (finishFor 1000 groupingStateMachine)
+        it "Test 4 for state machine" $ isOk (finishFor 1000 appleGirl)

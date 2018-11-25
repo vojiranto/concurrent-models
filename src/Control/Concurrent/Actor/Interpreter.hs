@@ -1,14 +1,12 @@
-module Control.Actor.Interpreter where
+module Control.Concurrent.Actor.Interpreter where
 
 import           Universum
 import qualified Data.Map as M
-import           Control.Loger
+import           Control.Concurrent.Loger
 import           Control.Monad.Free
-import           Control.Actor.Language
-import           Control.Actor.Message
+import           Control.Concurrent.Actor.Language
+import           Control.Concurrent.Actor.Message
 import           Data.Describe
-
-type HandlerMap = M.Map MessageType (ActorMessage -> IO ())
 
 interpretActorL :: Loger -> Actor -> IORef HandlerMap -> ActorF a -> IO a
 interpretActorL loger _ m (Math messageType handler next) = do
@@ -18,6 +16,11 @@ interpretActorL loger _ m (Math messageType handler next) = do
 interpretActorL loger link _ (This next) = do
     loger "[get this *] "
     pure $ next link
+
+interpretActorL loger _ _ (LiftIO action next) = do
+    loger "[IO action]"
+    next <$> action
+    
 
 makeHandlerMap :: Loger -> Actor -> ActorL a-> IO HandlerMap
 makeHandlerMap loger link h = do

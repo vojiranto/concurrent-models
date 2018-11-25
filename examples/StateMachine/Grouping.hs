@@ -1,8 +1,8 @@
 module StateMachine.Grouping where
 
 import           Universum
-import           Control.Loger
-import           Control.StateMachine
+import           Control.Concurrent.Loger
+import           Control.Concurrent.StateMachine
 import           Data.Flag
 
 data S1 = S1
@@ -17,7 +17,7 @@ data Exit = Exit
 groupingStateMachine :: IO ()
 groupingStateMachine = do
     stopSM <- newFlag
-    sm     <- runStateMachine logOff S1 $ do
+    sm <- runStateMachine logOff S1 $ do
         addTransition  S1 Move S2
         addTransition  S2 Move S3
         addTransition  S3 Move S1
@@ -29,7 +29,7 @@ groupingStateMachine = do
         addFinalState FS
         exitDo FS $ liftFlag stopSM
 
-    sm `emit` Move
-    sm `emit` Exit
+    sm `notify` Move
+    sm `notify` Exit
 
     wait stopSM

@@ -1,5 +1,5 @@
 {-# Language TemplateHaskell       #-}
-module Control.StateMachine.Language
+module Control.Concurrent.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
     , StateMachine(..)
@@ -13,6 +13,7 @@ module Control.StateMachine.Language
     , entryWithEventDo
     , exitWithEventDo
     , exitDo
+    , takeState
     , just
     , nothing
     ) where
@@ -22,9 +23,13 @@ import           Language.Haskell.TH.MakeFunctor
 import           Control.Concurrent.Chan
 import           Control.Monad.Free
 import           Data.This
-import           Control.StateMachine.Domain
+import           Control.Concurrent.StateMachine.Domain
 
 data StateMachine = StateMachine (Chan Event) (MVar MachineState)
+
+-- | Take current state of the FSN.
+takeState :: StateMachine -> IO MachineState
+takeState (StateMachine _ stateVar) = readMVar stateVar
 
 data StateMachineF next where
     LiftIO                      :: IO a -> (a -> next) -> StateMachineF next

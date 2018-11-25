@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ba01c6392c21c23757269a13b083e9576ade7bd654cc57ab8020ae52e6dc91f3
+-- hash: 15bd1d2587e2d0cc8c53e2add04ba7cb6274041ba49af1d6b3c6893aa09bcd0f
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -27,24 +27,28 @@ source-repository head
 
 library
   exposed-modules:
-      Control.StateMachine
-      Control.Actor
-      Control.Loger
+      Control.Concurrent.StateMachine
+      Control.Concurrent.Actor
+      Control.Concurrent.Loger
       Data.Flag
   other-modules:
-      Control.Actor.Interpreter
-      Control.Actor.Language
-      Control.Actor.Message
-      Control.StateMachine.Domain
-      Control.StateMachine.Interpreter
-      Control.StateMachine.Language
-      Control.StateMachine.Runtime
-      Control.StateMachine.Runtime.StateMaschineHandlers
-      Control.StateMachine.Runtime.StateMaschineStruct
-      Control.StateMachine.TH
+      Control.Concurrent.Actor.ActorRuntime
+      Control.Concurrent.Actor.Interpreter
+      Control.Concurrent.Actor.Language
+      Control.Concurrent.Actor.Message
+      Control.Concurrent.Actor.TH
+      Control.Concurrent.Listener
+      Control.Concurrent.StateMachine.Domain
+      Control.Concurrent.StateMachine.Interpreter
+      Control.Concurrent.StateMachine.Language
+      Control.Concurrent.StateMachine.Runtime
+      Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers
+      Control.Concurrent.StateMachine.Runtime.StateMaschineStruct
+      Control.Concurrent.StateMachine.TH
       Data.Describe
       Data.TextId
       Data.This
+      Language.Haskell.TH.Extra
       Language.Haskell.TH.MakeFunctor
       Paths_concurrent_models
   hs-source-dirs:
@@ -70,6 +74,9 @@ executable example
   main-is: Main.hs
   other-modules:
       Actor.PingPong
+      Actor.Postman
+      Actor.TypeSafe
+      StateMachine.AppleGirl
       StateMachine.Door
       StateMachine.Grouping
       StateMachine.Sequential
@@ -101,6 +108,9 @@ test-suite Actor-test
   other-modules:
       Test.Hspec.Extra
       Actor.PingPong
+      Actor.Postman
+      Actor.TypeSafe
+      StateMachine.AppleGirl
       StateMachine.Door
       StateMachine.Grouping
       StateMachine.Sequential
