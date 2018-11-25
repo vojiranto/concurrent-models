@@ -5,6 +5,7 @@ module Control.Concurrent.StateMachine.TH
     ) where
 
 import           Universum
+import           Control.Concurrent.Listener
 import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
 
@@ -48,21 +49,3 @@ makeRunFsm typeName = funD (mkName "runFsm") [clause patterns body []]
             (varE $ mkName "<$>")
             (foldApp [varE $ mkName v | v <- "runFsm" : vars]))
         vars = ["a" <> show i | i <- [1..3 :: Int]]
-
-makeListenerInstances :: String -> [String] -> [Q Dec]
-makeListenerInstances typeName eventNames =
-    makeListenerInstance typeName <$> eventNames
-
-makeListenerInstance :: String -> String -> Q Dec
-makeListenerInstance typeName msgType =
-    -- instance Listener AppleGirl Apple where
-    instanceD (cxt []) instanceType
-        [ makeWraperFor "notify"        typeName
-        , makeWraperFor "notifyAndWait" typeName
-        ]
-    where
-        instanceType = appT
-            (appT
-                (conT $ mkName "Listener")
-                (conT $ mkName typeName))
-            (conT $ mkName msgType)

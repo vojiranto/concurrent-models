@@ -1,9 +1,29 @@
 module Control.Concurrent.Listener where
 
 import           Universum
+import           Language.Haskell.TH.Extra 
+import           Language.Haskell.TH
 
 class Listener a msg where
     notify        :: a -> msg -> IO ()
     notifyAndWait :: a -> msg -> IO ()
 
     notifyAndWait = notify
+
+makeListenerInstances :: String -> [String] -> [Q Dec]
+makeListenerInstances typeName eventNames =
+    makeListenerInstance typeName <$> eventNames
+
+makeListenerInstance :: String -> String -> Q Dec
+makeListenerInstance typeName msgType =
+    -- instance Listener AppleGirl Apple where
+    instanceD (cxt []) instanceType
+        [ makeWraperFor "notify"        typeName
+        , makeWraperFor "notifyAndWait" typeName
+        ]
+    where
+        instanceType = appT
+            (appT
+                (conT $ mkName "Listener")
+                (conT $ mkName typeName))
+            (conT $ mkName msgType)

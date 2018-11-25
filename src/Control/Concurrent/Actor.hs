@@ -53,8 +53,8 @@ initActor logerAction chan handlerMap = forkIO $ do
     actorWorker actRuntime actor
 
 actorWorker :: ActorRuntimeData -> Actor -> IO ()
-actorWorker actRuntime actor@(Actor chan _) = do
-    message <- atomically $ readTChan chan
+actorWorker actRuntime actor = do
+    message <- recieveMessage actor
     (actRuntime ^. loger) $ "[message] " <> describe message
     case analyzeMessage message of
         StopNodeR       -> killRole actor

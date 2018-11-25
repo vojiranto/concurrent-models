@@ -15,6 +15,9 @@ import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 
 data Actor = Actor (TChan ActorMessage) ThreadId
 
+recieveMessage :: Actor -> IO ActorMessage
+recieveMessage (Actor chan _) = atomically $ readTChan chan
+
 type HandlerMap = M.Map MessageType (ActorMessage -> IO ())
 
 data ActorF next where
