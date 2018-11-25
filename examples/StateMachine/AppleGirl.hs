@@ -25,8 +25,8 @@ runAppleGirl girlIsWellFed = runFsm logOff Hungry $ do
 hangryGirl :: StateMachineL ()
 hangryGirl = do
     eatenApples <- makeAppleCounter
-    staticalDo               Hungry $ eatApple  eatenApples
-    addConditionalTransition Hungry $ toWellFed eatenApples
+    staticalDo Hungry $ eatApple  eatenApples
+    Hungry >?> toWellFed eatenApples
 
 toWellFed :: IORef Integer -> Apple -> IO (Maybe MachineState)
 toWellFed eatenApples _ = do

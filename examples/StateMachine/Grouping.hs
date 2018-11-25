@@ -18,12 +18,12 @@ groupingStateMachine :: IO ()
 groupingStateMachine = do
     stopSM <- newFlag
     sm <- runStateMachine logOff S1 $ do
-        addTransition  S1 Move S2
-        addTransition  S2 Move S3
-        addTransition  S3 Move S1
+        ifE Move $ S1 >-> S2
+        ifE Move $ S2 >-> S3
+        ifE Move $ S3 >-> S1
 
         groupStates    G $ S1 <: S2 <: S3 <: []
-        addTransition  G Exit FS
+        ifE Exit     $ G >-> FS
         exitDo         G $ pure ()
 
         addFinalState FS

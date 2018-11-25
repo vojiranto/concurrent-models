@@ -13,7 +13,10 @@ module Control.Concurrent.StateMachine
     , groupStates
     , (<:)
     , addTransition
+    , ifE
+    , (>->)
     , addConditionalTransition
+    , (>?>)
     , just
     , nothing
     , is

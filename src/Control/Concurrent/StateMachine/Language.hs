@@ -16,6 +16,9 @@ module Control.Concurrent.StateMachine.Language
     , takeState
     , just
     , nothing
+    , ifE
+    , (>->)
+    , (>?>)
     ) where
 
 import           Universum
@@ -116,3 +119,15 @@ just = pure . Just . toMachineState
 -- | A wrapper to return Nothing to the conditional transition function.
 nothing :: IO (Maybe MachineState)
 nothing = pure Nothing
+
+ifE
+    :: (Typeable state2, Typeable event, Typeable state1)
+    => event -> (state1, state2) -> StateMachineL ()
+ifE event (st1, st2) = addTransition st1 event st2
+
+(>->) :: a -> b -> (a, b)
+(>->) st1 st2 = (st1, st2)
+
+(>?>) :: (Typeable state, Typeable event)
+    => state -> (event -> IO (Maybe MachineState)) -> StateMachineL ()
+(>?>) = addConditionalTransition

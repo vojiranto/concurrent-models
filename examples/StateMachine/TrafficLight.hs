@@ -18,30 +18,29 @@ data ChangeColor = ChangeColor
 -- lights, not four lights?
 makeTrafficLight1 :: IO StateMachine
 makeTrafficLight1 = runStateMachine logToConsole Green $ do
-    addTransition Green         ChangeColor YellowUp
-    addTransition YellowUp      ChangeColor Red
-    addTransition Red           ChangeColor YellowDown
-    addTransition YellowDown    ChangeColor Green
+    ifE ChangeColor $ Green      >-> YellowUp
+    ifE ChangeColor $ YellowUp   >-> Red
+    ifE ChangeColor $ Red        >-> YellowDown
+    ifE ChangeColor $ YellowDown >-> Green
 
 -- properly functioning traffic lights
 makeTrafficLight2 :: IO StateMachine
 makeTrafficLight2 = runStateMachine logToConsole Green $ do
     -- add to fsm transitions from one states to another.
-    addTransition Green  ChangeColor Yellow
-    addTransition Red    ChangeColor Yellow
+    ifE ChangeColor $ Green >-> Yellow
+    ifE ChangeColor $ Red   >-> Yellow
     
     -- during the construction of the FSN, you can use IO.
     directionSM <- liftIO $ runStateMachine logToConsole Red $ do
-        addTransition Green  ChangeColor Red
-        addTransition Red    ChangeColor Green
+        ifE ChangeColor $ Green >-> Red
+        ifE ChangeColor $ Red   >-> Green
     
     exitDo Red   $ notifyAndWait directionSM ChangeColor
     exitDo Green $ notifyAndWait directionSM ChangeColor
 
     -- add context dependent transition
     -- naturally, you can also use logical conditions for events.
-    addConditionalTransition Yellow $
-        \ChangeColor -> Just <$> readState directionSM
+    Yellow >?> \ChangeColor -> Just <$> readState directionSM
 
 -- read lines have not yet read the "exit"
 readLightCommand :: StateMachine -> IO ()
