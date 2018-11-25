@@ -13,7 +13,7 @@ makeAct typeName eventNames = wrap
 
 makeActInstance :: String -> Q Dec
 makeActInstance typeName =
-    -- instance FSM AppleGirl where
+    -- instance Role AppleGirl where
     instanceD (cxt []) (appT (conT $ mkName "Role") (conT $ mkName typeName))
         [ makeMPackWraper 2 "runRole"   typeName
         , makeUnpackWraper "stopRole" typeName

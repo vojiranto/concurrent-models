@@ -31,7 +31,6 @@ makeMPackWraper varCaunter funcName typeName = funD (mkName funcName) [clause pa
             (foldApp [varE $ mkName v | v <- funcName : vars]))
         vars = ["a" <> show i | i <- [1..varCaunter]]
 
-
 foldApp :: [Q Exp] -> Q Exp
 foldApp = foldl1 appE
 
