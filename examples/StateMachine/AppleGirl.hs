@@ -6,19 +6,21 @@ import           Control.Concurrent.Loger
 import           Control.Concurrent.StateMachine
 import           Data.Flag
 
-
 makeEvents ["Apple"]
 makeStates ["Hungry", "WellFed"]
 makeFsm "AppleGirl" ["Apple"]
 
 appleGirl :: IO ()
 appleGirl = do
-    stopSM <- newFlag
-    girl :: AppleGirl <- runFsm logOff Hungry $ do
-        hangryGirl
-        wellFedGirl stopSM
-    replicateM_ 3 $ girl `notify` Apple
-    wait stopSM
+    girlIsWellFed <- newFlag
+    girl          <- runAppleGirl girlIsWellFed
+    feed girl 3 Apple
+    wait girlIsWellFed
+
+runAppleGirl :: Flag -> IO AppleGirl
+runAppleGirl stopSM = runFsm logOff Hungry $ do
+    hangryGirl
+    wellFedGirl stopSM
 
 hangryGirl :: StateMachineL ()
 hangryGirl = do
@@ -41,3 +43,6 @@ wellFedGirl :: Flag -> StateMachineL ()
 wellFedGirl stopSM = do
     addFinalState WellFed
     exitDo WellFed $ liftFlag stopSM
+
+feed :: AppleGirl -> Int -> Apple -> IO ()
+feed girl num apple = replicateM_ num $ girl `notify` apple
