@@ -22,10 +22,6 @@ module Control.Concurrent.StateMachine
     , is
     -- * Addition of handlers
     , L.staticalDo
-    , L.exitDo
-    , L.exitWithEventDo
-    , L.entryWithEventDo
-    , L.entryDo
     , Acception (..)
     -- * Communication with working FSN
     , Listener (..)

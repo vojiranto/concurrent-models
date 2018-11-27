@@ -42,7 +42,7 @@ eatApple eatenApples Apple = modifyIORef eatenApples (+1)
 wellFedGirl :: Flag -> StateMachineL ()
 wellFedGirl girlIsWellFed = do
     addFinalState WellFed
-    exitDo WellFed $ liftFlag girlIsWellFed
+    onExit WellFed $ liftFlag girlIsWellFed
 
 feed :: AppleGirl -> Int -> Apple -> IO ()
 feed girl num apple = replicateM_ num $ girl `notify` apple

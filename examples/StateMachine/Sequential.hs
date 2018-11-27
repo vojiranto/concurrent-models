@@ -14,11 +14,11 @@ data Event = Event
 sequentialStateMachine :: IO ()
 sequentialStateMachine = do
     stopSM <- newFlag
-    sm <- runStateMachine logOff S1 $ do
-        addTransition  S1 Event S2
-        addTransition  S2 Event S3
+    sm    <- runStateMachine logOff S1 $ do
+        ifE Event $ S1 >-> S2
+        ifE Event $ S2 >-> S3
         addFinalState S3
-        exitDo S3 $ liftFlag stopSM
+        onExit S3 $ liftFlag stopSM
     sm `notify` Event
     sm `notify` Event
     wait stopSM

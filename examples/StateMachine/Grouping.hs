@@ -24,10 +24,9 @@ groupingStateMachine = do
 
         groupStates    G $ S1 <: S2 <: S3 <: []
         ifE Exit     $ G >-> FS
-        exitDo         G $ pure ()
 
         addFinalState FS
-        exitDo FS $ liftFlag stopSM
+        onExit FS $ liftFlag stopSM
 
     sm `notify` Move
     sm `notify` Exit

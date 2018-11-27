@@ -94,7 +94,7 @@ class Acception state a where
 
 instance Typeable state => Acception state (IO ()) where
     onEntry = entryDo
-    onExit = exitDo
+    onExit  = exitDo
 
 instance (Typeable state, Typeable event) => Acception state (event -> IO ()) where
     onEntry = entryWithEventDo

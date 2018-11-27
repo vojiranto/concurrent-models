@@ -35,8 +35,8 @@ makeTrafficLight2 = runStateMachine logToConsole Green $ do
         ifE ChangeColor $ Green >-> Red
         ifE ChangeColor $ Red   >-> Green
     
-    exitDo Red   $ notifyAndWait directionSM ChangeColor
-    exitDo Green $ notifyAndWait directionSM ChangeColor
+    onExit Red   $ notifyAndWait directionSM ChangeColor
+    onExit Green $ notifyAndWait directionSM ChangeColor
 
     -- add context dependent transition
     -- naturally, you can also use logical conditions for events.
