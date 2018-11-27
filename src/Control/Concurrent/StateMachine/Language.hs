@@ -3,6 +3,7 @@ module Control.Concurrent.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
     , StateMachine(..)
+    , Acception(..)
     , this
     , groupStates
     , addFinalState
@@ -86,6 +87,18 @@ addConditionalTransition currentState condition = liftF $ AddConditionalTransiti
     (conditionToType condition)
     (condition . fromMachineEvent)
     id
+
+class Acception state a where
+    onEntry :: state -> a -> StateMachineL ()
+    onExit  :: state -> a -> StateMachineL ()
+
+instance Typeable state => Acception state (IO ()) where
+    onEntry = entryDo
+    onExit = exitDo
+
+instance (Typeable state, Typeable event) => Acception state (event -> IO ()) where
+    onEntry = entryWithEventDo
+    onExit  = exitWithEventDo
 
 -- | Execute the handler if the machine enters the state.
 entryDo :: Typeable state => state -> IO () -> StateMachineL ()

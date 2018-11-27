@@ -26,6 +26,7 @@ module Control.Concurrent.StateMachine
     , L.exitWithEventDo
     , L.entryWithEventDo
     , L.entryDo
+    , Acception (..)
     -- * Communication with working FSN
     , Listener (..)
     -- * Templates

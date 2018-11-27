@@ -22,11 +22,15 @@ stateMachinTest1 = finishFor 100 $ do
     success <- newFlag
     sm <- runStateMachine logOff Off $ do
         groupStates    AnyState $ On <: Off <: []
-        addTransition  AnyState TakeOn On
-        entryDo        On $ liftFlag success
+        ifE TakeOn $ AnyState >-> On
+        onEntry On   acceptTake
+        onEntry On $ liftFlag success
         addFinalState On
     notify sm TakeOn
     wait success
+
+acceptTake :: TakeOn -> IO ()
+acceptTake _ = pure ()
 
 main :: IO ()
 main = do
