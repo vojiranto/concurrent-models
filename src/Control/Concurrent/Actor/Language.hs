@@ -7,6 +7,7 @@ module Control.Concurrent.Actor.Language where
 import           Universum
 import           Data.This
 import qualified Data.Map as M
+import           Control.Concurrent.Math
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Monad.Free
 import           Control.Concurrent.Actor.Message
@@ -35,9 +36,8 @@ instance This ActorL Actor where
     -- | Return link of current FSM.
     this = liftF $ This id
 
--- | Add handler for message wich known type.
-math :: Typeable a => (a -> IO ()) -> ActorL ()
-math f = liftF $ Math (fromActionToMessageType f) (f . fromActorMessageUnsafe) id
+instance Typeable a => Math (a -> IO ()) ActorL where
+    math f = liftF $ Math (fromActionToMessageType f) (f . fromActorMessageUnsafe) id
 
 -- | Add handler for processing messages with other types.
 otherwiseMath :: (ActorMessage -> IO ()) -> ActorL ()

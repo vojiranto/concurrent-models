@@ -4,10 +4,10 @@ module Control.Concurrent.Actor
     ( Actor
     , ActorL
     , Role(..)
+    , Math(..)
     , runActor
     , Listener (..)
     , this
-    , math
     , otherwiseMath
     , fromActorMessage
     , ToType(..)
@@ -18,6 +18,7 @@ import           Universum
 import           Data.This
 import           Data.Describe
 import           Control.Lens.At (at)
+import           Control.Concurrent.Math
 import           Control.Concurrent.Listener
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.ActorRuntime 

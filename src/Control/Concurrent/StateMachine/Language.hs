@@ -9,7 +9,7 @@ module Control.Concurrent.StateMachine.Language
     , addFinalState
     , addTransition
     , addConditionalTransition
-    , staticalDo
+    , mathS
     , takeState
     , just
     , nothing
@@ -23,6 +23,7 @@ import           Language.Haskell.TH.MakeFunctor
 import           Control.Concurrent.Chan
 import           Control.Monad.Free
 import           Data.This
+import           Control.Concurrent.Math
 import           Control.Concurrent.StateMachine.Domain
 
 data StateMachine = StateMachine (Chan Event) (MVar MachineState)
@@ -102,9 +103,12 @@ instance (Typeable state, Typeable event) => Acception state (event -> IO ()) wh
     onExit oldState action = liftF $ ExitWithEventDo
         (toMachineState oldState) (actionToType action) (action . fromMachineEvent) id
 
+instance Typeable event => Math (event -> IO ()) StateMachineL where 
+    math action = liftF $ MathDo (actionToType action) (action . fromMachineEvent) id
+
 -- | If event does not cause a transition, call handler with the event.
-staticalDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
-staticalDo currentState action = liftF $ StaticalDo
+mathS :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
+mathS currentState action = liftF $ StaticalDo
     (toMachineState currentState) (actionToType action) (action . fromMachineEvent) id
 
 -- | A wrapper to return the target state to the conditional transition function.

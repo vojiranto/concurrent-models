@@ -16,11 +16,11 @@ makeDoor = runStateMachine logToConsole Closed $ do
     ifE Close $ Open   >-> Closed
     ifE Open  $ Closed >-> Open
 
-    staticalDo     Closed $ \Close -> putTextLn "Open door?"
+    mathS     Closed $ \Close -> putTextLn "Open door?"
     onEntry        Closed $ putTextLnIO "Open door?"
     onExit         Closed $ putTextLnIO "Door is now Open"
 
-    staticalDo     Open $ \Open -> putTextLn "The door must be closed. OK?"
+    mathS     Open $ \Open -> putTextLn "The door must be closed. OK?"
     onEntry        Open $ putTextLnIO "The door must be closed. OK?"
     onExit         Open $ putTextLnIO "Door is now Closed"
 

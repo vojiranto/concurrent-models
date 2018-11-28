@@ -5,6 +5,7 @@ module Control.Concurrent.StateMachine
       StateMachine
     , StateMachineL
     , MachineState
+    , Math(..)
     , Fsm (..)
     , runStateMachine
     -- * Making of FSM struct
@@ -21,7 +22,7 @@ module Control.Concurrent.StateMachine
     , nothing
     , is
     -- * Addition of handlers
-    , L.staticalDo
+    , L.mathS
     , Acception (..)
     -- * Communication with working FSN
     , Listener (..)
@@ -37,7 +38,7 @@ import           Data.Describe
 import           Control.Concurrent.Loger
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan
-
+import           Control.Concurrent.Math
 import           Control.Concurrent.Listener
 import           Control.Concurrent.StateMachine.TH
 import           Control.Concurrent.StateMachine.Language                      as L

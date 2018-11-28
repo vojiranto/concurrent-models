@@ -25,7 +25,7 @@ runAppleGirl girlIsWellFed = runFsm logOff Hungry $ do
 hangryGirl :: StateMachineL ()
 hangryGirl = do
     eatenApples <- makeAppleCounter
-    staticalDo Hungry $ eatApple  eatenApples
+    mathS Hungry $ eatApple  eatenApples
     Hungry >?> toWellFed eatenApples
 
 toWellFed :: IORef Integer -> Apple -> IO (Maybe MachineState)
