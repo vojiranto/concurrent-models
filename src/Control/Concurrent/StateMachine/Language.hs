@@ -102,7 +102,6 @@ instance (Typeable state, Typeable event) => Acception state (event -> IO ()) wh
     onExit oldState action = liftF $ ExitWithEventDo
         (toMachineState oldState) (actionToType action) (action . fromMachineEvent) id
 
-
 -- | If event does not cause a transition, call handler with the event.
 staticalDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
 staticalDo currentState action = liftF $ StaticalDo
