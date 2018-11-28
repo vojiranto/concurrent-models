@@ -40,6 +40,7 @@ data StateMachineF next where
     AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
     AddConditionalTransition    :: MachineState -> EventType -> (MachineEvent -> IO (Maybe MachineState)) -> (() -> next) -> StateMachineF next
     -- Addition handlers to states and transitions of state mashine
+    MathDo                      :: EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     StaticalDo                  :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
     EntryDo                     :: MachineState -> IO () -> (() -> next) -> StateMachineF next
     EntryWithEventDo            :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next

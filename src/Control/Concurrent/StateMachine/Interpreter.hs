@@ -67,6 +67,10 @@ interpretStateMachineL toLog m _ (L.AddConditionalTransition st1 ev condtition n
     toLog $ "[set conditional transition] " <> describe st1 <> " -> " <> describe ev <> " -> [st] [ ? ]"
     next <$> modifyIORef m (R.stateMachineStruct . R.conditionalTransitions %~ M.insert (st1, ev) (toSafe toLog ev condtition))
 
+interpretStateMachineL toLog m _ (L.MathDo eventType action next) = do
+    toLog "[set 'math do' handler]"
+    next <$> modifyIORef m (R.handlers . R.mathDo %~ M.insert eventType (toSafe toLog eventType action))
+
 interpretStateMachineL toLog m _ (L.EntryDo st action next) = do
     toLog $ "[set 'entry do' handler] " <> describe st
     next <$> modifyIORef m (R.handlers . R.entryDo %~ M.insert st (toSafeAction toLog action))

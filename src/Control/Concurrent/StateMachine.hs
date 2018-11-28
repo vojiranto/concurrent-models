@@ -121,6 +121,7 @@ eventAnalize stateMachineRef fsmRef@(StateMachine events _) = do
     machineData        <- readIORef stateMachineRef
     machineData ^. R.loger $ describe event
     applyStatic machineData event
+    applyMath (machineData ^. R.loger) (machineData ^. R.handlers) event
     whenJustM (R.takeTransition event machineData)
         (applyTransition stateMachineRef event fsmRef)
 
