@@ -28,15 +28,15 @@ emptyHandlers = StateMaschineHandlers mempty mempty mempty mempty mempty
 applyEntryDo, applyExitDo
     :: Loger -> StateMaschineHandlers -> MachineState -> IO ()
 
-applyEntryDo = applyState entryDo "[entry do]"
-applyExitDo  = applyState exitDo  "[exit do]"
+applyEntryDo = applyState entryDo "[onEntry]"
+applyExitDo  = applyState exitDo  "[onExit]"
 
 applyExitWithEventDo, applyEntryWithEventDo, applyStaticalDo
     :: Loger -> StateMaschineHandlers -> MachineState -> MachineEvent -> IO ()
 
-applyExitWithEventDo  = applyEvent exitWithEventDo  "[exit with event do]"
-applyEntryWithEventDo = applyEvent entryWithEventDo "[entry with event do]"
-applyStaticalDo       = applyEvent staticalDo       "[statical do]"
+applyExitWithEventDo  = applyEvent exitWithEventDo  "[onExit]"
+applyEntryWithEventDo = applyEvent entryWithEventDo "[onEntry]"
+applyStaticalDo       = applyEvent staticalDo       "[math]"
 
 applyState
         :: (Index m ~ MachineState, IxValue m ~ IO (), At m)
