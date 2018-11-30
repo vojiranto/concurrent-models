@@ -5,6 +5,7 @@ module Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers where
 
 import           Universum
 import           Data.Describe
+import           Data.Event
 import           Control.Concurrent.Loger
 import           Control.Lens.At (at, Index, IxValue, At)
 import           Control.Lens.Getter (Getting)
@@ -13,11 +14,11 @@ import           Control.Concurrent.StateMachine.Domain
 import qualified Data.Map as M
 
 data StateMaschineHandlers = StateMaschineHandlers
-    { _staticalDo               :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
-    , _mathDo                   :: M.Map EventType (MachineEvent -> IO ())
+    { _staticalDo               :: M.Map (MachineState, EventType) (Event -> IO ())
+    , _mathDo                   :: M.Map EventType (Event -> IO ())
     , _entryDo                  :: M.Map MachineState (IO ())
-    , _entryWithEventDo         :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
-    , _exitWithEventDo          :: M.Map (MachineState, EventType) (MachineEvent -> IO ())
+    , _entryWithEventDo         :: M.Map (MachineState, EventType) (Event -> IO ())
+    , _exitWithEventDo          :: M.Map (MachineState, EventType) (Event -> IO ())
     , _exitDo                   :: M.Map MachineState (IO ())
     }
 
@@ -33,13 +34,13 @@ applyEntryDo = applyState entryDo "[onEntry]"
 applyExitDo  = applyState exitDo  "[onExit]"
 
 applyExitWithEventDo, applyEntryWithEventDo, applyStaticalDo
-    :: Loger -> StateMaschineHandlers -> MachineState -> MachineEvent -> IO ()
+    :: Loger -> StateMaschineHandlers -> MachineState -> Event -> IO ()
 
 applyExitWithEventDo  = applyEvent exitWithEventDo  "[onExit]"
 applyEntryWithEventDo = applyEvent entryWithEventDo "[onEntry]"
 applyStaticalDo       = applyEvent staticalDo       "[math]"
 
-applyMath :: Loger -> StateMaschineHandlers -> MachineEvent -> IO ()
+applyMath :: Loger -> StateMaschineHandlers -> Event -> IO ()
 applyMath toLog machineData event =
     whenJust (machineData ^. mathDo . at (eventToType event)) $ \action -> do
         toLog $ "[math]" <> " "<> describe event
@@ -55,9 +56,9 @@ applyState actionLens tag toLog machineData st =
         action
 
 applyEvent
-    :: (Index m ~ (MachineState, EventType), IxValue m ~ (MachineEvent -> IO ()), At m)
-    => Getting (Maybe (MachineEvent -> IO ())) StateMaschineHandlers m
-    -> Text -> Loger -> StateMaschineHandlers -> MachineState -> MachineEvent -> IO ()
+    :: (Index m ~ (MachineState, EventType), IxValue m ~ (Event -> IO ()), At m)
+    => Getting (Maybe (Event -> IO ())) StateMaschineHandlers m
+    -> Text -> Loger -> StateMaschineHandlers -> MachineState -> Event -> IO ()
 applyEvent actionLens tag toLog machineData st event =
     whenJust (machineData ^. actionLens . at (st, (eventToType event))) $ \action -> do
         toLog $ tag <> " " <> describe st <> " "<> describe event

@@ -34,6 +34,7 @@ module Control.Concurrent.StateMachine
 
 import           Universum
 import           Data.Flag
+import           Data.Event                                                    as D
 import           Data.Describe
 import           Control.Concurrent.Loger
 import           Control.Concurrent (forkIO)
@@ -50,10 +51,10 @@ import           Control.Concurrent.StateMachine.Domain                        a
 
 -- | Emit event to the FSN.
 instance Typeable msg => Listener StateMachine msg where
-    notify (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toMachineEvent
+    notify (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toEvent
     notifyAndWait (StateMachine eventVar _) event = do
         processed <- newFlag
-        writeChan eventVar $ D.WaitEvent (D.toMachineEvent event) processed
+        writeChan eventVar $ D.WaitEvent (D.toEvent event) processed
         wait processed
 
 class Fsm fsm where
@@ -117,7 +118,7 @@ stateAnalize stateMachineRef stateMachine = do
         else eventAnalize stateMachineRef stateMachine
 
 eventAnalize stateMachineRef fsmRef@(StateMachine events _) = do
-    (event, processed) <- getEvent =<< readChan events
+    (event, processed) <- getMachineEvent =<< readChan events
 
     machineData        <- readIORef stateMachineRef
     machineData ^. R.loger $ describe event
@@ -131,7 +132,7 @@ eventAnalize stateMachineRef fsmRef@(StateMachine events _) = do
     stateAnalize stateMachineRef fsmRef
 
 
-applyStatic :: R.StateMaschineData -> MachineEvent -> IO ()
+applyStatic :: R.StateMaschineData -> Event -> IO ()
 applyStatic machineData event = do
     let stList = R.takeGroups
             (machineData ^. R.stateMachineStruct)
@@ -140,14 +141,14 @@ applyStatic machineData event = do
         R.applyStaticalDo (machineData ^. R.loger) (machineData ^. R.handlers) st event
 
 applyTransition
-    :: IORef R.StateMaschineData -> MachineEvent -> StateMachine -> Transition -> IO ()
+    :: IORef R.StateMaschineData -> Event -> StateMachine -> Transition -> IO ()
 applyTransition stateMachineRef event fsmRef (D.Transition currentState newState) = do
     fsmData <- readIORef stateMachineRef
     fsmData ^. R.loger $ showTransition currentState event newState
     changeState stateMachineRef fsmRef newState
     R.applyTransitionActions fsmData currentState event newState
 
-showTransition :: MachineState -> MachineEvent -> MachineState -> Text
+showTransition :: MachineState -> Event -> MachineState -> Text
 showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 

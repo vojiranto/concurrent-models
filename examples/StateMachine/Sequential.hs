@@ -9,16 +9,16 @@ data S1 = S1
 data S2 = S2 
 data S3 = S3
 
-data Event = Event
+data EkzampleEvent = EkzampleEvent
 
 sequentialStateMachine :: IO ()
 sequentialStateMachine = do
     stopSM <- newFlag
     sm    <- runStateMachine logOff S1 $ do
-        ifE Event $ S1 >-> S2
-        ifE Event $ S2 >-> S3
+        ifE EkzampleEvent $ S1 >-> S2
+        ifE EkzampleEvent $ S2 >-> S3
         addFinalState S3
         onExit S3 $ liftFlag stopSM
-    sm `notify` Event
-    sm `notify` Event
+    sm `notify` EkzampleEvent
+    sm `notify` EkzampleEvent
     wait stopSM

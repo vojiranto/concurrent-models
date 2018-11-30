@@ -6,6 +6,7 @@ module Control.Concurrent.StateMachine.Runtime.StateMaschineStruct where
 import           Universum
 import           Control.Lens.At (at)
 import           Data.Describe
+import           Data.Event
 import           Control.Concurrent.Loger
 import           Control.Lens.TH
 import           Control.Concurrent.StateMachine.Domain
@@ -13,7 +14,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 
 type TransitionMap          = M.Map (MachineState, EventType) MachineState
-type ConditionalTransitions = M.Map (MachineState, EventType) (MachineEvent -> IO (Maybe MachineState))
+type ConditionalTransitions = M.Map (MachineState, EventType) (Event -> IO (Maybe MachineState))
 
 data StateMaschineStruct = StateMaschineStruct
     { _transitions              :: TransitionMap
@@ -28,11 +29,11 @@ makeLenses ''StateMaschineStruct
 emptyStruct :: StateMaschineStruct
 emptyStruct = StateMaschineStruct mempty mempty mempty mempty mempty
 
-takeTransitionFromStruct :: Loger -> MachineState -> MachineEvent -> StateMaschineStruct -> IO (Maybe Transition)
+takeTransitionFromStruct :: Loger -> MachineState -> Event -> StateMaschineStruct -> IO (Maybe Transition)
 takeTransitionFromStruct loger currentState =
     takeTransitionWithGroup loger currentState currentState
 
-takeTransitionWithGroup :: Loger -> MachineState -> MachineState -> MachineEvent -> StateMaschineStruct -> IO (Maybe Transition)
+takeTransitionWithGroup :: Loger -> MachineState -> MachineState -> Event -> StateMaschineStruct -> IO (Maybe Transition)
 takeTransitionWithGroup loger currentGroup currentState event maschineData = do
     mTrasition <- makeTransition currentState (lookupByEvent (maschineData ^. transitions)) $
         case lookupByEvent conditionals of

@@ -9,6 +9,7 @@ import qualified Data.Set as S
 import           Control.Lens.Getter (to)
 import           Control.Concurrent.Loger
 import           Data.Describe
+import           Data.Event
 import           Control.Monad.Free
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Runtime                       as R
@@ -94,11 +95,11 @@ interpretStateMachineL toLog m _ (L.ExitDo st action next) = do
 class ToSafe t a where
     toSafe :: (Text -> IO ()) -> t -> a -> a
 
-instance ToSafe EventType (MachineEvent -> IO ()) where
+instance ToSafe EventType (Event -> IO ()) where
     toSafe loger' eventType action event = catchAny (action event) $ \ex ->
         loger' $ "[error] " <> show ex <> " in action with event " <> describe eventType
 
-instance ToSafe EventType (MachineEvent -> IO (Maybe MachineState)) where
+instance ToSafe EventType (Event -> IO (Maybe MachineState)) where
     toSafe loger' eventType condition event = catchAny (condition event) $ \ex -> do
         loger' $ "[error] " <> show ex <> " in condition with event " <> describe eventType
         pure Nothing
