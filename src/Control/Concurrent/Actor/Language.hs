@@ -7,6 +7,7 @@ module Control.Concurrent.Actor.Language where
 import           Universum
 import           Data.This
 import qualified Data.Map as M
+import           Data.TextId
 import           Control.Concurrent.Math
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Monad.Free
@@ -14,10 +15,13 @@ import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 
-data Actor = Actor (TChan Event) ThreadId
+data Actor = Actor (TChan Event) ThreadId TextId
+
+instance HaveTextId Actor where
+    getTextId (Actor _ _ textId) = textId 
 
 recieveMessage :: Actor -> IO Event
-recieveMessage (Actor chan _) = atomically $ readTChan chan
+recieveMessage (Actor chan _ _) = atomically $ readTChan chan
 
 type HandlerMap = M.Map EventType (Event -> IO ())
 

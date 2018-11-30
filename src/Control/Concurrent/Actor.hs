@@ -5,19 +5,25 @@ module Control.Concurrent.Actor
     , ActorL
     , Role(..)
     , Math(..)
+    , HaveTextId(..)
+    , TextId
     , runActor
     , Listener (..)
     , this
     , otherwiseMath
+    , EventType
     , toEvent
     , fromEvent
     , ToType(..)
+    , rawDataToType
     , makeAct
     ) where
 
 import           Universum
 import           Data.This
+import           Data.Event
 import           Data.Describe
+import           Data.TextId
 import           Control.Lens.At (at)
 import           Control.Concurrent.Math
 import           Control.Concurrent.Listener
@@ -44,15 +50,16 @@ runActor = runRole
 instance Role Actor where
     runRole logerAction handlerMap = do
         chan     <- atomically newTChan
-        threadId <- initActor logerAction chan handlerMap 
-        pure $ Actor chan threadId
+        actorId  <- newTextId
+        threadId <- initActor logerAction actorId chan handlerMap 
+        pure $ Actor chan threadId actorId
 
     stopRole actor = notify actor StopActor
-    killRole (Actor _ threadId) = killThread threadId
+    killRole (Actor _ threadId _) = killThread threadId
 
-initActor :: Loger -> TChan Event -> ActorL () -> IO ThreadId
-initActor logerAction chan handlerMap = forkIO $ do
-    actor      <- Actor chan <$> myThreadId
+initActor :: Loger -> TextId -> TChan Event -> ActorL () -> IO ThreadId
+initActor logerAction actorId chan handlerMap = forkIO $ do
+    actor      <- Actor chan <$> myThreadId <*> pure actorId
     actRuntime <- newActorRuntime logerAction actor handlerMap
     actorWorker actRuntime actor
 
@@ -91,7 +98,7 @@ handlerNotExistMsg :: Text
 handlerNotExistMsg = "[error] handler does not exist, msg is droped."
 
 instance Typeable msg => Listener Actor msg where
-    notify (Actor chan _) message = atomically $ writeTChan chan $ toEvent message
+    notify (Actor chan _ _) message = atomically $ writeTChan chan $ toEvent message
 
 data StopActor = StopActor
 

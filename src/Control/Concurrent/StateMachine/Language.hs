@@ -4,6 +4,7 @@ module Control.Concurrent.StateMachine.Language
     , StateMachineL
     , StateMachine(..)
     , Acception(..)
+    , HaveTextId(..)
     , this
     , groupStates
     , addFinalState
@@ -22,16 +23,20 @@ import           Universum
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Concurrent.Chan
 import           Control.Monad.Free
+import           Data.TextId
 import           Data.Event
 import           Data.This
 import           Control.Concurrent.Math
 import           Control.Concurrent.StateMachine.Domain
 
-data StateMachine = StateMachine (Chan PackagedEvent) (MVar MachineState)
+data StateMachine = StateMachine (Chan PackagedEvent) (MVar MachineState) TextId
 
 -- | Take current state of the FSN.
 takeState :: StateMachine -> IO MachineState
-takeState (StateMachine _ stateVar) = readMVar stateVar
+takeState (StateMachine _ stateVar _) = readMVar stateVar
+
+instance HaveTextId StateMachine where
+    getTextId (StateMachine _ _ textId) = textId 
 
 data StateMachineF next where
     LiftIO                      :: IO a -> (a -> next) -> StateMachineF next

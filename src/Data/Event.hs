@@ -40,3 +40,6 @@ instance {-# OVERLAPS #-} ToType Event where
 
 instance {-# OVERLAPPABLE #-} Typeable a => ToType a where
     toType = EventType . typeOf
+
+rawDataToType :: Typeable a => a -> EventType
+rawDataToType = EventType . typeOf

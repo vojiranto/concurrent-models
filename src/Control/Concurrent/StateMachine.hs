@@ -5,8 +5,10 @@ module Control.Concurrent.StateMachine
       StateMachine
     , StateMachineL
     , MachineState
+    , HaveTextId(..)
     , Math(..)
     , Fsm (..)
+    , TextId
     , runStateMachine
     -- * Making of FSM struct
     , this
@@ -36,6 +38,7 @@ import           Universum
 import           Data.Flag
 import           Data.Event                                                    as D
 import           Data.Describe
+import           Data.TextId
 import           Control.Concurrent.Loger
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan
@@ -51,8 +54,8 @@ import           Control.Concurrent.StateMachine.Domain                        a
 
 -- | Emit event to the FSN.
 instance Typeable msg => Listener StateMachine msg where
-    notify (StateMachine eventVar _) = writeChan eventVar . D.FastEvent . D.toEvent
-    notifyAndWait (StateMachine eventVar _) event = do
+    notify (StateMachine eventVar _ _) = writeChan eventVar . D.FastEvent . D.toEvent
+    notifyAndWait (StateMachine eventVar _ _) event = do
         processed <- newFlag
         writeChan eventVar $ D.WaitEvent (D.toEvent event) processed
         wait processed
@@ -76,11 +79,12 @@ instance Fsm StateMachine where
     readState = takeState
 
 newFsmRef :: MachineState -> IO StateMachine
-newFsmRef initState = StateMachine <$> newChan <*> newMVar initState
+newFsmRef initState =
+    StateMachine <$> newChan <*> newMVar initState <*> newTextId
 
 initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
 initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
-    loger <- addTagToLoger logerAction "[SM]"
+    loger <- addTagToLoger logerAction "[SM]" (getTextId fsmRef)
     eFsm  <- makeStateMachineData loger fsmRef machineDescriptione
     either (printError loger) (startFsm fsmRef) eFsm
 
@@ -117,7 +121,7 @@ stateAnalize stateMachineRef stateMachine = do
             forM_ stList (R.applyExitDo (machineData ^. R.loger) (machineData ^. R.handlers))
         else eventAnalize stateMachineRef stateMachine
 
-eventAnalize stateMachineRef fsmRef@(StateMachine events _) = do
+eventAnalize stateMachineRef fsmRef@(StateMachine events _ _) = do
     (event, processed) <- getMachineEvent =<< readChan events
 
     machineData        <- readIORef stateMachineRef
@@ -153,6 +157,6 @@ showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 
 changeState :: IORef R.StateMaschineData -> StateMachine -> MachineState -> IO ()
-changeState stateMachineRef (StateMachine _ stateVar) newState = do
+changeState stateMachineRef (StateMachine _ stateVar _) newState = do
     void $ swapMVar stateVar newState
     modifyIORef stateMachineRef $ R.currentState .~ newState
