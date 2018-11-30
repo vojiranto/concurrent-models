@@ -13,8 +13,11 @@ newtype EventType    = EventType    TypeRep deriving (Eq, Ord)
 toEvent :: Typeable a => a -> Event
 toEvent = Event . toDyn
 
-fromEvent :: Typeable a => Event -> a 
-fromEvent (Event event) = fromJust . fromDynamic $ event
+fromEvent :: Typeable a => Event -> Maybe a
+fromEvent (Event message) = fromDynamic message
+
+fromEventUnsafe :: Typeable a => Event -> a 
+fromEventUnsafe (Event event) = fromJust . fromDynamic $ event
 
 eventToType :: Event -> EventType
 eventToType (Event event) = EventType (dynTypeRep event)
@@ -28,3 +31,12 @@ instance Describe Event where
 instance Describe EventType where
     describe (EventType a) = "[event " <> show a <> "]"
     
+-- | You can get to know out which type the message has to select a handler.
+class ToType a where
+    toType :: a -> EventType
+
+instance {-# OVERLAPS #-} ToType Event where
+    toType (Event message) = EventType . dynTypeRep $ message
+
+instance {-# OVERLAPPABLE #-} Typeable a => ToType a where
+    toType = EventType . typeOf

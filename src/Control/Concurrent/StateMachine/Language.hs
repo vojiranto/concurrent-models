@@ -84,7 +84,7 @@ addConditionalTransition
 addConditionalTransition currentState condition = liftF $ AddConditionalTransition
     (toMachineState currentState)
     (conditionToType condition)
-    (condition . fromEvent)
+    (condition . fromEventUnsafe)
     id
 
 class Acception state a where
@@ -99,18 +99,18 @@ instance Typeable state => Acception state (IO ()) where
 
 instance (Typeable state, Typeable event) => Acception state (event -> IO ()) where
     onEntry newState action = liftF $ EntryWithEventDo
-        (toMachineState newState) (actionToType action) (action . fromEvent) id
+        (toMachineState newState) (actionToType action) (action . fromEventUnsafe) id
 
     onExit oldState action = liftF $ ExitWithEventDo
-        (toMachineState oldState) (actionToType action) (action . fromEvent) id
+        (toMachineState oldState) (actionToType action) (action . fromEventUnsafe) id
 
 instance Typeable event => Math (event -> IO ()) StateMachineL where 
-    math action = liftF $ MathDo (actionToType action) (action . fromEvent) id
+    math action = liftF $ MathDo (actionToType action) (action . fromEventUnsafe) id
 
 -- | If event does not cause a transition, call handler with the event.
 mathS :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
 mathS currentState action = liftF $ StaticalDo
-    (toMachineState currentState) (actionToType action) (action . fromEvent) id
+    (toMachineState currentState) (actionToType action) (action . fromEventUnsafe) id
 
 -- | A wrapper to return the target state to the conditional transition function.
 just :: Typeable state => state -> IO (Maybe MachineState)

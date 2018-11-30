@@ -28,6 +28,6 @@ makeHandlerMap loger link h = do
     void $ foldFree (interpretActorL loger link m) h
     readIORef m
 
-toSafe :: Loger -> MessageType -> (ActorMessage -> IO ()) -> ActorMessage -> IO ()
+toSafe :: Loger -> EventType -> (Event -> IO ()) -> Event -> IO ()
 toSafe loger messageType action message = catchAny (action message) $ \ex ->
     loger $ "[error] " <> show ex <> " in action with message " <> describe messageType
