@@ -4,6 +4,7 @@
 module Control.Concurrent.Service.Subscription
     ( Notify
     , Subscription
+    , Unsubscribe
     , subscriptioService
     , makeNotify
     , unsubscribe
@@ -12,21 +13,11 @@ module Control.Concurrent.Service.Subscription
     ) where
 
 import           Universum hiding (Type)
-import           Data.Dynamic
 import qualified Data.Map                                                   as M
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor
 import           Language.Haskell.TH
-
-newtype Notify = Notify Dynamic
-
-packNotify :: Typeable a => (a -> IO ()) -> Notify
-packNotify = Notify . toDyn
-
-newtype Subscribers = Subscribers (M.Map EventType (M.Map TextId Notify))
-
-data Subscription = Subscription TextId EventType Notify
-data Unsubscribe  = Unsubscribe  TextId EventType
+import           Control.Concurrent.Service.Subscription.Domain
 
 multicast :: Typeable msg => IORef Subscribers -> msg -> IO ()
 multicast subscribers msg = do
@@ -34,10 +25,7 @@ multicast subscribers msg = do
     multicast' broadcastList 
     where
         multicast' :: Subscribers -> IO ()
-        multicast' (Subscribers subscribers') =
-            whenJust (rawDataToType msg `M.lookup` subscribers') $
-                \broadcastList -> forM_ (M.elems broadcastList) $
-                    \(Notify dyn') -> whenJust (fromDynamic dyn') ($ msg)
+        multicast' subscribers' = forM_ (getNotifyList subscribers' msg) ($ msg)
 
 subscriptioService
     :: (Math (Unsubscribe -> IO ()) m
