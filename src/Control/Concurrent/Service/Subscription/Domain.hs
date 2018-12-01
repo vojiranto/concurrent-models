@@ -28,3 +28,18 @@ getNotifyList (Subscribers subscribers) msg =
 
         subsMap :: Maybe (M.Map TextId Notify)
         subsMap = rawDataToType msg `M.lookup` subscribers
+
+addSubscriber :: Subscription -> Subscribers -> Subscribers
+addSubscriber (Subscription textId eventType act) (Subscribers subscribers')
+    = Subscribers (M.alter upd eventType subscribers')
+    where
+        upd (Just a) = Just (M.insert textId act a)
+        upd _        = Just (M.singleton textId act)
+
+
+deleteSubscriber :: Unsubscribe -> Subscribers -> Subscribers
+deleteSubscriber (Unsubscribe textId eventType) (Subscribers subscribers')
+    = Subscribers (M.alter upd eventType subscribers')
+    where
+        upd (Just a) = Just (M.delete textId a)
+        upd _        = Nothing

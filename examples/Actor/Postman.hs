@@ -20,7 +20,7 @@ runPostman loger = runActor loger $ do
 
 postmanExample :: IO ()
 postmanExample = do
-    postman       <- runPostman logToConsole
+    postman       <- runPostman logOff
 
     wsAccepted    <- newFlag
     subs1         <- runSubscriberWSPost wsAccepted
