@@ -1,4 +1,6 @@
 {-# Language FlexibleContexts #-}
+{-# Language TemplateHaskell  #-}
+{-# Language QuasiQuotes      #-}
 module Actor.Postman where
 
 import           Universum
@@ -22,11 +24,11 @@ postmanExample = do
 
     wsAccepted    <- newFlag
     subs1         <- runSubscriberWSPost wsAccepted
-    postman `notify` makeNotify subs1 (\(msg :: WSPost) -> notify subs1 msg)
+    $(subscribe [t|WSPost|]) postman subs1
 
     timesAccepted <- newFlag
     subs2         <- runSubscriberTimes timesAccepted
-    postman `notify` makeNotify subs2 (\(msg :: Times) -> notify subs2 msg) 
+    $(subscribe [t|Times|]) postman subs2
 
     postman `notify` Times
     postman `notify` WSPost
@@ -41,3 +43,4 @@ runSubscriberWSPost flag = runActor logOff $
 runSubscriberTimes :: Flag -> IO Actor
 runSubscriberTimes flag = runActor logOff $
     math $ \Times -> liftFlag flag
+

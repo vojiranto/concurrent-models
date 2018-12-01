@@ -1,19 +1,22 @@
 {-# Language FlexibleContexts #-}
+{-# Language TemplateHaskell  #-}
+{-# Language QuasiQuotes      #-}
 module Control.Concurrent.Service.Subscription
     ( Notify
     , Subscription
-    , Unsubscribe
     , subscriptioService
     , makeNotify
-    , makeUnsubscribe
+    , unsubscribe
+    , subscribe
     , multicast
     ) where
 
-import           Universum
+import           Universum hiding (Type)
 import           Data.Dynamic
 import qualified Data.Map                                                   as M
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor
+import           Language.Haskell.TH
 
 newtype Notify = Notify Dynamic
 
@@ -34,7 +37,7 @@ multicast subscribers msg = do
         multicast' (Subscribers subscribers') =
             whenJust (rawDataToType msg `M.lookup` subscribers') $
                 \broadcastList -> forM_ (M.elems broadcastList) $
-                    \(Notify dyn) -> whenJust (fromDynamic dyn) ($ msg)
+                    \(Notify dyn') -> whenJust (fromDynamic dyn') ($ msg)
 
 subscriptioService
     :: (Math (Unsubscribe -> IO ()) m
@@ -47,7 +50,7 @@ subscriptioService loger = do
     textId <- getTextId <$> this
     subscribers <- liftIO $ newIORef emptySubscribers
     math $ subsription textId subscribers
-    math $ unsubscribe textId subscribers
+    math $ unsubscribe' textId subscribers
     liftIO $ loger $ "[Subscription service] " <> describe textId <> " Is init"
     pure subscribers
     where
@@ -68,8 +71,8 @@ subscriptioService loger = do
                         upd (Just a) = Just (M.insert textId act a)
                         upd _        = Just (M.singleton textId act)
 
-        unsubscribe :: TextId -> IORef Subscribers -> Unsubscribe -> IO ()
-        unsubscribe serviceId subscribers unsub@(Unsubscribe textId' eventType') = do
+        unsubscribe' :: TextId -> IORef Subscribers -> Unsubscribe -> IO ()
+        unsubscribe' serviceId subscribers unsub@(Unsubscribe textId' eventType') = do
             loger $ "[Subscription service] " <> describe serviceId
                 <> " [unsubscribe] " <> describe textId' <> " "
                 <> describe eventType'
@@ -82,8 +85,20 @@ subscriptioService loger = do
                         upd (Just a) = Just (M.delete textId a)
                         upd _        = Nothing
 
+-- $(subscribe "WSPost") postman subs
+subscribe :: Q Type -> ExpQ
+subscribe typeName =
+    [e| \postman subs -> postman `notify` makeNotify subs (\(msg :: $(typeName)) -> notify subs msg) |]
+
+
 makeNotify :: (Typeable a2, HaveTextId a1) => a1 -> (a2 -> IO ()) -> Subscription
 makeNotify subs act = Subscription (getTextId subs) (actionToType act) (packNotify act)
 
+unsubscribe
+    :: (HaveTextId a1, Typeable a2, Listener a Unsubscribe)
+    => a2 -> a -> a1 -> IO ()
+unsubscribe msg postman subs = postman `notify` makeUnsubscribe subs msg 
+
 makeUnsubscribe :: (Typeable a2, HaveTextId a1) => a1 -> a2 -> Unsubscribe
 makeUnsubscribe subs act = Unsubscribe (getTextId subs) (rawDataToType act)
+
