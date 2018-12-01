@@ -14,18 +14,20 @@ data Pong = Pong Actor Int
 actorPingPong :: IO ()
 actorPingPong = do
     success <- newFlag
-    actor1  <- runActor logOff $ do
-        link <- this
-        math $ ping success link
-        math $ pong success link
-
-    actor2  <- runActor logOff $ do
-        link <- this
-        math $ ping success link
-        math $ pong success link
-
-    notify actor2 $ Ping actor1 10
+    pingPong success
     wait success
+
+pingPong :: Flag -> IO ()
+pingPong success = do 
+    actor1 <- pinger success
+    actor2 <- pinger success
+    notify actor2 $ Ping actor1 10
+
+pinger :: Flag -> IO Actor
+pinger success = runActor logOff $ do
+    link <- this
+    math $ ping success link
+    math $ pong success link
 
 -- Handlers are ordinary Haskel functions.
 ping :: Flag -> Actor -> Ping -> IO ()

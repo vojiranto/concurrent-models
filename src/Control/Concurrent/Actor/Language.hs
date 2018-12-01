@@ -7,21 +7,26 @@ module Control.Concurrent.Actor.Language where
 import           Universum
 import           Data.This
 import qualified Data.Map as M
+import           Data.TextId
+import           Control.Concurrent.Math
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Monad.Free
 import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 
-data Actor = Actor (TChan ActorMessage) ThreadId
+data Actor = Actor (TChan Event) ThreadId TextId
 
-recieveMessage :: Actor -> IO ActorMessage
-recieveMessage (Actor chan _) = atomically $ readTChan chan
+instance HaveTextId Actor where
+    getTextId (Actor _ _ textId) = textId 
 
-type HandlerMap = M.Map MessageType (ActorMessage -> IO ())
+recieveMessage :: Actor -> IO Event
+recieveMessage (Actor chan _ _) = atomically $ readTChan chan
+
+type HandlerMap = M.Map EventType (Event -> IO ())
 
 data ActorF next where
-    Math    :: MessageType -> (ActorMessage -> IO ()) -> (() -> next) -> ActorF next
+    Math    :: EventType -> (Event -> IO ()) -> (() -> next) -> ActorF next
     This    :: (Actor -> next) -> ActorF next
     LiftIO  :: IO a -> (a -> next) -> ActorF next
 makeFunctorInstance ''ActorF
@@ -35,10 +40,9 @@ instance This ActorL Actor where
     -- | Return link of current FSM.
     this = liftF $ This id
 
--- | Add handler for message wich known type.
-math :: Typeable a => (a -> IO ()) -> ActorL ()
-math f = liftF $ Math (fromActionToMessageType f) (f . fromActorMessageUnsafe) id
+instance Typeable a => Math (a -> IO ()) ActorL where
+    math f = liftF $ Math (fromActionToMessageType f) (f . fromEventUnsafe) id
 
 -- | Add handler for processing messages with other types.
-otherwiseMath :: (ActorMessage -> IO ()) -> ActorL ()
+otherwiseMath :: (Event -> IO ()) -> ActorL ()
 otherwiseMath f = liftF $ Math otherwiseType f id

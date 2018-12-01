@@ -3,16 +3,14 @@ module Control.Concurrent.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
     , StateMachine(..)
+    , Acception(..)
+    , HaveTextId(..)
     , this
     , groupStates
     , addFinalState
     , addTransition
     , addConditionalTransition
-    , staticalDo
-    , entryDo
-    , entryWithEventDo
-    , exitWithEventDo
-    , exitDo
+    , mathS
     , takeState
     , just
     , nothing
@@ -25,28 +23,35 @@ import           Universum
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Concurrent.Chan
 import           Control.Monad.Free
+import           Data.TextId
+import           Data.Event
 import           Data.This
+import           Control.Concurrent.Math
 import           Control.Concurrent.StateMachine.Domain
 
-data StateMachine = StateMachine (Chan Event) (MVar MachineState)
+data StateMachine = StateMachine (Chan PackagedEvent) (MVar MachineState) TextId
 
 -- | Take current state of the FSN.
 takeState :: StateMachine -> IO MachineState
-takeState (StateMachine _ stateVar) = readMVar stateVar
+takeState (StateMachine _ stateVar _) = readMVar stateVar
+
+instance HaveTextId StateMachine where
+    getTextId (StateMachine _ _ textId) = textId 
 
 data StateMachineF next where
     LiftIO                      :: IO a -> (a -> next) -> StateMachineF next
     This                        :: (StateMachine -> next) -> StateMachineF next
     -- Construction of state mashine struct
     GroupStates                 :: MachineState -> [MachineState] -> (() -> next) -> StateMachineF next
-    AddFinalState              :: MachineState -> (() -> next) -> StateMachineF next
-    AddTransition               :: MachineState -> MachineEvent -> MachineState -> (() -> next) -> StateMachineF next
-    AddConditionalTransition    :: MachineState -> EventType -> (MachineEvent -> IO (Maybe MachineState)) -> (() -> next) -> StateMachineF next
+    AddFinalState               :: MachineState -> (() -> next) -> StateMachineF next
+    AddTransition               :: MachineState -> Event -> MachineState -> (() -> next) -> StateMachineF next
+    AddConditionalTransition    :: MachineState -> EventType -> (Event -> IO (Maybe MachineState)) -> (() -> next) -> StateMachineF next
     -- Addition handlers to states and transitions of state mashine
-    StaticalDo                  :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
+    MathDo                      :: EventType -> (Event -> IO ()) -> (() -> next) -> StateMachineF next
+    StaticalDo                  :: MachineState -> EventType -> (Event -> IO ()) -> (() -> next) -> StateMachineF next
     EntryDo                     :: MachineState -> IO () -> (() -> next) -> StateMachineF next
-    EntryWithEventDo            :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
-    ExitWithEventDo             :: MachineState -> EventType -> (MachineEvent -> IO ()) -> (() -> next) -> StateMachineF next
+    EntryWithEventDo            :: MachineState -> EventType -> (Event -> IO ()) -> (() -> next) -> StateMachineF next
+    ExitWithEventDo             :: MachineState -> EventType -> (Event -> IO ()) -> (() -> next) -> StateMachineF next
     ExitDo                      :: MachineState -> IO () -> (() -> next) -> StateMachineF next
 makeFunctorInstance ''StateMachineF
 
@@ -75,7 +80,7 @@ addTransition
     :: (Typeable state1, Typeable event, Typeable state2)
     => state1 -> event -> state2 -> StateMachineL ()
 addTransition state1 event state2 =
-    liftF $ AddTransition (toMachineState state1) (toMachineEvent event) (toMachineState state2) id
+    liftF $ AddTransition (toMachineState state1) (toEvent event) (toMachineState state2) id
 
 -- | Add a conditional transition, if the function returns nothing, the transition will not occur.
 addConditionalTransition
@@ -84,33 +89,33 @@ addConditionalTransition
 addConditionalTransition currentState condition = liftF $ AddConditionalTransition
     (toMachineState currentState)
     (conditionToType condition)
-    (condition . fromMachineEvent)
+    (condition . fromEventUnsafe)
     id
 
--- | Execute the handler if the machine enters the state.
-entryDo :: Typeable state => state -> IO () -> StateMachineL ()
-entryDo newState action = liftF $ EntryDo (toMachineState newState) action id
+class Acception state a where
+    -- | Execute the handler if the machine enters the state.
+    onEntry :: state -> a -> StateMachineL ()
+    -- | Execute the handler if the machine exit the state state.
+    onExit  :: state -> a -> StateMachineL ()
 
--- | Execute the handler if the machine enters the state by event.
-entryWithEventDo
-    :: (Typeable state, Typeable action)
-    => state -> (action -> IO ()) -> StateMachineL ()
-entryWithEventDo newState action = liftF $ EntryWithEventDo
-    (toMachineState newState) (actionToType action) (action . fromMachineEvent) id
+instance Typeable state => Acception state (IO ()) where
+    onEntry newState action = liftF $ EntryDo (toMachineState newState) action id
+    onExit  oldState action = liftF $ ExitDo (toMachineState oldState) action id
+
+instance (Typeable state, Typeable event) => Acception state (event -> IO ()) where
+    onEntry newState action = liftF $ EntryWithEventDo
+        (toMachineState newState) (actionToType action) (action . fromEventUnsafe) id
+
+    onExit oldState action = liftF $ ExitWithEventDo
+        (toMachineState oldState) (actionToType action) (action . fromEventUnsafe) id
+
+instance Typeable event => Math (event -> IO ()) StateMachineL where 
+    math action = liftF $ MathDo (actionToType action) (action . fromEventUnsafe) id
 
 -- | If event does not cause a transition, call handler with the event.
-staticalDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
-staticalDo currentState action = liftF $ StaticalDo
-    (toMachineState currentState) (actionToType action) (action . fromMachineEvent) id
-
--- | Execute the handler if the machine exit the state state by event.
-exitWithEventDo :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
-exitWithEventDo oldState action = liftF $ ExitWithEventDo
-    (toMachineState oldState) (actionToType action) (action . fromMachineEvent) id
-
--- | Execute the handler if the machine exit the state state.
-exitDo :: Typeable state => state -> IO () -> StateMachineL ()
-exitDo oldState action = liftF $ ExitDo (toMachineState oldState) action id
+mathS :: (Typeable state, Typeable event) => state -> (event -> IO ()) -> StateMachineL ()
+mathS currentState action = liftF $ StaticalDo
+    (toMachineState currentState) (actionToType action) (action . fromEventUnsafe) id
 
 -- | A wrapper to return the target state to the conditional transition function.
 just :: Typeable state => state -> IO (Maybe MachineState)

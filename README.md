@@ -57,18 +57,18 @@ The simplest example of a finite state machine. Three states, two transitions, o
 data S1 = S1
 data S2 = S2
 data S3 = S3
-data Event = Event
+data EkzampleEvent = EkzampleEvent
 
 sequentialStateMachine :: IO ()
 sequentialStateMachine = do
     stopSM <- newFlag
-    sm     <- runStateMachine logToConsole S1 $ do
-        addTransition  S1 Event S2
-        addTransition  S2 Event S3
+    sm     <- runStateMachine logOff S1 $ do
+        ifE EkzampleEvent $ S1 >-> S2
+        ifE EkzampleEvent $ S2 >-> S3
         addFinalState S3
-        exitDo S3 $ liftFlag stopSM
-    sm `notify` Event
-    sm `notify` Event
+        onExit S3 $ liftFlag stopSM
+    sm `notify` EkzampleEvent
+    sm `notify` EkzampleEvent
     wait stopSM
 ```
 
@@ -94,24 +94,24 @@ As well as the use of IO actions during the construction of the machine.
 makeStates ["Green", "Yellow", "Red"]
 makeEvents ["ChangeColor"]
 
-makeTrafficLight :: IO StateMachine
-makeTrafficLight = runStateMachine logToConsole Green $ do
+-- properly functioning traffic lights
+makeTrafficLight2 :: IO StateMachine
+makeTrafficLight2 = runStateMachine logToConsole Green $ do
     -- add to fsm transitions from one states to another.
-    addTransition Green  ChangeColor Yellow
-    addTransition Red    ChangeColor Yellow
+    ifE ChangeColor $ Green >-> Yellow
+    ifE ChangeColor $ Red   >-> Yellow
 
     -- during the construction of the FSN, you can use IO.
     directionSM <- liftIO $ runStateMachine logToConsole Red $ do
-        addTransition Green  ChangeColor Red
-        addTransition Red    ChangeColor Green
+        ifE ChangeColor $ Green >-> Red
+        ifE ChangeColor $ Red   >-> Green
 
-    exitDo Red   $ notifyAndWait directionSM ChangeColor
-    exitDo Green $ notifyAndWait directionSM ChangeColor
+    onExit Red   $ notifyAndWait directionSM ChangeColor
+    onExit Green $ notifyAndWait directionSM ChangeColor
 
     -- add context dependent transition
     -- naturally, you can also use logical conditions for events.
-    addConditionalTransition Yellow $
-        \ChangeColor -> Just <$> takeState directionSM
+    Yellow >?> \ChangeColor -> Just <$> readState directionSM
 ```
 
 You can collect states in groups and add to group common handlers and transitions to other states.
@@ -129,17 +129,16 @@ data Exit = Exit
 groupingStateMachine :: IO ()
 groupingStateMachine = do
     stopSM <- newFlag
-    sm     <- runStateMachine logToConsole S1 $ do
-        addTransition  S1 Move S2
-        addTransition  S2 Move S3
-        addTransition  S3 Move S1
+    sm <- runStateMachine logOff S1 $ do
+        ifE Move $ S1 >-> S2
+        ifE Move $ S2 >-> S3
+        ifE Move $ S3 >-> S1
 
         groupStates    G $ S1 <: S2 <: S3 <: []
-        addTransition  G Exit FS
-        exitDo         G $ pure ()
+        ifE Exit     $ G >-> FS
 
         addFinalState FS
-        exitDo FS $ liftFlag stopSM
+        onExit FS $ liftFlag stopSM
 
     sm `notify` Move
     sm `notify` Exit

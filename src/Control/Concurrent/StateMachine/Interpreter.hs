@@ -9,6 +9,7 @@ import qualified Data.Set as S
 import           Control.Lens.Getter (to)
 import           Control.Concurrent.Loger
 import           Data.Describe
+import           Data.Event
 import           Control.Monad.Free
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Runtime                       as R
@@ -67,6 +68,10 @@ interpretStateMachineL toLog m _ (L.AddConditionalTransition st1 ev condtition n
     toLog $ "[set conditional transition] " <> describe st1 <> " -> " <> describe ev <> " -> [st] [ ? ]"
     next <$> modifyIORef m (R.stateMachineStruct . R.conditionalTransitions %~ M.insert (st1, ev) (toSafe toLog ev condtition))
 
+interpretStateMachineL toLog m _ (L.MathDo eventType action next) = do
+    toLog "[set 'math do' handler]"
+    next <$> modifyIORef m (R.handlers . R.mathDo %~ M.insert eventType (toSafe toLog eventType action))
+
 interpretStateMachineL toLog m _ (L.EntryDo st action next) = do
     toLog $ "[set 'entry do' handler] " <> describe st
     next <$> modifyIORef m (R.handlers . R.entryDo %~ M.insert st (toSafeAction toLog action))
@@ -90,11 +95,11 @@ interpretStateMachineL toLog m _ (L.ExitDo st action next) = do
 class ToSafe t a where
     toSafe :: (Text -> IO ()) -> t -> a -> a
 
-instance ToSafe EventType (MachineEvent -> IO ()) where
+instance ToSafe EventType (Event -> IO ()) where
     toSafe loger' eventType action event = catchAny (action event) $ \ex ->
         loger' $ "[error] " <> show ex <> " in action with event " <> describe eventType
 
-instance ToSafe EventType (MachineEvent -> IO (Maybe MachineState)) where
+instance ToSafe EventType (Event -> IO (Maybe MachineState)) where
     toSafe loger' eventType condition event = catchAny (condition event) $ \ex -> do
         loger' $ "[error] " <> show ex <> " in condition with event " <> describe eventType
         pure Nothing

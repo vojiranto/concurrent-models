@@ -2,6 +2,7 @@
 module Control.Concurrent.Actor.ActorRuntime where
 
 import           Universum
+import           Data.TextId
 import           Control.Lens.TH
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.Language
@@ -15,6 +16,6 @@ makeLenses ''ActorRuntimeData
 
 newActorRuntime :: Loger -> Actor -> ActorL () -> IO ActorRuntimeData
 newActorRuntime logerAction actor handlers' = do
-    loger'     <- addTagToLoger logerAction "[Actor]"
+    loger'     <- addTagToLoger logerAction "[Actor]" (getTextId actor)
     handlerMap <- makeHandlerMap loger' actor handlers'
     pure $ ActorRuntimeData loger' handlerMap

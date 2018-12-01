@@ -4,6 +4,7 @@
 module Control.Concurrent.StateMachine.Runtime where
 
 import           Universum
+import           Data.Event
 import           Control.Concurrent.Loger
 import           Control.Lens.TH
 import           Control.Concurrent.StateMachine.Domain
@@ -23,14 +24,14 @@ emptyData :: Loger -> MachineState -> StateMaschineData
 emptyData loger' initState =
     StateMaschineData emptyStruct emptyHandlers initState loger'
 
-takeTransition :: MachineEvent -> StateMaschineData -> IO (Maybe Transition)
+takeTransition :: Event -> StateMaschineData -> IO (Maybe Transition)
 takeTransition event maschineData = takeTransitionFromStruct
     (maschineData ^. loger)
     (maschineData ^. currentState)
     event
     (maschineData ^. stateMachineStruct)
 
-applyTransitionActions :: StateMaschineData -> MachineState -> MachineEvent -> MachineState -> IO ()
+applyTransitionActions :: StateMaschineData -> MachineState -> Event -> MachineState -> IO ()
 applyTransitionActions machineData oldState event newState = do
     let oldGroups = takeGroups (machineData ^. stateMachineStruct) oldState
     let newGroups = takeGroups (machineData ^. stateMachineStruct) newState

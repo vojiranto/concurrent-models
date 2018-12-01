@@ -1,9 +1,26 @@
-module Data.TextId where
+module Data.TextId
+    ( TextId
+    , HaveTextId(..)
+    , Describe(..)
+    , newTextId
+    ) where
 
 import           Universum hiding (ToText(..))
 import           Data.Hashable
+import           Data.Describe
 import           Data.Base58String.Bitcoin
 import           Control.Concurrent.Unique
 
-newTextId :: IO Text
-newTextId = toText . fromBinary . hash <$> newUnique
+newtype TextId = TextId Text deriving (Eq, Ord)
+
+newTextId :: IO TextId
+newTextId = TextId . toText . fromBinary . hash <$> newUnique
+
+class HaveTextId a where
+    getTextId :: a -> TextId
+
+instance HaveTextId TextId where
+    getTextId = id
+
+instance Describe TextId where
+    describe (TextId textId) = "[" <> textId <> "]"

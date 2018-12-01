@@ -13,7 +13,6 @@ logToConsole = putTextLn
 logOff :: Loger
 logOff _ = pure ()
 
-addTagToLoger :: (Text -> t) -> Text -> IO (Text -> t)
-addTagToLoger logerAction tag = do
-    textId   <- newTextId
-    pure $ \txt -> logerAction $ tag <> " " <> "[" <> textId  <> "] " <> txt
+addTagToLoger :: (Text -> t) -> Text -> TextId -> IO (Text -> t)
+addTagToLoger logerAction tag textId =
+    pure $ \txt -> logerAction $ tag <> " " <> describe textId <> " " <> txt

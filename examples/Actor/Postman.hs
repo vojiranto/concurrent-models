@@ -1,50 +1,38 @@
+{-# Language FlexibleContexts #-}
 module Actor.Postman where
 
 import           Universum
-
 import           Data.Flag        -- To report about successful completion.
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor
+import           Control.Concurrent.Service.Subscription 
 
-newtype Subscription a = Subscription (a -> IO ())
 data Times  = Times
 data WSPost = WSPost
 
+runPostman :: Loger -> IO Actor
+runPostman loger = runActor loger $ do
+    subscribers <- subscriptioService loger
+    math $ \Times  -> multicast subscribers Times
+    math $ \WSPost -> multicast subscribers WSPost
+
 postmanExample :: IO ()
 postmanExample = do
-    postman       <- runPostman
+    postman       <- runPostman logToConsole
+
     wsAccepted    <- newFlag
     subs1         <- runSubscriberWSPost wsAccepted
+    postman `notify` makeNotify subs1 (\(msg :: WSPost) -> notify subs1 msg)
+
     timesAccepted <- newFlag
     subs2         <- runSubscriberTimes timesAccepted
-
-    postman `notify` (Subscription (subs1 `notify`) :: Subscription WSPost)
-    postman `notify` (Subscription (subs2 `notify`) :: Subscription Times)
+    postman `notify` makeNotify subs2 (\(msg :: Times) -> notify subs2 msg) 
 
     postman `notify` Times
     postman `notify` WSPost
 
     wait wsAccepted
     wait timesAccepted
-
-runPostman :: IO Actor
-runPostman = runActor logOff $ do
-    makeDistribution ([] :: [Subscription WSPost])
-    makeDistribution ([] :: [Subscription Times])
-    where
-        makeDistribution :: Typeable a => [Subscription a] -> ActorL ()
-        makeDistribution subscribers = do
-            subscribers' <- liftIO $ newIORef subscribers
-            math $ acceptSubscription subscribers'
-            math $ resending subscribers'
-
-        acceptSubscription :: IORef [Subscription a] -> Subscription a -> IO ()
-        acceptSubscription ref newSubs = modifyIORef ref (newSubs:)
-
-        resending :: IORef [Subscription a] -> a -> IO ()
-        resending ref msg = do
-            subscribers' <- readIORef ref
-            forM_ subscribers' $ \(Subscription s) -> s msg
 
 runSubscriberWSPost :: Flag -> IO Actor
 runSubscriberWSPost flag = runActor logOff $

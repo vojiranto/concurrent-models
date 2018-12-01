@@ -4,20 +4,30 @@ module Control.Concurrent.Actor
     ( Actor
     , ActorL
     , Role(..)
+    , Math(..)
+    , HaveTextId(..)
+    , Describe(..)
+    , This(..)
+    , TextId
     , runActor
     , Listener (..)
-    , this
-    , math
     , otherwiseMath
-    , fromActorMessage
+    , EventType
+    , toEvent
+    , fromEvent
     , ToType(..)
+    , actionToType
+    , rawDataToType
     , makeAct
     ) where
 
 import           Universum
 import           Data.This
+import           Data.Event
 import           Data.Describe
+import           Data.TextId
 import           Control.Lens.At (at)
+import           Control.Concurrent.Math
 import           Control.Concurrent.Listener
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.ActorRuntime 
@@ -42,15 +52,16 @@ runActor = runRole
 instance Role Actor where
     runRole logerAction handlerMap = do
         chan     <- atomically newTChan
-        threadId <- initActor logerAction chan handlerMap 
-        pure $ Actor chan threadId
+        actorId  <- newTextId
+        threadId <- initActor logerAction actorId chan handlerMap 
+        pure $ Actor chan threadId actorId
 
     stopRole actor = notify actor StopActor
-    killRole (Actor _ threadId) = killThread threadId
+    killRole (Actor _ threadId _) = killThread threadId
 
-initActor :: Loger -> TChan ActorMessage -> ActorL () -> IO ThreadId
-initActor logerAction chan handlerMap = forkIO $ do
-    actor      <- Actor chan <$> myThreadId
+initActor :: Loger -> TextId -> TChan Event -> ActorL () -> IO ThreadId
+initActor logerAction actorId chan handlerMap = forkIO $ do
+    actor      <- Actor chan <$> myThreadId <*> pure actorId
     actRuntime <- newActorRuntime logerAction actor handlerMap
     actorWorker actRuntime actor
 
@@ -67,19 +78,19 @@ actorWorker actRuntime actor = do
 data AnlyzeMessageResult = StopNodeR | ApplyHandlerR
     deriving Eq
 
-analyzeMessage :: ActorMessage -> AnlyzeMessageResult
+analyzeMessage :: Event -> AnlyzeMessageResult
 analyzeMessage message
     | toType message == stopType = StopNodeR
     | otherwise                  = ApplyHandlerR
 
-applyHandler :: ActorRuntimeData -> ActorMessage -> IO ()
+applyHandler :: ActorRuntimeData -> Event -> IO ()
 applyHandler actRuntime message = do
     let messageType = toType message
     case actRuntime ^. handlers . at messageType of
         Just handler -> handler message
         _            -> applyOtherwiseHandler actRuntime message
 
-applyOtherwiseHandler :: ActorRuntimeData -> ActorMessage -> IO ()
+applyOtherwiseHandler :: ActorRuntimeData -> Event -> IO ()
 applyOtherwiseHandler actRuntime message = do
     let printError = (actRuntime ^. loger) handlerNotExistMsg
     maybe printError ($ message) $
@@ -89,9 +100,9 @@ handlerNotExistMsg :: Text
 handlerNotExistMsg = "[error] handler does not exist, msg is droped."
 
 instance Typeable msg => Listener Actor msg where
-    notify (Actor chan _) message = atomically $ writeTChan chan $ toActorMessage message
+    notify (Actor chan _ _) message = atomically $ writeTChan chan $ toEvent message
 
 data StopActor = StopActor
 
-stopType :: MessageType
+stopType :: EventType
 stopType = toType StopActor
