@@ -58,6 +58,7 @@ library:
   exposed-modules:
     - Control.Concurrent.StateMachine
     - Control.Concurrent.Actor
+    - Control.Concurrent.Service.Subscription
     - Control.Concurrent.Loger
     - Data.Flag
   ghc-options:
