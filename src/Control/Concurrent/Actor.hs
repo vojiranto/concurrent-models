@@ -6,15 +6,17 @@ module Control.Concurrent.Actor
     , Role(..)
     , Math(..)
     , HaveTextId(..)
+    , Describe(..)
+    , This(..)
     , TextId
     , runActor
     , Listener (..)
-    , this
     , otherwiseMath
     , EventType
     , toEvent
     , fromEvent
     , ToType(..)
+    , actionToType
     , rawDataToType
     , makeAct
     ) where

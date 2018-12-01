@@ -6,12 +6,13 @@ module Control.Concurrent.StateMachine
     , StateMachineL
     , MachineState
     , HaveTextId(..)
+    , Describe(..)
     , Math(..)
     , Fsm (..)
     , TextId
+    , This(..)
     , runStateMachine
     -- * Making of FSM struct
-    , this
     , addFinalState
     , groupStates
     , (<:)
@@ -39,6 +40,7 @@ import           Data.Flag
 import           Data.Event                                                    as D
 import           Data.Describe
 import           Data.TextId
+import           Data.This
 import           Control.Concurrent.Loger
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan

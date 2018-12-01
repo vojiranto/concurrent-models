@@ -1,10 +1,9 @@
+{-# Language FlexibleContexts #-}
 module Actor.Postman where
 
 import           Universum
 import           Data.Dynamic
 import qualified Data.Map                                                   as M
---import           Data.IORef
-
 import           Data.Flag        -- To report about successful completion.
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor
@@ -30,11 +29,19 @@ multicast subscribers msg = do
                 \broadcastList -> forM_ (M.elems broadcastList) $
                     \(Notify dyn) -> whenJust (fromDynamic dyn) ($ msg)
 
-subscriptioService :: ActorL (IORef Subscribers)
-subscriptioService = do
+subscriptioService
+    :: (Math (Unsubscribe -> IO ()) m
+    ,   Math (Subscription -> IO ()) m
+    ,   MonadIO m
+    ,   This m act
+    ,   HaveTextId act) =>
+    Loger -> m (IORef Subscribers)
+subscriptioService loger = do
+    act <- this
     subscribers <- liftIO $ newIORef emptySubscribers
     math $ subsription subscribers
     math $ unsubscribe subscribers
+    liftIO $ loger $ "\n[Subscription service] " <> describe (getTextId act) <> " Is init"
     pure subscribers
     where
         emptySubscribers :: Subscribers
@@ -60,30 +67,29 @@ subscriptioService = do
                         upd (Just a) = Just (M.delete textId a)
                         upd _        = Nothing
 
-
 data Times  = Times
 data WSPost = WSPost
 
-runPostman :: IO Actor
-runPostman = runActor logOff $ do
-    subscribers <- subscriptioService
+runPostman :: Loger -> IO Actor
+runPostman loger = runActor loger $ do
+    subscribers <- subscriptioService loger
     math $ \Times  -> multicast subscribers Times
     math $ \WSPost -> multicast subscribers WSPost
 
-makeNotify :: (Listener a msg, HaveTextId a, Typeable msg) => a -> msg -> Subscription 
-makeNotify subs msg = Subscription (getTextId subs) (rawDataToType msg) (packNotify ((subs `notify`) :: msg -> IO ()))
+makeNotify :: (Typeable a2, HaveTextId a1) => a1 -> (a2 -> IO ()) -> Subscription
+makeNotify subs act = Subscription (getTextId subs) (actionToType act) (packNotify act)
 
 postmanExample :: IO ()
 postmanExample = do
-    postman       <- runPostman
+    postman       <- runPostman logOff
 
     wsAccepted    <- newFlag
     subs1         <- runSubscriberWSPost wsAccepted
-    postman `notify` makeNotify subs1 WSPost
+    postman `notify` makeNotify subs1 (\(msg :: WSPost) -> notify subs1 msg)
 
     timesAccepted <- newFlag
     subs2         <- runSubscriberTimes timesAccepted
-    postman `notify` makeNotify subs2 Times
+    postman `notify` makeNotify subs2 (\(msg :: Times) -> notify subs2 msg)
 
     postman `notify` Times
     postman `notify` WSPost
