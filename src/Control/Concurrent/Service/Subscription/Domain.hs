@@ -43,3 +43,11 @@ deleteSubscriber (Unsubscribe textId eventType) (Subscribers subscribers')
     where
         upd (Just a) = Just (M.delete textId a)
         upd _        = Nothing
+
+instance Describe Subscription where
+    describe (Subscription textId eventType _) =
+        "[subscription] " <> describe textId <> " " <> describe eventType
+
+instance Describe Unsubscribe where
+    describe (Unsubscribe textId eventType) =
+        "[unsubscribe] " <> describe textId <> " " <> describe eventType

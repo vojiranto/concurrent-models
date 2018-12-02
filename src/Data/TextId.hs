@@ -23,4 +23,4 @@ instance HaveTextId TextId where
     getTextId = id
 
 instance Describe TextId where
-    describe (TextId textId) = "[" <> textId <> "]"
+    describe (TextId textId) = "[id " <> textId <> "]"

@@ -32,34 +32,25 @@ subscriptioService
     Loger -> m (IORef Subscribers)
 subscriptioService loger = do
     textId <- getTextId <$> this
-    subscribers <- liftIO $ newIORef emptySubscribers
-    math $ subsription textId subscribers
-    math $ unsubscribe' textId subscribers
+    subscribers <- liftIO $ newIORef $ Subscribers mempty
+    let serviceLoger :: Describe a => a -> IO ()
+        serviceLoger obj = loger $
+            "[Subscription service] " <> describe textId <> " " <> describe obj
+    math $ \subs -> do
+        serviceLoger subs
+        modifyIORef' subscribers (addSubscriber subs)
+
+    math $ \unsub -> do
+        serviceLoger unsub
+        modifyIORef' subscribers (deleteSubscriber unsub)
+
     liftIO $ loger $ "[Subscription service] " <> describe textId <> " Is init"
     pure subscribers
-    where
-        emptySubscribers :: Subscribers
-        emptySubscribers = Subscribers mempty
-
-        subsription :: TextId -> IORef Subscribers -> Subscription -> IO ()
-        subsription serviceId subscribers subs@(Subscription textId' eventType' _) = do
-            loger $ "[Subscription service] " <> describe serviceId
-                <> " [subsription] " <> describe textId' <> " "
-                <> describe eventType'
-            modifyIORef' subscribers (addSubscriber subs)
-
-        unsubscribe' :: TextId -> IORef Subscribers -> Unsubscribe -> IO ()
-        unsubscribe' serviceId subscribers unsub@(Unsubscribe textId' eventType') = do
-            loger $ "[Subscription service] " <> describe serviceId
-                <> " [unsubscribe] " <> describe textId' <> " "
-                <> describe eventType'
-            modifyIORef' subscribers (deleteSubscriber unsub)
 
 -- $(subscribe "WSPost") postman subs
 subscribe :: Q Type -> ExpQ
 subscribe typeName =
     [e| \postman subs -> postman `notify` makeNotify subs (\(msg :: $(typeName)) -> notify subs msg) |]
-    
 
 makeNotify :: (Typeable a2, HaveTextId a1) => a1 -> (a2 -> IO ()) -> Subscription
 makeNotify subs act = Subscription (getTextId subs) (actionToType act) (packNotify act)

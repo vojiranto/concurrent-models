@@ -18,17 +18,19 @@ runPostman loger = runActor loger $ do
     math $ \Times  -> multicast subscribers Times
     math $ \WSPost -> multicast subscribers WSPost
 
-postmanExample :: IO ()
-postmanExample = do
+postmanExample1 :: IO ()
+postmanExample1 = do
     postman       <- runPostman logOff
 
     wsAccepted    <- newFlag
-    subs1         <- runSubscriberWSPost wsAccepted
-    $(subscribe [t|WSPost|]) postman subs1
-
     timesAccepted <- newFlag
-    subs2         <- runSubscriberTimes timesAccepted
-    $(subscribe [t|Times|]) postman subs2
+
+    subs1         <- runActor logOff $ do
+        math $ \WSPost -> liftFlag wsAccepted
+        math $ \Times  -> liftFlag timesAccepted
+
+    $(subscribe [t|WSPost|]) postman subs1
+    $(subscribe [t|Times|])  postman subs1
 
     postman `notify` Times
     postman `notify` WSPost
@@ -36,11 +38,20 @@ postmanExample = do
     wait wsAccepted
     wait timesAccepted
 
-runSubscriberWSPost :: Flag -> IO Actor
-runSubscriberWSPost flag = runActor logOff $
-    math $ \WSPost -> liftFlag flag
+postmanExample2 :: IO Bool
+postmanExample2 = do
+    postman <- runPostman logOff
+    res     <- newEmptyMVar
 
-runSubscriberTimes :: Flag -> IO Actor
-runSubscriberTimes flag = runActor logOff $
-    math $ \Times -> liftFlag flag
+    -- subscriber
+    subs    <- runActor logOff $ do
+        math (\WSPost -> putMVar res False :: IO ())
+        math (\Times  -> putMVar res True  :: IO ())
 
+    $(subscribe [t|WSPost|]) postman subs
+    $(subscribe [t|Times|])  postman subs
+    unsubscribe WSPost postman subs
+
+    postman `notify` WSPost
+    postman `notify` Times
+    readMVar res
