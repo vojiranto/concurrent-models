@@ -64,7 +64,7 @@ initActor :: Loger -> TextId -> TChan Event -> MVar Bool -> ActorL () -> IO Thre
 initActor logerAction actorId chan liveFlag handlerMap = forkIO $ do
     actor      <- Actor chan <$> myThreadId <*> pure actorId <*> pure liveFlag
     actRuntime <- newActorRuntime logerAction actor handlerMap
-    actorWorker actRuntime actor
+    actorWorker actRuntime actor `finally` setIsDead actor
 
 actorWorker :: ActorRuntimeData -> Actor -> IO ()
 actorWorker actRuntime actor = do
@@ -101,7 +101,8 @@ handlerNotExistMsg :: Text
 handlerNotExistMsg = "[error] handler does not exist, msg is droped."
 
 instance Typeable msg => Listener Actor msg where
-    notify actor message = atomically $ writeTChan (getChan actor) $ toEvent message
+    notify actor message = whenM (isLive actor) $
+        atomically $ writeTChan (getChan actor) $ toEvent message
 
 data StopActor = StopActor
 

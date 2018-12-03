@@ -56,8 +56,10 @@ import           Control.Concurrent.StateMachine.Domain                        a
 
 -- | Emit event to the FSN.
 instance Typeable msg => Listener StateMachine msg where
-    notify fsm = writeChan (getEventVar fsm) . D.FastEvent . D.toEvent
-    notifyAndWait fsm event = do
+    notify fsm event = whenM (isLive fsm) $
+        writeChan (getEventVar fsm) . D.FastEvent $ D.toEvent event
+    
+    notifyAndWait fsm event = whenM (isLive fsm) $ do
         processed <- newFlag
         writeChan (getEventVar fsm) $ D.WaitEvent (D.toEvent event) processed
         wait processed
@@ -88,7 +90,7 @@ initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
 initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
     loger <- addTagToLoger logerAction "[SM]" (getTextId fsmRef)
     eFsm  <- makeStateMachineData loger fsmRef machineDescriptione
-    either (printError loger) (startFsm fsmRef) eFsm
+    either (printError loger) (startFsm fsmRef) eFsm `finally` setIsDead fsmRef
 
 printError :: Show a => Loger -> a -> IO ()
 printError loger err = loger $ "[error] " <> show err

@@ -14,6 +14,7 @@ module Control.Concurrent.StateMachine.Language
     , takeState
     , getStateVar
     , getEventVar
+    , setIsDead
     , just
     , nothing
     , ifE
@@ -43,6 +44,9 @@ getStateVar (StateMachine _ stateVar _ _) = stateVar
 
 getEventVar :: StateMachine -> Chan PackagedEvent
 getEventVar (StateMachine eventVar _ _ _) = eventVar
+
+setIsDead :: StateMachine -> IO ()
+setIsDead (StateMachine _ _ _ liveFlag) = void $ swapMVar liveFlag False
 
 instance HaveTextId StateMachine where
     getTextId (StateMachine _ _ textId _) = textId 

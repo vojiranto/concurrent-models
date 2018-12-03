@@ -14,7 +14,7 @@ import           Control.Monad.Free
 import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
 import           Control.Concurrent hiding
-    (MVar, readMVar, putMVar, takeMVar, newMVar)
+    (MVar, readMVar, putMVar, takeMVar, newMVar, swapMVar)
 
 data Actor = Actor (TChan Event) ThreadId TextId (MVar Bool)
 
@@ -23,6 +23,9 @@ getChan (Actor chan _ _ _) = chan
 
 getTreadId :: Actor -> ThreadId
 getTreadId (Actor _ threadId _ _) = threadId
+
+setIsDead :: Actor -> IO ()
+setIsDead (Actor _ _ _ liveFlag) = void $ swapMVar liveFlag False
 
 instance HaveTextId Actor where
     getTextId (Actor _ _ textId _) = textId 
