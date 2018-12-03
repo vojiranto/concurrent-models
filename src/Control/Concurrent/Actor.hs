@@ -53,15 +53,16 @@ instance Role Actor where
     runRole logerAction handlerMap = do
         chan     <- atomically newTChan
         actorId  <- newTextId
-        threadId <- initActor logerAction actorId chan handlerMap 
-        pure $ Actor chan threadId actorId
+        liveFlag <- newMVar True
+        threadId <- initActor logerAction actorId chan liveFlag handlerMap 
+        pure $ Actor chan threadId actorId liveFlag
 
     stopRole actor = notify actor StopActor
-    killRole (Actor _ threadId _) = killThread threadId
+    killRole actor = killThread (getTreadId actor)
 
-initActor :: Loger -> TextId -> TChan Event -> ActorL () -> IO ThreadId
-initActor logerAction actorId chan handlerMap = forkIO $ do
-    actor      <- Actor chan <$> myThreadId <*> pure actorId
+initActor :: Loger -> TextId -> TChan Event -> MVar Bool -> ActorL () -> IO ThreadId
+initActor logerAction actorId chan liveFlag handlerMap = forkIO $ do
+    actor      <- Actor chan <$> myThreadId <*> pure actorId <*> pure liveFlag
     actRuntime <- newActorRuntime logerAction actor handlerMap
     actorWorker actRuntime actor
 
@@ -100,7 +101,7 @@ handlerNotExistMsg :: Text
 handlerNotExistMsg = "[error] handler does not exist, msg is droped."
 
 instance Typeable msg => Listener Actor msg where
-    notify (Actor chan _ _) message = atomically $ writeTChan chan $ toEvent message
+    notify actor message = atomically $ writeTChan (getChan actor) $ toEvent message
 
 data StopActor = StopActor
 

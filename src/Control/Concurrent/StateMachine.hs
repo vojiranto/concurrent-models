@@ -56,10 +56,10 @@ import           Control.Concurrent.StateMachine.Domain                        a
 
 -- | Emit event to the FSN.
 instance Typeable msg => Listener StateMachine msg where
-    notify (StateMachine eventVar _ _) = writeChan eventVar . D.FastEvent . D.toEvent
-    notifyAndWait (StateMachine eventVar _ _) event = do
+    notify fsm = writeChan (getEventVar fsm) . D.FastEvent . D.toEvent
+    notifyAndWait fsm event = do
         processed <- newFlag
-        writeChan eventVar $ D.WaitEvent (D.toEvent event) processed
+        writeChan (getEventVar fsm) $ D.WaitEvent (D.toEvent event) processed
         wait processed
 
 class Fsm fsm where
@@ -82,7 +82,7 @@ instance Fsm StateMachine where
 
 newFsmRef :: MachineState -> IO StateMachine
 newFsmRef initState =
-    StateMachine <$> newChan <*> newMVar initState <*> newTextId
+    StateMachine <$> newChan <*> newMVar initState <*> newTextId <*> newMVar True
 
 initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
 initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
@@ -123,7 +123,7 @@ stateAnalize stateMachineRef stateMachine = do
             forM_ stList (R.applyExitDo (machineData ^. R.loger) (machineData ^. R.handlers))
         else eventAnalize stateMachineRef stateMachine
 
-eventAnalize stateMachineRef fsmRef@(StateMachine events _ _) = do
+eventAnalize stateMachineRef fsmRef@(StateMachine events _ _ _) = do
     (event, processed) <- getMachineEvent =<< readChan events
 
     machineData        <- readIORef stateMachineRef
@@ -136,7 +136,6 @@ eventAnalize stateMachineRef fsmRef@(StateMachine events _ _) = do
     whenJust processed liftFlag
 
     stateAnalize stateMachineRef fsmRef
-
 
 applyStatic :: R.StateMaschineData -> Event -> IO ()
 applyStatic machineData event = do
@@ -159,6 +158,6 @@ showTransition st1 ev st2 =
     "[transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
 
 changeState :: IORef R.StateMaschineData -> StateMachine -> MachineState -> IO ()
-changeState stateMachineRef (StateMachine _ stateVar _) newState = do
-    void $ swapMVar stateVar newState
+changeState stateMachineRef fsm newState = do
+    void $ swapMVar (getStateVar fsm) newState
     modifyIORef stateMachineRef $ R.currentState .~ newState

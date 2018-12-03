@@ -5,13 +5,15 @@ module Control.Concurrent.StateMachine.Language
     , StateMachine(..)
     , Acception(..)
     , HaveTextId(..)
-    , this
+    , This(..)
     , groupStates
     , addFinalState
     , addTransition
     , addConditionalTransition
     , mathS
     , takeState
+    , getStateVar
+    , getEventVar
     , just
     , nothing
     , ifE
@@ -29,14 +31,21 @@ import           Data.This
 import           Control.Concurrent.Math
 import           Control.Concurrent.StateMachine.Domain
 
-data StateMachine = StateMachine (Chan PackagedEvent) (MVar MachineState) TextId
+data StateMachine =
+    StateMachine (Chan PackagedEvent) (MVar MachineState) TextId (MVar Bool)
 
 -- | Take current state of the FSN.
 takeState :: StateMachine -> IO MachineState
-takeState (StateMachine _ stateVar _) = readMVar stateVar
+takeState (StateMachine _ stateVar _ _) = readMVar stateVar
+
+getStateVar :: StateMachine -> MVar MachineState
+getStateVar (StateMachine _ stateVar _ _) = stateVar
+
+getEventVar :: StateMachine -> Chan PackagedEvent
+getEventVar (StateMachine eventVar _ _ _) = eventVar
 
 instance HaveTextId StateMachine where
-    getTextId (StateMachine _ _ textId) = textId 
+    getTextId (StateMachine _ _ textId _) = textId 
 
 data StateMachineF next where
     LiftIO                      :: IO a -> (a -> next) -> StateMachineF next
@@ -62,7 +71,8 @@ instance MonadIO StateMachineL where
 
 instance This StateMachineL StateMachine where
     -- | Return link of current FSM.
-    this = liftF $ This id
+    this   = liftF $ This id
+    isLive (StateMachine _ _ _ liveFlag) = readMVar liveFlag
 
 -- | Add new finsh state to FSM. 
 addFinalState :: Typeable state => state -> StateMachineL ()

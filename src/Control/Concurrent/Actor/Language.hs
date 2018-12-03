@@ -13,15 +13,22 @@ import           Language.Haskell.TH.MakeFunctor
 import           Control.Monad.Free
 import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.STM.TChan
-import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
+import           Control.Concurrent hiding
+    (MVar, readMVar, putMVar, takeMVar, newMVar)
 
-data Actor = Actor (TChan Event) ThreadId TextId
+data Actor = Actor (TChan Event) ThreadId TextId (MVar Bool)
+
+getChan :: Actor -> TChan Event
+getChan (Actor chan _ _ _) = chan
+
+getTreadId :: Actor -> ThreadId
+getTreadId (Actor _ threadId _ _) = threadId
 
 instance HaveTextId Actor where
-    getTextId (Actor _ _ textId) = textId 
+    getTextId (Actor _ _ textId _) = textId 
 
 recieveMessage :: Actor -> IO Event
-recieveMessage (Actor chan _ _) = atomically $ readTChan chan
+recieveMessage (Actor chan _ _ _) = atomically $ readTChan chan
 
 type HandlerMap = M.Map EventType (Event -> IO ())
 
@@ -39,6 +46,7 @@ instance MonadIO ActorL where
 instance This ActorL Actor where
     -- | Return link of current FSM.
     this = liftF $ This id
+    isLive (Actor _ _ _ liveFlag) = readMVar liveFlag
 
 instance Typeable a => Math (a -> IO ()) ActorL where
     math f = liftF $ Math (fromActionToMessageType f) (f . fromEventUnsafe) id
