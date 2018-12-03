@@ -1,4 +1,6 @@
 {-# Language FlexibleContexts #-}
+{-# Language TemplateHaskell  #-}
+{-# Language QuasiQuotes      #-}
 module Actor.Postman where
 
 import           Universum
@@ -16,17 +18,19 @@ runPostman loger = runActor loger $ do
     math $ \Times  -> multicast subscribers Times
     math $ \WSPost -> multicast subscribers WSPost
 
-postmanExample :: IO ()
-postmanExample = do
-    postman       <- runPostman logToConsole
+postmanExample1 :: IO ()
+postmanExample1 = do
+    postman       <- runPostman logOff
 
     wsAccepted    <- newFlag
-    subs1         <- runSubscriberWSPost wsAccepted
-    postman `notify` makeNotify subs1 (\(msg :: WSPost) -> notify subs1 msg)
-
     timesAccepted <- newFlag
-    subs2         <- runSubscriberTimes timesAccepted
-    postman `notify` makeNotify subs2 (\(msg :: Times) -> notify subs2 msg) 
+
+    subs1         <- runActor logOff $ do
+        math $ \WSPost -> liftFlag wsAccepted
+        math $ \Times  -> liftFlag timesAccepted
+
+    $(subscribe [t|WSPost|]) postman subs1
+    $(subscribe [t|Times|])  postman subs1
 
     postman `notify` Times
     postman `notify` WSPost
@@ -34,10 +38,20 @@ postmanExample = do
     wait wsAccepted
     wait timesAccepted
 
-runSubscriberWSPost :: Flag -> IO Actor
-runSubscriberWSPost flag = runActor logOff $
-    math $ \WSPost -> liftFlag flag
+postmanExample2 :: IO Bool
+postmanExample2 = do
+    postman <- runPostman logOff
+    res     <- newEmptyMVar
 
-runSubscriberTimes :: Flag -> IO Actor
-runSubscriberTimes flag = runActor logOff $
-    math $ \Times -> liftFlag flag
+    -- subscriber
+    subs    <- runActor logOff $ do
+        math (\WSPost -> putMVar res False :: IO ())
+        math (\Times  -> putMVar res True  :: IO ())
+
+    $(subscribe [t|WSPost|]) postman subs
+    $(subscribe [t|Times|])  postman subs
+    unsubscribe WSPost postman subs
+
+    postman `notify` WSPost
+    postman `notify` Times
+    readMVar res
