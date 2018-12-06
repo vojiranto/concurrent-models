@@ -22,11 +22,8 @@ module Control.Concurrent.StateMachine.Language
     , (>?>)
     ) where
 
-import           Universum
+import           Control.Concurrent.Prelude
 import           Language.Haskell.TH.MakeFunctor
-import           Control.Concurrent.Chan
-import           Control.Monad.Free
-
 import           Control.Concurrent.Core
 import           Control.Concurrent.StateMachine.Domain
 

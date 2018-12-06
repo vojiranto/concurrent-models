@@ -1,6 +1,6 @@
 module Control.Concurrent.Core.Interface.Listener where
 
-import           Universum
+import           Control.Concurrent.Prelude
 import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
 

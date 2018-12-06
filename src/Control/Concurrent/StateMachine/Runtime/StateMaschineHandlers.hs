@@ -3,10 +3,7 @@
 
 module Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers where
 
-import           Universum
-import           Control.Lens.At (at, Index, IxValue, At)
-import           Control.Lens.Getter (Getting)
-import           Control.Lens.TH
+import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 
 import           Control.Concurrent.StateMachine.Domain

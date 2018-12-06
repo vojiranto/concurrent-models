@@ -1,7 +1,7 @@
 module Control.Concurrent.Service.Subscription.Domain where
 
-import           Universum 
-import           Data.Dynamic
+
+import           Control.Concurrent.Prelude
 import qualified Data.Map                                                   as M
 import           Control.Concurrent.Core.Data
 

@@ -21,10 +21,7 @@ module Control.Concurrent.Actor
     , makeAct
     ) where
 
-import           Universum
-import           Control.Lens.At (at)
-import           Control.Concurrent.STM.TChan
-import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
+import           Control.Concurrent.Prelude
 
 import           Control.Concurrent.Core
 import           Control.Concurrent.Loger

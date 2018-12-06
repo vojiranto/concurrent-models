@@ -2,7 +2,7 @@
 {-# LAnguage FunctionalDependencies #-}
 module Control.Concurrent.Core.Interface.This where
 
-import           Universum
+import           Control.Concurrent.Prelude
 
 class This m f | f -> m, m -> f where
     this   :: m f

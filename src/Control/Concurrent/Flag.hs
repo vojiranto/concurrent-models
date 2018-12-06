@@ -1,6 +1,6 @@
 module Control.Concurrent.Flag (Flag, newFlag, liftFlag, wait) where
 
-import           Universum
+import           Control.Concurrent.Prelude
 
 -- | One-time flag, for fixing the fact that an event has occurred.
 newtype Flag = Flag (MVar ())

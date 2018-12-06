@@ -3,13 +3,11 @@
 
 module Control.Concurrent.StateMachine.Interpreter (makeStateMachineData) where
 
-import           Universum
+import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import qualified Data.Set as S
-import           Control.Lens.Getter (to)
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Core.Data
-import           Control.Monad.Free
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Runtime                       as R
 import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R

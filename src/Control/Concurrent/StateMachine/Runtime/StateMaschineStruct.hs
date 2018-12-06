@@ -3,9 +3,7 @@
 
 module Control.Concurrent.StateMachine.Runtime.StateMaschineStruct where
 
-import           Universum
-import           Control.Lens.At (at)
-import           Control.Lens.TH
+import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import qualified Data.Set as S
 

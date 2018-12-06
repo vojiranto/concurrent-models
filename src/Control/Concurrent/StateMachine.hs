@@ -35,9 +35,7 @@ module Control.Concurrent.StateMachine
     , makeFsm
     ) where
 
-import           Universum
-import           Control.Concurrent (forkIO)
-import           Control.Concurrent.Chan
+import           Control.Concurrent.Prelude
 
 import           Control.Concurrent.Flag
 import           Control.Concurrent.Loger

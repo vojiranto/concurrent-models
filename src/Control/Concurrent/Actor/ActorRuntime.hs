@@ -1,9 +1,9 @@
 {-# Language TemplateHaskell #-}
 module Control.Concurrent.Actor.ActorRuntime where
 
-import           Universum
+import           Control.Concurrent.Prelude
+
 import           Control.Concurrent.Core.Data.TextId
-import           Control.Lens.TH
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Interpreter 

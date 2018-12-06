@@ -12,7 +12,8 @@ module Control.Concurrent.Service.Subscription
     , multicast
     ) where
 
-import           Universum hiding (Type)
+
+import           Control.Concurrent.Prelude hiding (Type)
 import           Control.Concurrent.Core
 import           Control.Concurrent.Loger
 import           Language.Haskell.TH

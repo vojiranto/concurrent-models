@@ -2,10 +2,7 @@
 {-# Language FlexibleInstances     #-}
 module Control.Concurrent.StateMachine.Domain where
 
-import           Universum hiding (head)
-import           Universum.Unsafe
-import           Data.Typeable
-
+import           Control.Concurrent.Prelude
 import           Control.Concurrent.Flag
 import           Control.Concurrent.Core.Data
 

@@ -3,8 +3,7 @@
 
 module Control.Concurrent.StateMachine.Runtime where
 
-import           Universum
-import           Control.Lens.TH
+import           Control.Concurrent.Prelude
 import qualified Data.Set as S
 
 import           Control.Concurrent.Core.Data.Event
