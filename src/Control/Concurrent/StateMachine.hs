@@ -44,8 +44,6 @@ import           Control.Concurrent.StateMachine.TH
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Interpreter                   as I
 import qualified Control.Concurrent.StateMachine.Runtime                       as R
-import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as R
-import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R 
 import           Control.Concurrent.StateMachine.Domain                        as D
 
 -- | Emit event to the FSN.
@@ -125,7 +123,7 @@ eventAnalize stateMachineRef fsmRef@(StateMachine events _ _ _) = do
     machineData        <- readIORef stateMachineRef
     machineData ^. R.loger $ describe event
     applyStatic machineData event
-    applyMath (machineData ^. R.loger) (machineData ^. R.handlers) event
+    R.applyMath (machineData ^. R.loger) (machineData ^. R.handlers) event
     whenJustM (R.takeTransition event machineData)
         (applyTransition stateMachineRef event fsmRef)
 

@@ -10,8 +10,6 @@ import           Control.Concurrent.Loger
 import           Control.Concurrent.Core.Data
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Runtime                       as R
-import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R
-import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as R
 import           Control.Concurrent.StateMachine.Domain                        as D
 
 data BuildingError = BuildingError deriving Show
