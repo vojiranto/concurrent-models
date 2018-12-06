@@ -4,7 +4,7 @@ module StateMachine.AppleGirl where
 import           Universum
 import           Control.Concurrent.Loger
 import           Control.Concurrent.StateMachine
-import           Data.Flag
+import           Control.Concurrent.Flag
 
 makeEvents ["Apple"]
 makeStates ["Hungry", "WellFed"]

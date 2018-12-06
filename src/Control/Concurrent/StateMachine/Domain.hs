@@ -4,11 +4,10 @@ module Control.Concurrent.StateMachine.Domain where
 
 import           Universum hiding (head)
 import           Universum.Unsafe
-
 import           Data.Typeable
-import           Data.Describe
-import           Data.Flag
-import           Data.Event
+
+import           Control.Concurrent.Flag
+import           Control.Concurrent.Core.Data
 
 data Transition = Transition MachineState MachineState
 data PackagedEvent = FastEvent Event | WaitEvent Event Flag

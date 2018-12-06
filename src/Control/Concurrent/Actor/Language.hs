@@ -5,10 +5,10 @@
 module Control.Concurrent.Actor.Language where
 
 import           Universum
-import           Data.This
 import qualified Data.Map as M
-import           Data.TextId
-import           Control.Concurrent.Math
+import           Control.Concurrent.Core.Data.TextId
+import           Control.Concurrent.Core.Interface.This
+import           Control.Concurrent.Core.Interface.Math
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Monad.Free
 import           Control.Concurrent.Actor.Message

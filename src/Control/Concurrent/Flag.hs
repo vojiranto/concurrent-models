@@ -1,4 +1,4 @@
-module Data.Flag (Flag, newFlag, liftFlag, wait) where
+module Control.Concurrent.Flag (Flag, newFlag, liftFlag, wait) where
 
 import           Universum
 

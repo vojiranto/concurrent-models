@@ -13,8 +13,8 @@ module Control.Concurrent.Service.Subscription
     ) where
 
 import           Universum hiding (Type)
+import           Control.Concurrent.Core
 import           Control.Concurrent.Loger
-import           Control.Concurrent.Actor
 import           Language.Haskell.TH
 import           Control.Concurrent.Service.Subscription.Domain
 

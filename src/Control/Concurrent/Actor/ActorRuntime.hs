@@ -2,7 +2,7 @@
 module Control.Concurrent.Actor.ActorRuntime where
 
 import           Universum
-import           Data.TextId
+import           Control.Concurrent.Core.Data.TextId
 import           Control.Lens.TH
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.Language

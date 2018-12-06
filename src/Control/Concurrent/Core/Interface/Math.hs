@@ -1,4 +1,4 @@
-module Control.Concurrent.Math where
+module Control.Concurrent.Core.Interface.Math where
 
 class Math func language where
     -- | Add handler for message wich known type.

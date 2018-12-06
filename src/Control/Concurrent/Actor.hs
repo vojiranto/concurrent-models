@@ -22,20 +22,16 @@ module Control.Concurrent.Actor
     ) where
 
 import           Universum
-import           Data.This
-import           Data.Event
-import           Data.Describe
-import           Data.TextId
 import           Control.Lens.At (at)
-import           Control.Concurrent.Math
-import           Control.Concurrent.Listener
+import           Control.Concurrent.STM.TChan
+import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
+
+import           Control.Concurrent.Core
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.ActorRuntime 
 import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.Actor.TH
-import           Control.Concurrent.STM.TChan
-import           Control.Concurrent hiding (MVar, putMVar, takeMVar, newMVar)
 
 class Role actor where
     -- | Build and run new actor.

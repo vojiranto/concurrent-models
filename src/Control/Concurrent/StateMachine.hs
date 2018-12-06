@@ -36,16 +36,12 @@ module Control.Concurrent.StateMachine
     ) where
 
 import           Universum
-import           Data.Flag
-import           Data.Event                                                    as D
-import           Data.Describe
-import           Data.TextId
-import           Data.This
-import           Control.Concurrent.Loger
 import           Control.Concurrent (forkIO)
 import           Control.Concurrent.Chan
-import           Control.Concurrent.Math
-import           Control.Concurrent.Listener
+
+import           Control.Concurrent.Flag
+import           Control.Concurrent.Loger
+import           Control.Concurrent.Core
 import           Control.Concurrent.StateMachine.TH
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Interpreter                   as I
@@ -57,11 +53,11 @@ import           Control.Concurrent.StateMachine.Domain                        a
 -- | Emit event to the FSN.
 instance Typeable msg => Listener StateMachine msg where
     notify fsm event = whenM (isLive fsm) $
-        writeChan (getEventVar fsm) . D.FastEvent $ D.toEvent event
+        writeChan (getEventVar fsm) . D.FastEvent $ toEvent event
     
     notifyAndWait fsm event = whenM (isLive fsm) $ do
         processed <- newFlag
-        writeChan (getEventVar fsm) $ D.WaitEvent (D.toEvent event) processed
+        writeChan (getEventVar fsm) $ D.WaitEvent (toEvent event) processed
         wait processed
 
 class Fsm fsm where

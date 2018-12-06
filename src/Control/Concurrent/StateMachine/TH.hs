@@ -7,7 +7,7 @@ module Control.Concurrent.StateMachine.TH
     ) where
 
 import           Universum
-import           Control.Concurrent.Listener
+import           Control.Concurrent.Core.Interface.Listener
 import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
 

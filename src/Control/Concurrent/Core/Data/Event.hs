@@ -1,11 +1,11 @@
-module Data.Event where
+module Control.Concurrent.Core.Data.Event where
 
 import           Universum hiding (head)
 import           Universum.Unsafe
 
 import           Data.Typeable
 import           Data.Dynamic
-import           Data.Describe
+import           Control.Concurrent.Core.Data.Describe
 
 newtype Event        = Event        Dynamic
 newtype EventType    = EventType    TypeRep deriving (Eq, Ord)

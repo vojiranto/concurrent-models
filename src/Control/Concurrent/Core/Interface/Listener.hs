@@ -1,4 +1,4 @@
-module Control.Concurrent.Listener where
+module Control.Concurrent.Core.Interface.Listener where
 
 import           Universum
 import           Language.Haskell.TH.Extra 

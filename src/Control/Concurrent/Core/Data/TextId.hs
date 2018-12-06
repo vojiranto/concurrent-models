@@ -1,4 +1,4 @@
-module Data.TextId
+module Control.Concurrent.Core.Data.TextId
     ( TextId
     , HaveTextId(..)
     , Describe(..)
@@ -7,7 +7,7 @@ module Data.TextId
 
 import           Universum hiding (ToText(..))
 import           Data.Hashable
-import           Data.Describe
+import           Control.Concurrent.Core.Data.Describe
 import           Data.Base58String.Bitcoin
 import           Control.Concurrent.Unique
 

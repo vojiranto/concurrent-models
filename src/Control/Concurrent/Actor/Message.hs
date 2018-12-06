@@ -14,7 +14,7 @@ module Control.Concurrent.Actor.Message
 import           Universum hiding (head)
 import           Universum.Unsafe
 import           Data.Typeable
-import           Data.Event
+import           Control.Concurrent.Core.Data.Event
 
 data    Otherwise    = Otherwise 
 

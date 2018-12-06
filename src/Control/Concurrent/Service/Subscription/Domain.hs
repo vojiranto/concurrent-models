@@ -3,8 +3,7 @@ module Control.Concurrent.Service.Subscription.Domain where
 import           Universum 
 import           Data.Dynamic
 import qualified Data.Map                                                   as M
-import           Data.Event
-import           Data.TextId
+import           Control.Concurrent.Core.Data
 
 newtype Notify = Notify Dynamic
 

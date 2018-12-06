@@ -4,14 +4,16 @@
 module Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers where
 
 import           Universum
-import           Data.Describe
-import           Data.Event
-import           Control.Concurrent.Loger
 import           Control.Lens.At (at, Index, IxValue, At)
 import           Control.Lens.Getter (Getting)
 import           Control.Lens.TH
-import           Control.Concurrent.StateMachine.Domain
 import qualified Data.Map as M
+
+import           Control.Concurrent.StateMachine.Domain
+import           Control.Concurrent.Core.Data
+import           Control.Concurrent.Loger
+
+
 
 data StateMaschineHandlers = StateMaschineHandlers
     { _staticalDo               :: M.Map (MachineState, EventType) (Event -> IO ())

@@ -26,10 +26,8 @@ import           Universum
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Concurrent.Chan
 import           Control.Monad.Free
-import           Data.TextId
-import           Data.Event
-import           Data.This
-import           Control.Concurrent.Math
+
+import           Control.Concurrent.Core
 import           Control.Concurrent.StateMachine.Domain
 
 data StateMachine =

@@ -60,7 +60,7 @@ library:
     - Control.Concurrent.Actor
     - Control.Concurrent.Service.Subscription
     - Control.Concurrent.Loger
-    - Data.Flag
+    - Control.Concurrent.Flag
   ghc-options:
   - -Wall
   - -Werror

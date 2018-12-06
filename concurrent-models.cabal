@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 09281913eb1c92d9ee4c19d4cd9bc3f4fe65f238820e0d7e89d2c8b149fb4939
+-- hash: 9b7dbe4ff07e89a482c1b2fa471597c2ea7f81325ada81c3b7180117ea2b42d6
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -31,15 +31,22 @@ library
       Control.Concurrent.Actor
       Control.Concurrent.Service.Subscription
       Control.Concurrent.Loger
-      Data.Flag
+      Control.Concurrent.Flag
   other-modules:
       Control.Concurrent.Actor.ActorRuntime
       Control.Concurrent.Actor.Interpreter
       Control.Concurrent.Actor.Language
       Control.Concurrent.Actor.Message
       Control.Concurrent.Actor.TH
-      Control.Concurrent.Listener
-      Control.Concurrent.Math
+      Control.Concurrent.Core
+      Control.Concurrent.Core.Data
+      Control.Concurrent.Core.Data.Describe
+      Control.Concurrent.Core.Data.Event
+      Control.Concurrent.Core.Data.TextId
+      Control.Concurrent.Core.Interface
+      Control.Concurrent.Core.Interface.Listener
+      Control.Concurrent.Core.Interface.Math
+      Control.Concurrent.Core.Interface.This
       Control.Concurrent.Service.Subscription.Domain
       Control.Concurrent.StateMachine.Domain
       Control.Concurrent.StateMachine.Interpreter
@@ -48,10 +55,6 @@ library
       Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers
       Control.Concurrent.StateMachine.Runtime.StateMaschineStruct
       Control.Concurrent.StateMachine.TH
-      Data.Describe
-      Data.Event
-      Data.TextId
-      Data.This
       Language.Haskell.TH.Extra
       Language.Haskell.TH.MakeFunctor
       Paths_concurrent_models

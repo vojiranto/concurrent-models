@@ -1,6 +1,6 @@
 {-# Language MultiParamTypeClasses  #-}
 {-# LAnguage FunctionalDependencies #-}
-module Data.This where
+module Control.Concurrent.Core.Interface.This where
 
 import           Universum
 
