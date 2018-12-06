@@ -3,7 +3,7 @@ module Control.Concurrent.Service.Subscription.Domain where
 
 import           Control.Concurrent.Prelude
 import qualified Data.Map                                                   as M
-import           Control.Concurrent.Core.Data
+import           Control.Concurrent.Model.Data
 
 newtype Notify = Notify Dynamic
 

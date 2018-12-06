@@ -1,6 +1,7 @@
 module StateMachine.TrafficLight where
 
 import           Universum
+import           Control.Concurrent.Model
 import           Control.Concurrent.Loger
 import           Control.Concurrent.StateMachine
 

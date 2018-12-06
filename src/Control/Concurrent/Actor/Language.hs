@@ -12,7 +12,7 @@ import           Control.Concurrent hiding
     (MVar, readMVar, putMVar, takeMVar, newMVar, swapMVar)
 
 import           Language.Haskell.TH.MakeFunctor
-import           Control.Concurrent.Core
+import           Control.Concurrent.Model
 import           Control.Concurrent.Actor.Message
 
 data Actor = Actor (TChan Event) ThreadId TextId (MVar Bool)

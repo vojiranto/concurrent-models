@@ -7,7 +7,7 @@ module Control.Concurrent.StateMachine.TH
     ) where
 
 import           Control.Concurrent.Prelude
-import           Control.Concurrent.Core.Interface.Listener
+import           Control.Concurrent.Model.Interface.Listener
 import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
 

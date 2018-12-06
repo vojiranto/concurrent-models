@@ -5,12 +5,7 @@ module Control.Concurrent.StateMachine
       StateMachine
     , StateMachineL
     , MachineState
-    , HaveTextId(..)
-    , Describe(..)
-    , Math(..)
     , Fsm (..)
-    , TextId
-    , This(..)
     , runStateMachine
     -- * Making of FSM struct
     , addFinalState
@@ -27,8 +22,6 @@ module Control.Concurrent.StateMachine
     -- * Addition of handlers
     , L.mathS
     , Acception (..)
-    -- * Communication with working FSN
-    , Listener (..)
     -- * Templates
     , makeStates
     , makeEvents
@@ -39,7 +32,7 @@ import           Control.Concurrent.Prelude
 
 import           Control.Concurrent.Flag
 import           Control.Concurrent.Loger
-import           Control.Concurrent.Core
+import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.TH
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Interpreter                   as I

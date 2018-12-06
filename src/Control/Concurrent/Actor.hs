@@ -5,25 +5,14 @@ module Control.Concurrent.Actor
     , ActorL
     , Role(..)
     , Math(..)
-    , HaveTextId(..)
-    , Describe(..)
-    , This(..)
-    , TextId
     , runActor
-    , Listener (..)
     , otherwiseMath
-    , EventType
-    , toEvent
-    , fromEvent
-    , ToType(..)
-    , actionToType
-    , rawDataToType
     , makeAct
     ) where
 
 import           Control.Concurrent.Prelude
 
-import           Control.Concurrent.Core
+import           Control.Concurrent.Model
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.ActorRuntime 
 import           Control.Concurrent.Actor.Language

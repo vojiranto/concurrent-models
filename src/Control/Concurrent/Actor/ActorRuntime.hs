@@ -3,7 +3,7 @@ module Control.Concurrent.Actor.ActorRuntime where
 
 import           Control.Concurrent.Prelude
 
-import           Control.Concurrent.Core.Data.TextId
+import           Control.Concurrent.Model.Data.TextId
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Interpreter 

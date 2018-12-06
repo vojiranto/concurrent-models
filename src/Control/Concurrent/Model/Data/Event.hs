@@ -1,7 +1,7 @@
-module Control.Concurrent.Core.Data.Event where
+module Control.Concurrent.Model.Data.Event where
 
 import           Control.Concurrent.Prelude
-import           Control.Concurrent.Core.Data.Describe
+import           Control.Concurrent.Model.Data.Describe
 
 newtype Event        = Event        Dynamic
 newtype EventType    = EventType    TypeRep deriving (Eq, Ord)

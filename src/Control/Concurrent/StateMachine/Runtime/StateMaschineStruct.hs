@@ -7,7 +7,7 @@ import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import qualified Data.Set as S
 
-import           Control.Concurrent.Core.Data
+import           Control.Concurrent.Model.Data
 import           Control.Concurrent.Loger
 import           Control.Concurrent.StateMachine.Domain
 

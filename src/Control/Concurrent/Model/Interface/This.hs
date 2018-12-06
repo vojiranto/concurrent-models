@@ -1,6 +1,6 @@
 {-# Language MultiParamTypeClasses  #-}
 {-# LAnguage FunctionalDependencies #-}
-module Control.Concurrent.Core.Interface.This where
+module Control.Concurrent.Model.Interface.This where
 
 import           Control.Concurrent.Prelude
 

@@ -4,7 +4,7 @@ module Control.Concurrent.StateMachine.Domain where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Core.Data
+import           Control.Concurrent.Model.Data
 
 data Transition = Transition MachineState MachineState
 data PackagedEvent = FastEvent Event | WaitEvent Event Flag

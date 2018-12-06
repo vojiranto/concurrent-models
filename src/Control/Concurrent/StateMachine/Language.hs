@@ -24,7 +24,7 @@ module Control.Concurrent.StateMachine.Language
 
 import           Control.Concurrent.Prelude
 import           Language.Haskell.TH.MakeFunctor
-import           Control.Concurrent.Core
+import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.Domain
 
 data StateMachine =
