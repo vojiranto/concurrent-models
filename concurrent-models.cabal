@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 907b1882bff876fbf41948439451ee6d890a0e3db52417d3169b2207cb3e7377
+-- hash: 001b8c95ffb44d3d9022fbbbab3e1ddb60be1fa5a6095b3798a3c7d9c2919600
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -31,7 +31,6 @@ library
       Control.Concurrent.StateMachine
       Control.Concurrent.Actor
       Control.Concurrent.Service.Subscription
-      Control.Concurrent.Loger
       Control.Concurrent.Flag
   other-modules:
       Control.Concurrent.Actor.ActorRuntime
@@ -45,6 +44,7 @@ library
       Control.Concurrent.Model.Data.TextId
       Control.Concurrent.Model.Interface
       Control.Concurrent.Model.Interface.Listener
+      Control.Concurrent.Model.Interface.Loger
       Control.Concurrent.Model.Interface.Math
       Control.Concurrent.Model.Interface.This
       Control.Concurrent.Prelude
@@ -81,9 +81,11 @@ library
 executable example
   main-is: Main.hs
   other-modules:
+      Actor
       Actor.PingPong
       Actor.Postman
       Actor.TypeSafe
+      StateMachine
       StateMachine.AppleGirl
       StateMachine.Door
       StateMachine.Grouping
@@ -115,9 +117,11 @@ test-suite Actor-test
   main-is: Spec.hs
   other-modules:
       Test.Hspec.Extra
+      Actor
       Actor.PingPong
       Actor.Postman
       Actor.TypeSafe
+      StateMachine
       StateMachine.AppleGirl
       StateMachine.Door
       StateMachine.Grouping

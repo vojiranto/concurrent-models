@@ -12,7 +12,6 @@ module Control.Concurrent.Actor
 import           Control.Concurrent.Prelude
 
 import           Control.Concurrent.Model
-import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.ActorRuntime 
 import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Message

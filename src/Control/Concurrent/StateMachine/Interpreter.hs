@@ -6,8 +6,7 @@ module Control.Concurrent.StateMachine.Interpreter (makeStateMachineData) where
 import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import qualified Data.Set as S
-import           Control.Concurrent.Loger
-import           Control.Concurrent.Model.Data
+import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Runtime                       as R
 import           Control.Concurrent.StateMachine.Domain                        as D

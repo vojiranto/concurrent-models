@@ -6,14 +6,10 @@ import           Test.Hspec.Extra
 
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Loger
 import           Control.Concurrent.StateMachine
 
-import           StateMachine.Sequential
-import           StateMachine.Grouping
-import           StateMachine.AppleGirl
-import           Actor.PingPong
-import           Actor.Postman
+import           StateMachine
+import           Actor
 
 makeStates ["On", "Off", "AnyState"]
 makeEvents ["TakeOn"]

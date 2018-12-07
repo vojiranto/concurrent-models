@@ -7,8 +7,7 @@ import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 
 import           Control.Concurrent.StateMachine.Domain
-import           Control.Concurrent.Model.Data
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Model
 
 data StateMaschineHandlers = StateMaschineHandlers
     { _staticalDo               :: M.Map (MachineState, EventType) (Event -> IO ())

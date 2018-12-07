@@ -2,10 +2,9 @@ module Control.Concurrent.Actor.Interpreter where
 
 import           Control.Concurrent.Prelude
 import qualified Data.Map as M
-import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Message
-import           Control.Concurrent.Model.Data.Describe
+import           Control.Concurrent.Model
 
 interpretActorL :: Loger -> Actor -> IORef HandlerMap -> ActorF a -> IO a
 interpretActorL loger _ m (Math messageType handler next) = do

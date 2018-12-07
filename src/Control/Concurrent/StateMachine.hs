@@ -31,7 +31,6 @@ module Control.Concurrent.StateMachine
 import           Control.Concurrent.Prelude
 
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Loger
 import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.TH
 import           Control.Concurrent.StateMachine.Language                      as L

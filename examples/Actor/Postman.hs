@@ -6,7 +6,6 @@ module Actor.Postman where
 import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag        -- To report about successful completion.
-import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor
 import           Control.Concurrent.Service.Subscription 
 
@@ -26,7 +25,7 @@ postmanExample1 = do
     wsAccepted    <- newFlag
     timesAccepted <- newFlag
 
-    subs1         <- runActor logToConsole $ do
+    subs1         <- runActor logOff $ do
         math $ \WSPost -> liftFlag wsAccepted
         math $ \Times  -> liftFlag timesAccepted
 

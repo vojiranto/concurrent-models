@@ -1,4 +1,4 @@
-module Control.Concurrent.Loger where
+module Control.Concurrent.Model.Interface.Loger where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model.Data.TextId
