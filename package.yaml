@@ -61,6 +61,7 @@ library:
     - Control.Concurrent.Actor
     - Control.Concurrent.Service.Subscription
     - Control.Concurrent.Flag
+    - Control.Concurrent.Loger
   ghc-options:
   - -Wall
   - -Werror

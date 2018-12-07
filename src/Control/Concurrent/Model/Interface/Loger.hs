@@ -5,21 +5,13 @@ import           Control.Concurrent.Model.Data.TextId
 
 -- https://stackoverflow.com/a/2031209
 data LogLevel = Trace | Debug | Info | Warn | Error | Fatal
-    deriving (Eq, Enum, Show)
+    deriving (Eq, Ord, Enum, Show)
 
 type Loger = LogLevel -> Text -> IO ()
 
 class Monad m => Logers m where
     toLog    :: LogLevel -> Text -> m ()
     getLoger :: m Loger 
-
--- | Alias for putTextLn.
-logToConsole :: Loger
-logToConsole logLevel msg = putTextLn $ "[" <> show logLevel <> "] " <> msg
-
--- | Alias for (\\_ -> pure ()).
-logOff :: Loger
-logOff _ _ = pure ()
 
 addTagToLoger :: Loger -> Text -> TextId -> IO Loger
 addTagToLoger logerAction tag textId =

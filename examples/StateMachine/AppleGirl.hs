@@ -5,6 +5,7 @@ import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine
 import           Control.Concurrent.Flag
+import           Control.Concurrent.Loger
 
 makeEvents ["Apple"]
 makeStates ["Hungry", "WellFed"]

@@ -2,6 +2,7 @@ module StateMachine.Grouping where
 
 import           Universum
 import           Control.Concurrent.Model
+import           Control.Concurrent.Loger
 import           Control.Concurrent.StateMachine
 import           Control.Concurrent.Flag
 
