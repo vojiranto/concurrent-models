@@ -14,13 +14,13 @@ data WSPost = WSPost
 
 runPostman :: Loger -> IO Actor
 runPostman loger = runActor loger $ do
-    subscribers <- subscriptioService loger
+    subscribers <- subscriptioService
     math $ \Times  -> multicast subscribers Times
     math $ \WSPost -> multicast subscribers WSPost
 
 postmanExample1 :: IO ()
 postmanExample1 = do
-    postman       <- runPostman logOff
+    postman       <- runPostman logToConsole
 
     wsAccepted    <- newFlag
     timesAccepted <- newFlag

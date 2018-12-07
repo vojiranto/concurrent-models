@@ -9,6 +9,10 @@ data LogLevel = Trace | Debug | Info | Warn | Error | Fatal
 
 type Loger = LogLevel -> Text -> IO ()
 
+class Monad m => Logers m where
+    toLog    :: LogLevel -> Text -> m ()
+    getLoger :: m Loger 
+
 -- | Alias for putTextLn.
 logToConsole :: Loger
 logToConsole logLevel msg = putTextLn $ "[" <> show logLevel <> "] " <> msg

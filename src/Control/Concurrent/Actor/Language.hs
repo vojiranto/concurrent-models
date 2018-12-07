@@ -34,9 +34,15 @@ data ActorF next where
     Math    :: EventType -> (Event -> IO ()) -> (() -> next) -> ActorF next
     This    :: (Actor -> next) -> ActorF next
     LiftIO  :: IO a -> (a -> next) -> ActorF next
+    ToLog   :: LogLevel -> Text -> (() -> next) ->  ActorF next
+    GetLoger :: (Loger -> next) ->  ActorF next
 makeFunctorInstance ''ActorF
 
 type ActorL = Free ActorF
+
+instance Logers ActorL where
+    toLog logLevel txt = liftF $ ToLog logLevel txt id
+    getLoger = liftF $ GetLoger id
 
 instance MonadIO ActorL where
     liftIO action = liftF $ LiftIO action id

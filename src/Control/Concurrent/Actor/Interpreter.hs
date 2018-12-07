@@ -11,8 +11,16 @@ interpretActorL loger _ m (Math messageType handler next) = do
     loger Trace $ "[add handler] " <> describe messageType
     next <$> modifyIORef m (M.insert messageType (toSafe loger messageType handler))
 
+interpretActorL loger _ _ (GetLoger next) = do
+    loger Trace "[get loger]"
+    pure $ next loger
+
+interpretActorL loger _ _ (ToLog logLevel text next) = do
+    loger logLevel text
+    pure $ next ()
+    
 interpretActorL loger link _ (This next) = do
-    loger Trace "[get this *] "
+    loger Trace "[get this *]"
     pure $ next link
 
 interpretActorL loger _ _ (LiftIO action next) = do

@@ -49,6 +49,8 @@ instance HaveTextId StateMachine where
 data StateMachineF next where
     LiftIO                      :: IO a -> (a -> next) -> StateMachineF next
     This                        :: (StateMachine -> next) -> StateMachineF next
+    ToLog                       :: LogLevel -> Text -> (() -> next) -> StateMachineF next
+    GetLoger                    :: (Loger -> next) ->  StateMachineF next
     -- Construction of state mashine struct
     GroupStates                 :: MachineState -> [MachineState] -> (() -> next) -> StateMachineF next
     AddFinalState               :: MachineState -> (() -> next) -> StateMachineF next
@@ -72,6 +74,10 @@ instance This StateMachineL StateMachine where
     -- | Return link of current FSM.
     this   = liftF $ This id
     isLive (StateMachine _ _ _ liveFlag) = readMVar liveFlag
+
+instance Logers StateMachineL where
+    toLog logLevel txt = liftF $ ToLog logLevel txt id
+    getLoger = liftF $ GetLoger id
 
 -- | Add new finsh state to FSM. 
 addFinalState :: Typeable state => state -> StateMachineL ()
