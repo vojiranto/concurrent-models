@@ -1,9 +1,8 @@
 module Control.Concurrent.Actor.Interpreter where
 
-import           Universum
+import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import           Control.Concurrent.Loger
-import           Control.Monad.Free
 import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Message
 import           Control.Concurrent.Model.Data.Describe

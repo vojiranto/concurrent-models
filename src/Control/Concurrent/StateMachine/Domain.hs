@@ -30,7 +30,7 @@ toMachineState :: Typeable a => a -> MachineState
 toMachineState = MachineState . typeOf
 
 conditionToType :: Typeable a => (a -> IO (Maybe MachineState)) -> EventType
-conditionToType action = EventType (head . snd . splitTyConApp . typeOf $ action)
+conditionToType action = eventType (head . snd . splitTyConApp . typeOf $ action)
 
 instance Describe MachineState where
     describe (MachineState a) = "[state " <> show a <> "]"

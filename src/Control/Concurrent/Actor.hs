@@ -4,7 +4,6 @@ module Control.Concurrent.Actor
     ( Actor
     , ActorL
     , Role(..)
-    , Math(..)
     , runActor
     , otherwiseMath
     , makeAct

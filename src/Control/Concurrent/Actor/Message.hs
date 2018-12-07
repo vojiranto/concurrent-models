@@ -11,9 +11,7 @@ module Control.Concurrent.Actor.Message
     , fromActionToMessageType
     ) where
 
-import           Universum hiding (head)
-import           Universum.Unsafe
-import           Data.Typeable
+import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model.Data.Event
 
 data    Otherwise    = Otherwise 
@@ -21,5 +19,3 @@ data    Otherwise    = Otherwise
 otherwiseType :: EventType
 otherwiseType = toType Otherwise
 
-fromActionToMessageType :: Typeable a => (a -> IO ()) -> EventType
-fromActionToMessageType = EventType . head . snd . splitTyConApp . typeOf    
