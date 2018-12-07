@@ -4,13 +4,9 @@
 
 module Control.Concurrent.Actor.Language where
 
-import           Universum
-import qualified Data.Map as M
-import           Control.Concurrent.STM.TChan
-import           Control.Monad.Free
-import           Control.Concurrent hiding
-    (MVar, readMVar, putMVar, takeMVar, newMVar, swapMVar)
+import           Control.Concurrent.Prelude
 
+import qualified Data.Map as M
 import           Language.Haskell.TH.MakeFunctor
 import           Control.Concurrent.Model
 import           Control.Concurrent.Actor.Message
