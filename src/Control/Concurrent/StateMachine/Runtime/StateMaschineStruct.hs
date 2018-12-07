@@ -3,15 +3,13 @@
 
 module Control.Concurrent.StateMachine.Runtime.StateMaschineStruct where
 
-import           Universum
-import           Control.Lens.At (at)
-import           Data.Describe
-import           Data.Event
-import           Control.Concurrent.Loger
-import           Control.Lens.TH
-import           Control.Concurrent.StateMachine.Domain
+import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import qualified Data.Set as S
+
+import           Control.Concurrent.Model.Data
+import           Control.Concurrent.Loger
+import           Control.Concurrent.StateMachine.Domain
 
 type TransitionMap          = M.Map (MachineState, EventType) MachineState
 type ConditionalTransitions = M.Map (MachineState, EventType) (Event -> IO (Maybe MachineState))

@@ -1,8 +1,8 @@
 {-# Language MultiParamTypeClasses  #-}
 {-# LAnguage FunctionalDependencies #-}
-module Data.This where
+module Control.Concurrent.Model.Interface.This where
 
-import           Universum
+import           Control.Concurrent.Prelude
 
 class This m f | f -> m, m -> f where
     this   :: m f

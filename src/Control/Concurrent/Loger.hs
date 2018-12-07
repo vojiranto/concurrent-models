@@ -1,7 +1,7 @@
 module Control.Concurrent.Loger where
 
-import           Universum
-import           Data.TextId
+import           Control.Concurrent.Prelude
+import           Control.Concurrent.Model.Data.TextId
 
 type Loger = Text -> IO ()
 

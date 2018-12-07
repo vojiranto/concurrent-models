@@ -1,10 +1,9 @@
 module Control.Concurrent.Service.Subscription.Domain where
 
-import           Universum 
-import           Data.Dynamic
+
+import           Control.Concurrent.Prelude
 import qualified Data.Map                                                   as M
-import           Data.Event
-import           Data.TextId
+import           Control.Concurrent.Model.Data
 
 newtype Notify = Notify Dynamic
 
@@ -30,24 +29,24 @@ getNotifyList (Subscribers subscribers) msg =
         subsMap = rawDataToType msg `M.lookup` subscribers
 
 addSubscriber :: Subscription -> Subscribers -> Subscribers
-addSubscriber (Subscription textId eventType act) (Subscribers subscribers')
-    = Subscribers (M.alter upd eventType subscribers')
+addSubscriber (Subscription textId eventType' act) (Subscribers subscribers')
+    = Subscribers (M.alter upd eventType' subscribers')
     where
         upd (Just a) = Just (M.insert textId act a)
         upd _        = Just (M.singleton textId act)
 
 
 deleteSubscriber :: Unsubscribe -> Subscribers -> Subscribers
-deleteSubscriber (Unsubscribe textId eventType) (Subscribers subscribers')
-    = Subscribers (M.alter upd eventType subscribers')
+deleteSubscriber (Unsubscribe textId eventType') (Subscribers subscribers')
+    = Subscribers (M.alter upd eventType' subscribers')
     where
         upd (Just a) = Just (M.delete textId a)
         upd _        = Nothing
 
 instance Describe Subscription where
-    describe (Subscription textId eventType _) =
-        "[subscription] " <> describe textId <> " " <> describe eventType
+    describe (Subscription textId eventType' _) =
+        "[subscription] " <> describe textId <> " " <> describe eventType'
 
 instance Describe Unsubscribe where
-    describe (Unsubscribe textId eventType) =
-        "[unsubscribe] " <> describe textId <> " " <> describe eventType
+    describe (Unsubscribe textId eventType') =
+        "[unsubscribe] " <> describe textId <> " " <> describe eventType'

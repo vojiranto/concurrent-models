@@ -1,14 +1,25 @@
-module Data.Event where
+module Control.Concurrent.Model.Data.Event
+    ( Event
+    , EventType
+    , eventType
+    , ToType(..)
+    , toEvent
+    , fromEvent
+    , fromEventUnsafe
+    , eventToType
+    , actionToType
+    , fromActionToMessageType
+    , rawDataToType
+    ) where
 
-import           Universum hiding (head)
-import           Universum.Unsafe
-
-import           Data.Typeable
-import           Data.Dynamic
-import           Data.Describe
+import           Control.Concurrent.Prelude
+import           Control.Concurrent.Model.Data.Describe
 
 newtype Event        = Event        Dynamic
 newtype EventType    = EventType    TypeRep deriving (Eq, Ord)
+
+eventType :: TypeRep -> EventType
+eventType = EventType
 
 toEvent :: Typeable a => a -> Event
 toEvent = Event . toDyn
@@ -43,3 +54,6 @@ instance {-# OVERLAPPABLE #-} Typeable a => ToType a where
 
 rawDataToType :: Typeable a => a -> EventType
 rawDataToType = EventType . typeOf
+
+fromActionToMessageType :: Typeable a => (a -> IO ()) -> EventType
+fromActionToMessageType = EventType . head . snd . splitTyConApp . typeOf    

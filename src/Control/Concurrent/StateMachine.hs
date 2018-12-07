@@ -5,12 +5,7 @@ module Control.Concurrent.StateMachine
       StateMachine
     , StateMachineL
     , MachineState
-    , HaveTextId(..)
-    , Describe(..)
-    , Math(..)
     , Fsm (..)
-    , TextId
-    , This(..)
     , runStateMachine
     -- * Making of FSM struct
     , addFinalState
@@ -27,41 +22,31 @@ module Control.Concurrent.StateMachine
     -- * Addition of handlers
     , L.mathS
     , Acception (..)
-    -- * Communication with working FSN
-    , Listener (..)
     -- * Templates
     , makeStates
     , makeEvents
     , makeFsm
     ) where
 
-import           Universum
-import           Data.Flag
-import           Data.Event                                                    as D
-import           Data.Describe
-import           Data.TextId
-import           Data.This
+import           Control.Concurrent.Prelude
+
+import           Control.Concurrent.Flag
 import           Control.Concurrent.Loger
-import           Control.Concurrent (forkIO)
-import           Control.Concurrent.Chan
-import           Control.Concurrent.Math
-import           Control.Concurrent.Listener
+import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.TH
 import           Control.Concurrent.StateMachine.Language                      as L
 import           Control.Concurrent.StateMachine.Interpreter                   as I
 import qualified Control.Concurrent.StateMachine.Runtime                       as R
-import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as R
-import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct   as R 
 import           Control.Concurrent.StateMachine.Domain                        as D
 
 -- | Emit event to the FSN.
 instance Typeable msg => Listener StateMachine msg where
     notify fsm event = whenM (isLive fsm) $
-        writeChan (getEventVar fsm) . D.FastEvent $ D.toEvent event
+        writeChan (getEventVar fsm) . D.FastEvent $ toEvent event
     
     notifyAndWait fsm event = whenM (isLive fsm) $ do
         processed <- newFlag
-        writeChan (getEventVar fsm) $ D.WaitEvent (D.toEvent event) processed
+        writeChan (getEventVar fsm) $ D.WaitEvent (toEvent event) processed
         wait processed
 
 class Fsm fsm where
@@ -131,7 +116,7 @@ eventAnalize stateMachineRef fsmRef@(StateMachine events _ _ _) = do
     machineData        <- readIORef stateMachineRef
     machineData ^. R.loger $ describe event
     applyStatic machineData event
-    applyMath (machineData ^. R.loger) (machineData ^. R.handlers) event
+    R.applyMath (machineData ^. R.loger) (machineData ^. R.handlers) event
     whenJustM (R.takeTransition event machineData)
         (applyTransition stateMachineRef event fsmRef)
 

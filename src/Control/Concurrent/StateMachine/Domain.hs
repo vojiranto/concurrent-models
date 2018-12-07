@@ -2,13 +2,9 @@
 {-# Language FlexibleInstances     #-}
 module Control.Concurrent.StateMachine.Domain where
 
-import           Universum hiding (head)
-import           Universum.Unsafe
-
-import           Data.Typeable
-import           Data.Describe
-import           Data.Flag
-import           Data.Event
+import           Control.Concurrent.Prelude
+import           Control.Concurrent.Flag
+import           Control.Concurrent.Model.Data
 
 data Transition = Transition MachineState MachineState
 data PackagedEvent = FastEvent Event | WaitEvent Event Flag
@@ -34,7 +30,7 @@ toMachineState :: Typeable a => a -> MachineState
 toMachineState = MachineState . typeOf
 
 conditionToType :: Typeable a => (a -> IO (Maybe MachineState)) -> EventType
-conditionToType action = EventType (head . snd . splitTyConApp . typeOf $ action)
+conditionToType action = eventType (head . snd . splitTyConApp . typeOf $ action)
 
 instance Describe MachineState where
     describe (MachineState a) = "[state " <> show a <> "]"

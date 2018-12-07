@@ -1,15 +1,17 @@
-module Data.TextId
+module Control.Concurrent.Model.Data.TextId
     ( TextId
     , HaveTextId(..)
     , Describe(..)
     , newTextId
     ) where
+import           Control.Concurrent.Prelude hiding (ToText(..))
 
-import           Universum hiding (ToText(..))
-import           Data.Hashable
-import           Data.Describe
 import           Data.Base58String.Bitcoin
 import           Control.Concurrent.Unique
+import           Data.Hashable
+
+import           Control.Concurrent.Model.Data.Describe
+
 
 newtype TextId = TextId Text deriving (Eq, Ord)
 

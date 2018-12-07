@@ -6,8 +6,8 @@ module Control.Concurrent.StateMachine.TH
     , makeFsm
     ) where
 
-import           Universum
-import           Control.Concurrent.Listener
+import           Control.Concurrent.Prelude
+import           Control.Concurrent.Model.Interface.Listener
 import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
 

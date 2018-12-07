@@ -22,14 +22,9 @@ module Control.Concurrent.StateMachine.Language
     , (>?>)
     ) where
 
-import           Universum
+import           Control.Concurrent.Prelude
 import           Language.Haskell.TH.MakeFunctor
-import           Control.Concurrent.Chan
-import           Control.Monad.Free
-import           Data.TextId
-import           Data.Event
-import           Data.This
-import           Control.Concurrent.Math
+import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.Domain
 
 data StateMachine =

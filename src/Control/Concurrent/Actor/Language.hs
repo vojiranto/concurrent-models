@@ -4,17 +4,12 @@
 
 module Control.Concurrent.Actor.Language where
 
-import           Universum
-import           Data.This
+import           Control.Concurrent.Prelude
+
 import qualified Data.Map as M
-import           Data.TextId
-import           Control.Concurrent.Math
 import           Language.Haskell.TH.MakeFunctor
-import           Control.Monad.Free
+import           Control.Concurrent.Model
 import           Control.Concurrent.Actor.Message
-import           Control.Concurrent.STM.TChan
-import           Control.Concurrent hiding
-    (MVar, readMVar, putMVar, takeMVar, newMVar, swapMVar)
 
 data Actor = Actor (TChan Event) ThreadId TextId (MVar Bool)
 
