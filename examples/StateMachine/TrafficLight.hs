@@ -18,7 +18,7 @@ data ChangeColor = ChangeColor
 -- simple but not the right example, we all know that there is three traffic
 -- lights, not four lights?
 makeTrafficLight1 :: IO StateMachine
-makeTrafficLight1 = runStateMachine logToConsole Green $ do
+makeTrafficLight1 = runStateMachine loger Green $ do
     ifE ChangeColor $ Green      >-> YellowUp
     ifE ChangeColor $ YellowUp   >-> Red
     ifE ChangeColor $ Red        >-> YellowDown
@@ -26,13 +26,13 @@ makeTrafficLight1 = runStateMachine logToConsole Green $ do
 
 -- properly functioning traffic lights
 makeTrafficLight2 :: IO StateMachine
-makeTrafficLight2 = runStateMachine logToConsole Green $ do
+makeTrafficLight2 = runStateMachine loger Green $ do
     -- add to fsm transitions from one states to another.
     ifE ChangeColor $ Green >-> Yellow
     ifE ChangeColor $ Red   >-> Yellow
     
     -- during the construction of the FSN, you can use IO.
-    directionSM <- liftIO $ runStateMachine logToConsole Red $ do
+    directionSM <- liftIO $ runStateMachine loger Red $ do
         ifE ChangeColor $ Green >-> Red
         ifE ChangeColor $ Red   >-> Green
     

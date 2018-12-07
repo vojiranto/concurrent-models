@@ -25,7 +25,7 @@ pingPong success = do
     notify actor2 $ Ping actor1 10
 
 pinger :: Flag -> IO Actor
-pinger success = runActor logOff $ do
+pinger success = runActor loger $ do
     link <- this
     math $ ping success link
     math $ pong success link

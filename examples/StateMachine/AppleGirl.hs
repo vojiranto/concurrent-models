@@ -19,7 +19,8 @@ appleGirl = do
     wait girlIsWellFed
 
 runAppleGirl :: Flag -> IO AppleGirl
-runAppleGirl girlIsWellFed = runFsm logOff Hungry $ do
+runAppleGirl girlIsWellFed = runFsm loger Hungry $ do
+    toLog Trace "Init apple girl"
     hangryGirl
     wellFedGirl girlIsWellFed
 

@@ -15,7 +15,7 @@ data EkzampleEvent = EkzampleEvent
 sequentialStateMachine :: IO ()
 sequentialStateMachine = do
     stopSM <- newFlag
-    sm    <- runStateMachine logOff SequentialState1 $ do
+    sm    <- runStateMachine loger SequentialState1 $ do
         ifE EkzampleEvent $ SequentialState1 >-> SequentialState2
         ifE EkzampleEvent $ SequentialState2 >-> SequentialState3
         addFinalState SequentialState3

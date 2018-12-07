@@ -13,7 +13,7 @@ exampleDoor :: IO ()
 exampleDoor = readDoorComands =<< makeDoor
 
 makeDoor :: IO StateMachine
-makeDoor = runStateMachine logToConsole Closed $ do
+makeDoor = runStateMachine loger Closed $ do
     ifE Close $ Open   >-> Closed
     ifE Open  $ Closed >-> Open
 

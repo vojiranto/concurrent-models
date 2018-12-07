@@ -26,7 +26,7 @@ postmanExample1 = do
     wsAccepted    <- newFlag
     timesAccepted <- newFlag
 
-    subs1         <- runActor logOf $ do
+    subs1         <- runActor dummyLoger $ do
         math $ \WSPost -> liftFlag wsAccepted
         math $ \Times  -> liftFlag timesAccepted
 
@@ -41,11 +41,11 @@ postmanExample1 = do
 
 postmanExample2 :: IO Bool
 postmanExample2 = do
-    postman <- runPostman logOff
+    postman <- runPostman loger
     res     <- newEmptyMVar
 
     -- subscriber
-    subs    <- runActor logOff $ do
+    subs    <- runActor loger $ do
         math (\WSPost -> putMVar res False :: IO ())
         math (\Times  -> putMVar res True  :: IO ())
 

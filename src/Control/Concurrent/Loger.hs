@@ -2,8 +2,7 @@
 {-# Language QuasiQuotes      #-}
 {-# Language FlexibleContexts #-}
 module Control.Concurrent.Loger
-    ( logToConsole
-    , logOff
+    ( dummyLoger
     , LogMessage(..)
     , startLogListening
     , stopLogListening
@@ -18,20 +17,15 @@ import           Control.Concurrent.Actor
 import           Control.Concurrent.Service.Subscription
 import           System.IO.Unsafe
 
--- | Alias for putTextLn.
-logToConsole :: Loger
-logToConsole logLevel msg = putTextLn $ "[" <> show logLevel <> "] " <> msg
-
--- | Alias for (\\_ -> pure ()).
-logOff :: Loger
-logOff _ _ = pure ()
+dummyLoger :: Loger
+dummyLoger _ _ = pure ()
 
 newtype SetLogLevel = SetLogLevel LogLevel
 data LogMessage     = LogMessage LogLevel Text
 
 logerActor :: Actor
 {-# NOINLINE logerActor #-}
-logerActor = unsafePerformIO $ runActor logOff $ do
+logerActor = unsafePerformIO $ runActor dummyLoger $ do
     subscribers <- subscriptioService
     logLevelRef <- liftIO $ newIORef Trace
     math $ \(SetLogLevel logLever) -> (writeIORef logLevelRef logLever :: IO ())
@@ -48,7 +42,7 @@ stopLogListening = unsubscribe (LogMessage Trace "") logerActor
 
 сonsoleLogOn :: IO (IO ())
 сonsoleLogOn = do
-    consoleLoger <- runActor logOff $
+    consoleLoger <- runActor dummyLoger $
         math $ \(LogMessage logLevel text) ->
             ((putTextLn $ "[" <> show logLevel <> "] " <> text) :: IO ())
     startLogListening consoleLoger

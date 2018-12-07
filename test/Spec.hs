@@ -2,6 +2,7 @@
 module Main where
 
 import           Universum
+import           Control.Concurrent
 import           Test.Hspec.Extra
 
 import           Control.Concurrent.Model
@@ -18,7 +19,7 @@ makeEvents ["TakeOn"]
 stateMachinTest1 :: IO Bool
 stateMachinTest1 = finishFor 100 $ do
     success <- newFlag
-    sm <- runStateMachine logOff Off $ do
+    sm <- runStateMachine loger Off $ do
         groupStates    AnyState $ On <: Off <: []
         ifE TakeOn $ AnyState >-> On
         onEntry On   acceptTake
@@ -33,6 +34,7 @@ acceptTake _ = pure ()
 main :: IO ()
 main = do
     putTextLn ""
+    void сonsoleLogOn
     hspec $ do
         it "Actor ping pong test"               $ isOk (finishFor 5000 actorPingPong)
         it "Actor postman test (subscription)"  $ isOk (finishFor 5000 postmanExample1)
@@ -41,3 +43,4 @@ main = do
         it "Test 2 for state machine"           $ isOk (finishFor 1000 sequentialStateMachine)
         it "Test 3 for state machine"           $ isOk (finishFor 1000 groupingStateMachine)
         it "Test 4 for state machine"           $ isOk (finishFor 1000 appleGirl)
+    threadDelay 100000

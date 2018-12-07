@@ -21,12 +21,12 @@ data Pong = Pong Actor Int
 actorPingPong :: IO ()
 actorPingPong = do
     success <- newFlag
-    actor1  <- runActor logOff $ do
+    actor1  <- runActor loger $ do
         link <- this
         math $ ping success link
         math $ pong success link
 
-    actor2  <- runActor logOff $ do
+    actor2  <- runActor loger $ do
         link <- this
         math $ ping success link
         math $ pong success link
@@ -62,7 +62,7 @@ data EkzampleEvent = EkzampleEvent
 sequentialStateMachine :: IO ()
 sequentialStateMachine = do
     stopSM <- newFlag
-    sm     <- runStateMachine logOff S1 $ do
+    sm     <- runStateMachine loger S1 $ do
         ifE EkzampleEvent $ S1 >-> S2
         ifE EkzampleEvent $ S2 >-> S3
         addFinalState S3
@@ -129,7 +129,7 @@ data Exit = Exit
 groupingStateMachine :: IO ()
 groupingStateMachine = do
     stopSM <- newFlag
-    sm <- runStateMachine logOff S1 $ do
+    sm <- runStateMachine loger S1 $ do
         ifE Move $ S1 >-> S2
         ifE Move $ S2 >-> S3
         ifE Move $ S3 >-> S1
