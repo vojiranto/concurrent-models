@@ -7,8 +7,7 @@ import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import qualified Data.Set as S
 
-import           Control.Concurrent.Model.Data
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.Domain
 
 type TransitionMap          = M.Map (MachineState, EventType) MachineState
@@ -56,7 +55,7 @@ takeTransitionWithGroup loger currentGroup currentState event maschineData = do
 checkTransition :: Loger -> StateMaschineStruct -> Maybe Transition -> IO Bool
 checkTransition loger maschineData (Just (Transition st1 st2)) = do
     let err = S.member st2 (maschineData ^. groups)
-    when err $ loger $ "[error trasition] " <> describe st1 <> " -> "<> describe st2 
+    when err $ loger Error $ "[trasition] " <> describe st1 <> " -> "<> describe st2 
     pure $ not err
 checkTransition _ _ _ = pure False
 

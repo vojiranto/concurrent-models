@@ -31,7 +31,6 @@ module Control.Concurrent.StateMachine
 import           Control.Concurrent.Prelude
 
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Loger
 import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.TH
 import           Control.Concurrent.StateMachine.Language                      as L
@@ -75,10 +74,7 @@ initFsm :: Loger -> StateMachine -> StateMachineL a -> IO ()
 initFsm logerAction fsmRef machineDescriptione = void $ forkIO $ do
     loger <- addTagToLoger logerAction "[SM]" (getTextId fsmRef)
     eFsm  <- makeStateMachineData loger fsmRef machineDescriptione
-    either (printError loger) (startFsm fsmRef) eFsm `finally` setIsDead fsmRef
-
-printError :: Show a => Loger -> a -> IO ()
-printError loger err = loger $ "[error] " <> show err
+    either (loger Error . show) (startFsm fsmRef) eFsm `finally` setIsDead fsmRef
 
 startFsm :: StateMachine -> IORef R.StateMaschineData -> IO ()
 startFsm fsmRef fsmDataRef = do 
@@ -88,7 +84,7 @@ startFsm fsmRef fsmDataRef = do
 entryInitState :: IORef R.StateMaschineData -> IO ()
 entryInitState fsmDataRef = do
     fsmData <- readIORef fsmDataRef
-    fsmData ^. R.loger $ "[init state] " <> describe (fsmData ^. R.currentState)
+    (fsmData ^. R.loger) Trace $ "[init state] " <> describe (fsmData ^. R.currentState)
     let stList = R.takeGroups (fsmData ^. R.stateMachineStruct) (fsmData ^. R.currentState)
     forM_ stList (R.applyEntryDo (fsmData ^. R.loger) (fsmData ^. R.handlers))
 
@@ -103,7 +99,7 @@ stateAnalize stateMachineRef stateMachine = do
     if R.isFinish machineData
         then do
             let currentState = machineData ^. R.currentState
-            machineData ^. R.loger $ "[finish state] " <> describe currentState
+            (machineData ^. R.loger) Trace $ "[finish state] " <> describe currentState
             let stList = R.takeGroups
                     (machineData ^. R.stateMachineStruct)
                     (machineData ^. R.currentState)
@@ -114,7 +110,7 @@ eventAnalize stateMachineRef fsmRef@(StateMachine events _ _ _) = do
     (event, processed) <- getMachineEvent =<< readChan events
 
     machineData        <- readIORef stateMachineRef
-    machineData ^. R.loger $ describe event
+    (machineData ^. R.loger) Trace $ describe event
     applyStatic machineData event
     R.applyMath (machineData ^. R.loger) (machineData ^. R.handlers) event
     whenJustM (R.takeTransition event machineData)
@@ -136,7 +132,7 @@ applyTransition
     :: IORef R.StateMaschineData -> Event -> StateMachine -> Transition -> IO ()
 applyTransition stateMachineRef event fsmRef (D.Transition currentState newState) = do
     fsmData <- readIORef stateMachineRef
-    fsmData ^. R.loger $ showTransition currentState event newState
+    (fsmData ^. R.loger) Trace $ showTransition currentState event newState
     changeState stateMachineRef fsmRef newState
     R.applyTransitionActions fsmData currentState event newState
 

@@ -6,27 +6,27 @@ module Actor.Postman where
 import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag        -- To report about successful completion.
-import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor
+import           Control.Concurrent.Loger
 import           Control.Concurrent.Service.Subscription 
 
 data Times  = Times
 data WSPost = WSPost
 
 runPostman :: Loger -> IO Actor
-runPostman loger = runActor loger $ do
-    subscribers <- subscriptioService loger
+runPostman loger' = runActor loger' $ do
+    subscribers <- subscriptioService
     math $ \Times  -> multicast subscribers Times
     math $ \WSPost -> multicast subscribers WSPost
 
 postmanExample1 :: IO ()
 postmanExample1 = do
-    postman       <- runPostman logOff
+    postman       <- runPostman loger
 
     wsAccepted    <- newFlag
     timesAccepted <- newFlag
 
-    subs1         <- runActor logOff $ do
+    subs1         <- runActor dummyLoger $ do
         math $ \WSPost -> liftFlag wsAccepted
         math $ \Times  -> liftFlag timesAccepted
 
@@ -41,11 +41,11 @@ postmanExample1 = do
 
 postmanExample2 :: IO Bool
 postmanExample2 = do
-    postman <- runPostman logOff
+    postman <- runPostman loger
     res     <- newEmptyMVar
 
     -- subscriber
-    subs    <- runActor logOff $ do
+    subs    <- runActor loger $ do
         math (\WSPost -> putMVar res False :: IO ())
         math (\Times  -> putMVar res True  :: IO ())
 

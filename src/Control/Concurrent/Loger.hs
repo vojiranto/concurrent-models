@@ -1,18 +1,57 @@
-module Control.Concurrent.Loger where
+{-# Language TemplateHaskell  #-}
+{-# Language QuasiQuotes      #-}
+{-# Language FlexibleContexts #-}
+module Control.Concurrent.Loger
+    ( dummyLoger
+    , LogMessage(..)
+    , startLogListening
+    , stopLogListening
+    , сonsoleLogOn
+    , setLogLevel
+    , loger
+    ) where
 
 import           Control.Concurrent.Prelude
-import           Control.Concurrent.Model.Data.TextId
+import           Control.Concurrent.Model
+import           Control.Concurrent.Actor
+import           Control.Concurrent.Service.Subscription
+import           System.IO.Unsafe
 
-type Loger = Text -> IO ()
+dummyLoger :: Loger
+dummyLoger _ _ = pure ()
 
--- | Alias for putTextLn.
-logToConsole :: Loger
-logToConsole = putTextLn
+newtype SetLogLevel = SetLogLevel LogLevel
+data LogMessage     = LogMessage LogLevel Text
 
--- | Alias for (\\_ -> pure ()).
-logOff :: Loger
-logOff _ = pure ()
+logerActor :: Actor
+{-# NOINLINE logerActor #-}
+logerActor = unsafePerformIO $ runActor dummyLoger $ do
+    subscribers <- subscriptioService
+    logLevelRef <- liftIO $ newIORef Trace
+    math $ \(SetLogLevel logLever) -> (writeIORef logLevelRef logLever :: IO ())
+    math $ \(LogMessage logLevel text) -> do
+        counLevel <- readIORef logLevelRef
+        when (logLevel >= counLevel) $ multicast subscribers $
+            LogMessage logLevel text
 
-addTagToLoger :: (Text -> t) -> Text -> TextId -> IO (Text -> t)
-addTagToLoger logerAction tag textId =
-    pure $ \txt -> logerAction $ tag <> " " <> describe textId <> " " <> txt
+startLogListening :: (HaveTextId a, Listener a LogMessage) => a -> IO ()
+startLogListening = $(subscribe [t|LogMessage|]) logerActor
+
+stopLogListening :: (HaveTextId a, Listener a LogMessage) => a -> IO ()
+stopLogListening = unsubscribe (LogMessage Trace "") logerActor
+
+сonsoleLogOn :: IO (IO ())
+сonsoleLogOn = do
+    consoleLoger <- runActor dummyLoger $
+        math $ \(LogMessage logLevel text) ->
+            ((putTextLn $ "[" <> show logLevel <> "] " <> text) :: IO ())
+    startLogListening consoleLoger
+    pure $ do
+        stopLogListening consoleLoger
+        stopRole consoleLoger
+
+setLogLevel :: LogLevel -> IO ()
+setLogLevel logLevel = notify logerActor $ SetLogLevel logLevel
+
+loger :: Loger
+loger logLevel text = notify logerActor $ LogMessage logLevel text

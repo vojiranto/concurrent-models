@@ -3,9 +3,9 @@ module StateMachine.AppleGirl where
 
 import           Universum
 import           Control.Concurrent.Model
-import           Control.Concurrent.Loger
 import           Control.Concurrent.StateMachine
 import           Control.Concurrent.Flag
+import           Control.Concurrent.Loger
 
 makeEvents ["Apple"]
 makeStates ["Hungry", "WellFed"]
@@ -19,7 +19,8 @@ appleGirl = do
     wait girlIsWellFed
 
 runAppleGirl :: Flag -> IO AppleGirl
-runAppleGirl girlIsWellFed = runFsm logOff Hungry $ do
+runAppleGirl girlIsWellFed = runFsm loger Hungry $ do
+    toLog Trace "Init apple girl"
     hangryGirl
     wellFedGirl girlIsWellFed
 

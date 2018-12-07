@@ -17,8 +17,7 @@ module Control.Concurrent.StateMachine.Runtime
 import           Control.Concurrent.Prelude
 import qualified Data.Set as S
 
-import           Control.Concurrent.Model.Data.Event
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.Domain
 import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct as X
 import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as X

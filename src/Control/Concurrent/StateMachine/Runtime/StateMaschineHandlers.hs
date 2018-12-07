@@ -7,10 +7,7 @@ import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 
 import           Control.Concurrent.StateMachine.Domain
-import           Control.Concurrent.Model.Data
-import           Control.Concurrent.Loger
-
-
+import           Control.Concurrent.Model
 
 data StateMaschineHandlers = StateMaschineHandlers
     { _staticalDo               :: M.Map (MachineState, EventType) (Event -> IO ())
@@ -40,26 +37,26 @@ applyEntryWithEventDo = applyEvent entryWithEventDo "[onEntry]"
 applyStaticalDo       = applyEvent staticalDo       "[math]"
 
 applyMath :: Loger -> StateMaschineHandlers -> Event -> IO ()
-applyMath toLog machineData event =
+applyMath toLog' machineData event =
     whenJust (machineData ^. mathDo . at (eventToType event)) $ \action -> do
-        toLog $ "[math]" <> " "<> describe event
+        toLog' Trace $ "[math]" <> " "<> describe event
         action event
 
 applyState
         :: (Index m ~ MachineState, IxValue m ~ IO (), At m)
         => Getting (Maybe (IO ())) StateMaschineHandlers m
         -> Text -> Loger -> StateMaschineHandlers -> MachineState -> IO ()
-applyState actionLens tag toLog machineData st =
+applyState actionLens tag toLog' machineData st =
     whenJust (machineData ^. actionLens . at st) $ \action -> do
-        toLog $ tag <> " " <> describe st
+        toLog' Trace $ tag <> " " <> describe st
         action
 
 applyEvent
     :: (Index m ~ (MachineState, EventType), IxValue m ~ (Event -> IO ()), At m)
     => Getting (Maybe (Event -> IO ())) StateMaschineHandlers m
     -> Text -> Loger -> StateMaschineHandlers -> MachineState -> Event -> IO ()
-applyEvent actionLens tag toLog machineData st event =
+applyEvent actionLens tag toLog' machineData st event =
     whenJust (machineData ^. actionLens . at (st, (eventToType event))) $ \action -> do
-        toLog $ tag <> " " <> describe st <> " "<> describe event
+        toLog' Trace $ tag <> " " <> describe st <> " "<> describe event
         action event
 

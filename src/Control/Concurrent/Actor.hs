@@ -12,7 +12,6 @@ module Control.Concurrent.Actor
 import           Control.Concurrent.Prelude
 
 import           Control.Concurrent.Model
-import           Control.Concurrent.Loger
 import           Control.Concurrent.Actor.ActorRuntime 
 import           Control.Concurrent.Actor.Language
 import           Control.Concurrent.Actor.Message
@@ -50,7 +49,7 @@ initActor logerAction actorId chan liveFlag handlerMap = forkIO $ do
 actorWorker :: ActorRuntimeData -> Actor -> IO ()
 actorWorker actRuntime actor = do
     message <- recieveMessage actor
-    (actRuntime ^. loger) $ "[message] " <> describe message
+    (actRuntime ^. loger) Trace $ "[message] " <> describe message
     case analyzeMessage message of
         StopNodeR       -> killRole actor
         ApplyHandlerR   -> do
@@ -74,8 +73,8 @@ applyHandler actRuntime message = do
 
 applyOtherwiseHandler :: ActorRuntimeData -> Event -> IO ()
 applyOtherwiseHandler actRuntime message = do
-    let printError = (actRuntime ^. loger) handlerNotExistMsg
-    maybe printError ($ message) $
+    let printWarn = (actRuntime ^. loger) Warn handlerNotExistMsg
+    maybe printWarn ($ message) $
         actRuntime ^. handlers . at otherwiseType
 
 handlerNotExistMsg :: Text

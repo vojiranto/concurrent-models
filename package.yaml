@@ -60,8 +60,8 @@ library:
     - Control.Concurrent.StateMachine
     - Control.Concurrent.Actor
     - Control.Concurrent.Service.Subscription
-    - Control.Concurrent.Loger
     - Control.Concurrent.Flag
+    - Control.Concurrent.Loger
   ghc-options:
   - -Wall
   - -Werror
