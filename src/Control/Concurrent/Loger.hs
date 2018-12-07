@@ -27,7 +27,7 @@ logOff :: Loger
 logOff _ _ = pure ()
 
 newtype SetLogLevel = SetLogLevel LogLevel
-data LogMessage = LogMessage LogLevel Text
+data LogMessage     = LogMessage LogLevel Text
 
 logerActor :: Actor
 {-# NOINLINE logerActor #-}
