@@ -26,7 +26,7 @@ postmanExample1 = do
     wsAccepted    <- newFlag
     timesAccepted <- newFlag
 
-    subs1         <- runActor logOff $ do
+    subs1         <- runActor logToConsole $ do
         math $ \WSPost -> liftFlag wsAccepted
         math $ \Times  -> liftFlag timesAccepted
 

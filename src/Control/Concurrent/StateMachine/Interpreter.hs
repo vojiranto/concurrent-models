@@ -31,18 +31,18 @@ makeStateMachineData logerAction stateMachine h = do
 
 interpretStateMachineL :: Loger -> IORef R.StateMaschineData -> L.StateMachine -> L.StateMachineF a -> IO a
 interpretStateMachineL toLog _ _ (L.LiftIO action next) = do
-    toLog "[IO action]"
+    toLog Trace "[IO action]"
     next <$> action
 
 interpretStateMachineL toLog _ link (L.This next) = do
-    toLog "[get this *]"
+    toLog Trace "[get this *]"
     pure $ next link
 
 interpretStateMachineL toLog m _ (L.GroupStates g states next) = do
-    toLog $ "[make group] " <> describe g
+    toLog Trace $ "[make group] " <> describe g
     modifyIORef m (R.stateMachineStruct . R.groups %~ S.insert g)
     forM_ states $ \st -> do
-        toLog $ "[add states to group] " <> describe st
+        toLog Trace $ "[add states to group] " <> describe st
         mData <- readIORef m   
         -- The group tree structure is broken
         when (st `M.member` (mData ^. R.stateMachineStruct . R.groupStruct)) $
@@ -52,55 +52,55 @@ interpretStateMachineL toLog m _ (L.GroupStates g states next) = do
     pure $ next ()
 
 interpretStateMachineL toLog m _ (L.AddFinalState st next) = do
-    toLog $ "[set finish state] " <> describe st
+    toLog Trace $ "[set finish state] " <> describe st
     next <$> modifyIORef m (R.stateMachineStruct . R.finishStates %~ S.insert st)
 
 interpretStateMachineL toLog m _ (L.AddTransition st1 ev st2 next) = do
-    toLog $ "[set transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
+    toLog Trace $ "[set transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
     next <$> modifyIORef m (R.stateMachineStruct . R.transitions %~ M.insert (st1, eventToType ev) st2)    
 
 interpretStateMachineL toLog m _ (L.AddConditionalTransition st1 ev condtition next) = do
-    toLog $ "[set conditional transition] " <> describe st1 <> " -> " <> describe ev <> " -> [st] [ ? ]"
+    toLog Trace $ "[set conditional transition] " <> describe st1 <> " -> " <> describe ev <> " -> [st] [ ? ]"
     next <$> modifyIORef m (R.stateMachineStruct . R.conditionalTransitions %~ M.insert (st1, ev) (toSafe toLog ev condtition))
 
 interpretStateMachineL toLog m _ (L.MathDo eventType' action next) = do
-    toLog "[set 'math do' handler]"
+    toLog Trace  "[set 'math do' handler]"
     next <$> modifyIORef m (R.handlers . R.mathDo %~ M.insert eventType' (toSafe toLog eventType' action))
 
 interpretStateMachineL toLog m _ (L.EntryDo st action next) = do
-    toLog $ "[set 'entry do' handler] " <> describe st
+    toLog Trace $ "[set 'entry do' handler] " <> describe st
     next <$> modifyIORef m (R.handlers . R.entryDo %~ M.insert st (toSafeAction toLog action))
 
 interpretStateMachineL toLog m _ (L.EntryWithEventDo st1 eventType' action next) = do
-    toLog $ "[set 'entry with event do' handler] " <> describe st1 <> " " <> describe eventType'
+    toLog Trace $ "[set 'entry with event do' handler] " <> describe st1 <> " " <> describe eventType'
     next <$> modifyIORef m (R.handlers . R.entryWithEventDo %~ M.insert (st1, eventType') (toSafe toLog eventType' action))
 
 interpretStateMachineL toLog m _ (L.StaticalDo st1 eventType' action next) = do
-    toLog $ "[set 'statical do' handler] " <> describe st1 <> " " <> describe eventType'
+    toLog Trace $ "[set 'statical do' handler] " <> describe st1 <> " " <> describe eventType'
     next <$> modifyIORef m (R.handlers . R.staticalDo %~ M.insert (st1, eventType') (toSafe toLog eventType'  action))
 
 interpretStateMachineL toLog m _ (L.ExitWithEventDo st1 eventType' action next) = do
-    toLog $ "[set 'exit with event do' handler] " <> describe st1 <> " " <> describe eventType'
+    toLog Trace $ "[set 'exit with event do' handler] " <> describe st1 <> " " <> describe eventType'
     next <$> modifyIORef m (R.handlers . R.exitWithEventDo %~ M.insert (st1, eventType') (toSafe toLog eventType' action))    
 
 interpretStateMachineL toLog m _ (L.ExitDo st action next) = do
-    toLog $ "[set 'exit do' handler] " <> describe st
+    toLog Trace $ "[set 'exit do' handler] " <> describe st
     next <$> modifyIORef m (R.handlers . R.exitDo %~ M.insert st (toSafeAction toLog action))
 
 class ToSafe t a where
-    toSafe :: (Text -> IO ()) -> t -> a -> a
+    toSafe :: Loger -> t -> a -> a
 
 instance ToSafe EventType (Event -> IO ()) where
     toSafe loger' eventType' action event = catchAny (action event) $ \ex ->
-        loger' $ "[error] " <> show ex <> " in action with event " <> describe eventType'
+        loger' Warn $ show ex <> " in action with event " <> describe eventType'
 
 instance ToSafe EventType (Event -> IO (Maybe MachineState)) where
     toSafe loger' eventType' condition event = catchAny (condition event) $ \ex -> do
-        loger' $ "[error] " <> show ex <> " in condition with event " <> describe eventType'
+        loger' Warn $ show ex <> " in condition with event " <> describe eventType'
         pure Nothing
 
-toSafeAction :: (Text -> IO ()) -> IO () -> IO () 
-toSafeAction loger' action = catchAny action $ \ex -> loger' $ "[error] " <> show ex <> " in action."
+toSafeAction :: Loger -> IO () -> IO () 
+toSafeAction loger' action = catchAny action $ \ex -> loger' Warn $ show ex <> " in action."
 
 data BuildExeption = BuildExeption deriving Show
 instance Exception BuildExeption

@@ -10,8 +10,6 @@ import           Control.Concurrent.StateMachine.Domain
 import           Control.Concurrent.Model.Data
 import           Control.Concurrent.Loger
 
-
-
 data StateMaschineHandlers = StateMaschineHandlers
     { _staticalDo               :: M.Map (MachineState, EventType) (Event -> IO ())
     , _mathDo                   :: M.Map EventType (Event -> IO ())
@@ -42,7 +40,7 @@ applyStaticalDo       = applyEvent staticalDo       "[math]"
 applyMath :: Loger -> StateMaschineHandlers -> Event -> IO ()
 applyMath toLog machineData event =
     whenJust (machineData ^. mathDo . at (eventToType event)) $ \action -> do
-        toLog $ "[math]" <> " "<> describe event
+        toLog Trace $ "[math]" <> " "<> describe event
         action event
 
 applyState
@@ -51,7 +49,7 @@ applyState
         -> Text -> Loger -> StateMaschineHandlers -> MachineState -> IO ()
 applyState actionLens tag toLog machineData st =
     whenJust (machineData ^. actionLens . at st) $ \action -> do
-        toLog $ tag <> " " <> describe st
+        toLog Trace $ tag <> " " <> describe st
         action
 
 applyEvent
@@ -60,6 +58,6 @@ applyEvent
     -> Text -> Loger -> StateMaschineHandlers -> MachineState -> Event -> IO ()
 applyEvent actionLens tag toLog machineData st event =
     whenJust (machineData ^. actionLens . at (st, (eventToType event))) $ \action -> do
-        toLog $ tag <> " " <> describe st <> " "<> describe event
+        toLog Trace $ tag <> " " <> describe st <> " "<> describe event
         action event
 

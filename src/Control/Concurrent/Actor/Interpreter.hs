@@ -9,15 +9,15 @@ import           Control.Concurrent.Model.Data.Describe
 
 interpretActorL :: Loger -> Actor -> IORef HandlerMap -> ActorF a -> IO a
 interpretActorL loger _ m (Math messageType handler next) = do
-    loger $ "[add handler] " <> describe messageType
+    loger Trace $ "[add handler] " <> describe messageType
     next <$> modifyIORef m (M.insert messageType (toSafe loger messageType handler))
 
 interpretActorL loger link _ (This next) = do
-    loger "[get this *] "
+    loger Trace "[get this *] "
     pure $ next link
 
 interpretActorL loger _ _ (LiftIO action next) = do
-    loger "[IO action]"
+    loger Trace "[IO action]"
     next <$> action
     
 
@@ -29,4 +29,4 @@ makeHandlerMap loger link h = do
 
 toSafe :: Loger -> EventType -> (Event -> IO ()) -> Event -> IO ()
 toSafe loger messageType action message = catchAny (action message) $ \ex ->
-    loger $ "[error] " <> show ex <> " in action with message " <> describe messageType
+    loger Warn $ show ex <> " in action with message " <> describe messageType

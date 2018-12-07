@@ -56,7 +56,7 @@ takeTransitionWithGroup loger currentGroup currentState event maschineData = do
 checkTransition :: Loger -> StateMaschineStruct -> Maybe Transition -> IO Bool
 checkTransition loger maschineData (Just (Transition st1 st2)) = do
     let err = S.member st2 (maschineData ^. groups)
-    when err $ loger $ "[error trasition] " <> describe st1 <> " -> "<> describe st2 
+    when err $ loger Error $ "[trasition] " <> describe st1 <> " -> "<> describe st2 
     pure $ not err
 checkTransition _ _ _ = pure False
 

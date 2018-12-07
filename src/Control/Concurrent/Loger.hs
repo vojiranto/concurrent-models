@@ -3,16 +3,20 @@ module Control.Concurrent.Loger where
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model.Data.TextId
 
-type Loger = Text -> IO ()
+-- https://stackoverflow.com/a/2031209
+data LogLevel = Trace | Debug | Info | Warn | Error | Fatal
+    deriving (Eq, Enum, Show)
+
+type Loger = LogLevel -> Text -> IO ()
 
 -- | Alias for putTextLn.
 logToConsole :: Loger
-logToConsole = putTextLn
+logToConsole logLevel msg = putTextLn $ "[" <> show logLevel <> "] " <> msg
 
 -- | Alias for (\\_ -> pure ()).
 logOff :: Loger
-logOff _ = pure ()
+logOff _ _ = pure ()
 
-addTagToLoger :: (Text -> t) -> Text -> TextId -> IO (Text -> t)
+addTagToLoger :: Loger -> Text -> TextId -> IO Loger
 addTagToLoger logerAction tag textId =
-    pure $ \txt -> logerAction $ tag <> " " <> describe textId <> " " <> txt
+    pure $ \logLevel txt -> logerAction logLevel (tag <> " " <> describe textId <> " " <> txt)

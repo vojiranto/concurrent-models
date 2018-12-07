@@ -35,7 +35,7 @@ subscriptioService loger = do
     textId <- getTextId <$> this
     subscribers <- liftIO $ newIORef $ Subscribers mempty
     let serviceLoger :: Describe a => a -> IO ()
-        serviceLoger obj = loger $
+        serviceLoger obj = loger Trace  $
             "[Subscription service] " <> describe textId <> " " <> describe obj
     math $ \subs -> do
         serviceLoger subs
@@ -45,7 +45,7 @@ subscriptioService loger = do
         serviceLoger unsub
         modifyIORef' subscribers (deleteSubscriber unsub)
 
-    liftIO $ loger $ "[Subscription service] " <> describe textId <> " Is init"
+    liftIO $ loger Trace $ "[Subscription service] " <> describe textId <> " Is init"
     pure subscribers
 
 -- $(subscribe "WSPost") postman subs
