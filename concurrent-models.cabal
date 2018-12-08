@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b107f1e22a9d11b96b9ae9326dc47d06540bdd755688f618bee0ac8a86e7b129
+-- hash: d32220cb663060c98594af76ca9398a98bb11fdbc316ec1e1f72d4144f7cd7b2
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -75,6 +75,7 @@ library
     , free
     , hashable
     , lens
+    , network
     , stm
     , template-haskell
     , text
@@ -111,6 +112,7 @@ executable example
     , free
     , hashable
     , lens
+    , network
     , stm
     , template-haskell
     , text
@@ -152,6 +154,7 @@ test-suite Actor-test
     , hashable
     , lens
     , nanospec
+    , network
     , stm
     , template-haskell
     , text

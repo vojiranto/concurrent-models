@@ -3,7 +3,7 @@ module Control.Concurrent.Model.Core.Interface.Loger where
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model.Core.Data.TextId
 
--- https://stackoverflow.com/a/2031209
+-- | https://stackoverflow.com/a/2031209
 data LogLevel = Trace | Debug | Info | Warn | Error | Fatal
     deriving (Eq, Ord, Enum, Show)
 
