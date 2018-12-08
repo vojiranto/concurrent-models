@@ -9,9 +9,7 @@ import           Control.Concurrent.Prelude hiding (ToText(..))
 import           Data.Base58String.Bitcoin
 import           Control.Concurrent.Unique
 import           Data.Hashable
-
 import           Control.Concurrent.Model.Core.Data.Describe
-
 
 newtype TextId = TextId Text deriving (Eq, Ord)
 

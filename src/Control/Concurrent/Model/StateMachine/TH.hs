@@ -3,10 +3,11 @@
 module Control.Concurrent.Model.StateMachine.TH
     ( makeStates
     , makeEvents
+    , makeFsmInstance
     , makeFsm
     ) where
 
-import           Control.Concurrent.Prelude
+import           Control.Concurrent.Prelude hiding (Type)
 import           Control.Concurrent.Model.Core.Interface.Listener
 import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
@@ -14,12 +15,11 @@ import           Language.Haskell.TH
 makeStates :: [String] -> Q [Dec]
 makeStates names = forM names $ \name ->
     dataD (cxt []) (mkName name) [] Nothing [normalC (mkName name) []] []
-    
 
 makeEvents :: [String] -> Q [Dec]
 makeEvents = makeStates
 
-makeFsm :: String -> [String] -> Q [Dec]
+makeFsm :: String -> [Q Type] -> Q [Dec]
 makeFsm typeName eventNames = wrap
     $ makeTypeWraper "StateMachine" typeName
     : makeFsmInstance typeName

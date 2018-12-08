@@ -26,7 +26,7 @@ logerActor :: Actor
 {-# NOINLINE logerActor #-}
 logerActor = unsafePerformIO $ runActor dummyLoger $ do
     subscribers <- subscriptioService
-    logLevelRef <- liftIO $ newIORef Trace
+    logLevelRef <- liftIO $ newIORef Warn
     math $ \(SetLogLevel logLever) -> (writeIORef logLevelRef logLever :: IO ())
     math $ \(LogMessage logLevel text) -> do
         counLevel <- readIORef logLevelRef

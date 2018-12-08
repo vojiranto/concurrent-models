@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 34e4cfcf82c56bd0afdfa593d5f2a7e9530374f23ce82204717b94417da7dbfe
+-- hash: b107f1e22a9d11b96b9ae9326dc47d06540bdd755688f618bee0ac8a86e7b129
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -28,17 +28,6 @@ source-repository head
 library
   exposed-modules:
       Control.Concurrent.Model
-      Control.Concurrent.Model.StateMachine
-      Control.Concurrent.Model.Actor
-      Control.Concurrent.Service.Subscription
-      Control.Concurrent.Flag
-      Control.Concurrent.Loger
-  other-modules:
-      Control.Concurrent.Model.Actor.ActorRuntime
-      Control.Concurrent.Model.Actor.Interpreter
-      Control.Concurrent.Model.Actor.Language
-      Control.Concurrent.Model.Actor.Message
-      Control.Concurrent.Model.Actor.TH
       Control.Concurrent.Model.Core
       Control.Concurrent.Model.Core.Data
       Control.Concurrent.Model.Core.Data.Describe
@@ -49,6 +38,18 @@ library
       Control.Concurrent.Model.Core.Interface.Loger
       Control.Concurrent.Model.Core.Interface.Math
       Control.Concurrent.Model.Core.Interface.This
+      Control.Concurrent.Model.StateMachine
+      Control.Concurrent.Model.Actor
+      Control.Concurrent.Service.Subscription
+      Control.Concurrent.Service.StreamController
+      Control.Concurrent.Flag
+      Control.Concurrent.Loger
+  other-modules:
+      Control.Concurrent.Model.Actor.ActorRuntime
+      Control.Concurrent.Model.Actor.Interpreter
+      Control.Concurrent.Model.Actor.Language
+      Control.Concurrent.Model.Actor.Message
+      Control.Concurrent.Model.Actor.TH
       Control.Concurrent.Model.StateMachine.Domain
       Control.Concurrent.Model.StateMachine.Interpreter
       Control.Concurrent.Model.StateMachine.Language
@@ -68,7 +69,9 @@ library
   build-depends:
       base >=4.7 && <5
     , base58string
+    , bytestring
     , containers
+    , extra
     , free
     , hashable
     , lens
@@ -101,8 +104,10 @@ executable example
   build-depends:
       base >=4.7 && <5
     , base58string
+    , bytestring
     , concurrent-models
     , containers
+    , extra
     , free
     , hashable
     , lens
@@ -139,8 +144,10 @@ test-suite Actor-test
       async
     , base >=4.7 && <5
     , base58string
+    , bytestring
     , concurrent-models
     , containers
+    , extra
     , free
     , hashable
     , lens

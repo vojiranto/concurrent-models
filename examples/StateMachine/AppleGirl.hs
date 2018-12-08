@@ -8,7 +8,7 @@ import           Control.Concurrent.Loger
 
 makeEvents ["Apple"]
 makeStates ["Hungry", "WellFed"]
-makeFsm "AppleGirl" ["Apple"]
+makeFsm "AppleGirl" [[t|Apple|]]
 
 appleGirl :: IO ()
 appleGirl = do
