@@ -12,7 +12,8 @@ import           Control.Concurrent.Service.Subscription
 main :: IO ()
 main = do
     сonsoleLogOn
-    input <- streamController loger stdin 50 (const "") (Just . length)
+    let packageDescribe = PackegeDescribe 50 (const "") (Just . length)
+    input <- streamController loger stdin packageDescribe
     printer <- runActor loger $ math showMsg
     $(subscribe [t|Message Int|]) input printer
     forever $ threadDelay 100000000

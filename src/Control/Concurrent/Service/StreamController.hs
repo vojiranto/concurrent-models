@@ -30,28 +30,40 @@ instance Typeable msg => Listener StreamController (Outbox msg) where
 instance HaveTextId StreamController where
     getTextId (StreamController fsm) = getTextId fsm
 
+
+data PackegeDescribe msg = PackegeDescribe Int (msg -> ByteString) (ByteString -> Maybe msg)
+
+getEncoder :: PackegeDescribe msg -> msg -> ByteString
+getEncoder (PackegeDescribe _ encoder _) = encoder
+
+getDecoder :: PackegeDescribe msg -> ByteString -> Maybe msg
+getDecoder (PackegeDescribe _ _ decoder) = decoder
+
+getMaxSize :: PackegeDescribe msg -> Int
+getMaxSize (PackegeDescribe maxSize _ _) = maxSize
+
+
 streamController
     :: forall msg. Typeable msg
-    => Loger -> Handle -> Int -> (msg -> ByteString) -> (ByteString -> Maybe msg) -> IO StreamController
-streamController loger handler maxPackSize encoder decoder =
-    runFsm loger Opened $ do
-        subscribers <- subscriptioService
-        myRef <- this
-        liftIO $ void $ forkIO $ whileM $ do
-            rawData <- B.hGetSome handler maxPackSize
-            let retryReading = not $ B.null rawData
-            whenJust (decoder rawData) $ notify myRef . Inbox
-            unless retryReading $ notify myRef HandleClosed
-            pure retryReading
+    => Loger -> Handle -> PackegeDescribe msg -> IO StreamController
+streamController loger handler pDescribe = runFsm loger Opened $ do
+    subscribers <- subscriptioService
+    myRef <- this
+    liftIO $ void $ forkIO $ whileM $ do
+        rawData <- B.hGetSome handler (getMaxSize pDescribe)
+        let retryReading = not $ B.null rawData
+        whenJust (getDecoder pDescribe rawData) $ notify myRef . Inbox
+        unless retryReading $ notify myRef HandleClosed
+        pure retryReading
 
-        math $ \((Inbox message) :: Inbox msg) ->
-            multicast subscribers $ Message (getTextId myRef) message
-        math $ \((Outbox msg) :: Outbox msg)   ->
-            catchAny
-                (B.hPut handler $ encoder msg)
-                (\_ -> notify myRef HandleClosed)
+    math $ \((Inbox message) :: Inbox msg) ->
+        multicast subscribers $ Message (getTextId myRef) message
+    math $ \((Outbox msg) :: Outbox msg)   ->
+        catchAny
+            (B.hPut handler $ getEncoder pDescribe msg)
+            (\_ -> notify myRef HandleClosed)
 
-        closeLogic subscribers myRef $ H.hClose handler
+    closeLogic subscribers myRef $ H.hClose handler
 
 closeLogic
     :: (HaveTextId a, Acception Closed (IO b))
@@ -83,32 +95,42 @@ makeTcpServer
         Listener a NewConnect,
         Listener a (Inbox msg),
         Listener a IsClosed)
-    => Loger -> a -> S.PortNumber -> Int -> (msg -> ByteString) -> (ByteString -> Maybe msg) -> IO TcpServer
-
-makeTcpServer loger centralActor port maxPackSize encoder decoder =
+    => Loger -> a -> S.PortNumber -> PackegeDescribe msg -> IO TcpServer
+makeTcpServer loger centralActor port pDescribe =
     catchAny (do
         listenSock <- S.listenOn (S.PortNumber port)
-        runFsm loger Opened $ do
-            subscribers <- subscriptioService
-            fsmLoger    <- getLoger
-            myRef       <- this
-            liftIO $ void $ forkIO $ whileM $
-                catchAny (do
-                    (clientSock, _) <- S.accept listenSock
-                    handler     <- S.socketToHandle clientSock ReadWriteMode
-                    sController <- streamController loger handler maxPackSize encoder decoder
-                    -- sending events           from        to
-                    $(subscribe [t|IsClosed|])  sController centralActor
-                    $(subscribe [t|Inbox msg|]) sController centralActor
-                    notify centralActor $ NewConnect sController
-                    pure True
-                ) (\exception -> do
-                    fsmLoger Error $ "Fail of connect accepting: " <> show exception
-                    notify myRef SocketClosed
-                    pure False
-                )
-            closeLogic subscribers myRef $ S.close listenSock
+        tcpServer loger centralActor listenSock pDescribe
     ) (\exception -> do
         loger Error $ "Fail of tcp server start: " <> show exception
         runFsm loger Closed $ addFinalState Closed
     )
+
+tcpServer
+    :: forall msg a.(
+    HaveTextId a,
+    Typeable msg,
+    Listener a Subscription,
+    Listener a NewConnect,
+    Listener a (Inbox msg),
+    Listener a IsClosed)
+    => Loger -> a -> S.Socket -> PackegeDescribe msg -> IO TcpServer
+tcpServer loger centralActor listenSock pDescribe = runFsm loger Opened $ do
+    subscribers <- subscriptioService
+    fsmLoger    <- getLoger
+    myRef       <- this
+    liftIO $ void $ forkIO $
+        whileM $ catchAny (do
+            (clientSock, _) <- S.accept listenSock
+            handler     <- S.socketToHandle clientSock ReadWriteMode
+            sController <- streamController loger handler pDescribe
+            -- sending events           from        to
+            $(subscribe [t|IsClosed|])  sController centralActor
+            $(subscribe [t|Inbox msg|]) sController centralActor
+            notify centralActor $ NewConnect sController
+            pure True
+        ) (\exception -> do
+            fsmLoger Error $ "Fail of connect accepting: " <> show exception
+            notify myRef SocketClosed
+            pure False
+        )
+    closeLogic subscribers myRef $ S.close listenSock
