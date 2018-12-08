@@ -39,7 +39,7 @@ applyStaticalDo       = applyEvent staticalDo       "[math]"
 applyMath :: Loger -> StateMaschineHandlers -> Event -> IO ()
 applyMath toLog' machineData event =
     whenJust (machineData ^. mathDo . at (eventToType event)) $ \action -> do
-        toLog' Trace $ "[math]" <> " "<> describe event
+        toLog' Trace $ "[math]" <> " " <> describe event
         action event
 
 applyState
@@ -56,7 +56,7 @@ applyEvent
     => Getting (Maybe (Event -> IO ())) StateMaschineHandlers m
     -> Text -> Loger -> StateMaschineHandlers -> MachineState -> Event -> IO ()
 applyEvent actionLens tag toLog' machineData st event =
-    whenJust (machineData ^. actionLens . at (st, (eventToType event))) $ \action -> do
+    whenJust (machineData ^. actionLens . at (st, eventToType event)) $ \action -> do
         toLog' Trace $ tag <> " " <> describe st <> " "<> describe event
         action event
 
