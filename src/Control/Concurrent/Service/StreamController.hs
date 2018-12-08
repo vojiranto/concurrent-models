@@ -51,12 +51,18 @@ streamController loger handler maxPackSize encoder decoder =
                 (B.hPut handler $ encoder msg)
                 (\_ -> notify myRef HandleClosed)
 
-        ifE HandleClosed $ Opened >-> Closed
-        ifE CommandClose $ Opened >-> Closed
-        addFinalState Closed
-        onEntry Closed $ do
-            multicast subscribers $ IsClosed $ getTextId myRef
-            H.hClose handler
+        closeLogic subscribers myRef $ H.hClose handler
+
+closeLogic
+    :: (HaveTextId a, Acception Closed (IO b))
+    => IORef Subscribers -> a -> IO b -> StateMachineL ()
+closeLogic subscribers myRef ioAction = do
+    ifE HandleClosed $ Opened >-> Closed
+    ifE CommandClose $ Opened >-> Closed
+    addFinalState Closed
+    onEntry Closed $ do
+        multicast subscribers $ IsClosed $ getTextId myRef
+        ioAction
 
 makeTcpConnection :: S.HostName -> S.PortNumber -> IO Handle
 makeTcpConnection host port = do
@@ -79,35 +85,30 @@ makeTcpServer
         Listener a IsClosed)
     => Loger -> a -> S.PortNumber -> Int -> (msg -> ByteString) -> (ByteString -> Maybe msg) -> IO TcpServer
 
-makeTcpServer loger centralActor port maxPackSize encoder decoder = do
-    eSock <- try $ S.listenOn (S.PortNumber port)
-    case eSock of
-        Left (exception :: SomeException) -> do
-            loger Error $ "Fail of tcp server start: " <> show exception
-            runFsm loger Closed $ addFinalState Closed
-        Right listenSock -> runFsm loger Opened $ do
+makeTcpServer loger centralActor port maxPackSize encoder decoder =
+    catchAny (do
+        listenSock <- S.listenOn (S.PortNumber port)
+        runFsm loger Opened $ do
             subscribers <- subscriptioService
             fsmLoger    <- getLoger
             myRef       <- this
-            liftIO $ void $ forkIO $ whileM $ do
-                eClientSock <- try $ S.accept listenSock
-                case eClientSock of
-                    Left (exception :: SomeException) -> do
-                        fsmLoger Error $ "Fail of connect accepting: " <> show exception
-                        notify myRef SocketClosed
-                    Right (clientSock, _) -> do
-                        handler     <- S.socketToHandle clientSock ReadWriteMode
-                        sController <- streamController loger handler maxPackSize encoder decoder
-                        notify  sController $
-                            makeNotify centralActor (\(isClosed :: IsClosed) -> notify centralActor isClosed)
-                        notify  sController $
-                            makeNotify centralActor (\(msg :: Inbox msg) -> notify centralActor msg)
-                        notify centralActor $ NewConnect sController
-                pure $ isRight eClientSock
-
-            ifE SocketClosed $ Opened >-> Closed
-            ifE CommandClose $ Opened >-> Closed
-            addFinalState Closed
-            onEntry Closed $ do
-                multicast subscribers $ IsClosed $ getTextId myRef
-                S.close listenSock
+            liftIO $ void $ forkIO $ whileM $
+                catchAny (do
+                    (clientSock, _) <- S.accept listenSock
+                    handler     <- S.socketToHandle clientSock ReadWriteMode
+                    sController <- streamController loger handler maxPackSize encoder decoder
+                    -- sending events           from        to
+                    $(subscribe [t|IsClosed|])  sController centralActor
+                    $(subscribe [t|Inbox msg|]) sController centralActor
+                    notify centralActor $ NewConnect sController
+                    pure True
+                ) (\exception -> do
+                    fsmLoger Error $ "Fail of connect accepting: " <> show exception
+                    notify myRef SocketClosed
+                    pure False
+                )
+            closeLogic subscribers myRef $ S.close listenSock
+    ) (\exception -> do
+        loger Error $ "Fail of tcp server start: " <> show exception
+        runFsm loger Closed $ addFinalState Closed
+    )

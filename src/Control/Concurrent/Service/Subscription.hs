@@ -3,6 +3,7 @@
 {-# Language QuasiQuotes      #-}
 module Control.Concurrent.Service.Subscription
     ( Notify
+    , Subscribers
     , Subscription
     , Unsubscribe
     , subscriptioService
