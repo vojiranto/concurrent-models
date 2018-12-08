@@ -1,7 +1,7 @@
 {-# Language TemplateHaskell #-}
 {-# Language RankNTypes      #-}
 
-module Control.Concurrent.StateMachine.Runtime
+module Control.Concurrent.Model.StateMachine.Runtime
     ( module X
     , StateMaschineData(..)
     , emptyData
@@ -17,10 +17,10 @@ module Control.Concurrent.StateMachine.Runtime
 import           Control.Concurrent.Prelude
 import qualified Data.Set as S
 
-import           Control.Concurrent.Model
-import           Control.Concurrent.StateMachine.Domain
-import           Control.Concurrent.StateMachine.Runtime.Struct as X
-import           Control.Concurrent.StateMachine.Runtime.Handlers as X
+import           Control.Concurrent.Model.Core
+import           Control.Concurrent.Model.StateMachine.Domain
+import           Control.Concurrent.Model.StateMachine.Runtime.Struct as X
+import           Control.Concurrent.Model.StateMachine.Runtime.Handlers as X
 
 data StateMaschineData = StateMaschineData
     { _stateMachineStruct       :: StateMaschineStruct

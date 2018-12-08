@@ -2,14 +2,14 @@
 {-# Language FlexibleContexts #-}
 {-# Language TemplateHaskell  #-}
 
-module Control.Concurrent.Actor.Language where
+module Control.Concurrent.Model.Actor.Language where
 
 import           Control.Concurrent.Prelude
 
 import qualified Data.Map as M
 import           Language.Haskell.TH.MakeFunctor
-import           Control.Concurrent.Model
-import           Control.Concurrent.Actor.Message
+import           Control.Concurrent.Model.Core
+import           Control.Concurrent.Model.Actor.Message
 
 data Actor = Actor (TChan Event) ThreadId TextId (MVar Bool)
 

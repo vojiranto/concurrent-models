@@ -1,11 +1,11 @@
 {-# Language TemplateHaskell #-}
-module Control.Concurrent.Actor.ActorRuntime where
+module Control.Concurrent.Model.Actor.ActorRuntime where
 
 import           Control.Concurrent.Prelude
 
-import           Control.Concurrent.Model
-import           Control.Concurrent.Actor.Language
-import           Control.Concurrent.Actor.Interpreter 
+import           Control.Concurrent.Model.Core
+import           Control.Concurrent.Model.Actor.Language
+import           Control.Concurrent.Model.Actor.Interpreter 
 
 data ActorRuntimeData = ActorRuntimeData
     { _loger    :: Loger

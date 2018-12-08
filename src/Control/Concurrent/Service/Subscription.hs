@@ -14,7 +14,7 @@ module Control.Concurrent.Service.Subscription
 
 
 import           Control.Concurrent.Prelude hiding (Type)
-import           Control.Concurrent.Model
+import           Control.Concurrent.Model.Core
 import           Language.Haskell.TH
 import           Control.Concurrent.Service.Subscription.Domain
 

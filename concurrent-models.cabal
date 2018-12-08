@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 42c5ce61c2622be3c4d0a857e291a6ff4fd774857236b80963bf7b8c56f35469
+-- hash: 34e4cfcf82c56bd0afdfa593d5f2a7e9530374f23ce82204717b94417da7dbfe
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -28,35 +28,36 @@ source-repository head
 library
   exposed-modules:
       Control.Concurrent.Model
-      Control.Concurrent.StateMachine
-      Control.Concurrent.Actor
+      Control.Concurrent.Model.StateMachine
+      Control.Concurrent.Model.Actor
       Control.Concurrent.Service.Subscription
       Control.Concurrent.Flag
       Control.Concurrent.Loger
   other-modules:
-      Control.Concurrent.Actor.ActorRuntime
-      Control.Concurrent.Actor.Interpreter
-      Control.Concurrent.Actor.Language
-      Control.Concurrent.Actor.Message
-      Control.Concurrent.Actor.TH
-      Control.Concurrent.Model.Data
-      Control.Concurrent.Model.Data.Describe
-      Control.Concurrent.Model.Data.Event
-      Control.Concurrent.Model.Data.TextId
-      Control.Concurrent.Model.Interface
-      Control.Concurrent.Model.Interface.Listener
-      Control.Concurrent.Model.Interface.Loger
-      Control.Concurrent.Model.Interface.Math
-      Control.Concurrent.Model.Interface.This
+      Control.Concurrent.Model.Actor.ActorRuntime
+      Control.Concurrent.Model.Actor.Interpreter
+      Control.Concurrent.Model.Actor.Language
+      Control.Concurrent.Model.Actor.Message
+      Control.Concurrent.Model.Actor.TH
+      Control.Concurrent.Model.Core
+      Control.Concurrent.Model.Core.Data
+      Control.Concurrent.Model.Core.Data.Describe
+      Control.Concurrent.Model.Core.Data.Event
+      Control.Concurrent.Model.Core.Data.TextId
+      Control.Concurrent.Model.Core.Interface
+      Control.Concurrent.Model.Core.Interface.Listener
+      Control.Concurrent.Model.Core.Interface.Loger
+      Control.Concurrent.Model.Core.Interface.Math
+      Control.Concurrent.Model.Core.Interface.This
+      Control.Concurrent.Model.StateMachine.Domain
+      Control.Concurrent.Model.StateMachine.Interpreter
+      Control.Concurrent.Model.StateMachine.Language
+      Control.Concurrent.Model.StateMachine.Runtime
+      Control.Concurrent.Model.StateMachine.Runtime.Handlers
+      Control.Concurrent.Model.StateMachine.Runtime.Struct
+      Control.Concurrent.Model.StateMachine.TH
       Control.Concurrent.Prelude
       Control.Concurrent.Service.Subscription.Domain
-      Control.Concurrent.StateMachine.Domain
-      Control.Concurrent.StateMachine.Interpreter
-      Control.Concurrent.StateMachine.Language
-      Control.Concurrent.StateMachine.Runtime
-      Control.Concurrent.StateMachine.Runtime.Handlers
-      Control.Concurrent.StateMachine.Runtime.Struct
-      Control.Concurrent.StateMachine.TH
       Language.Haskell.TH.Extra
       Language.Haskell.TH.MakeFunctor
       Paths_concurrent_models

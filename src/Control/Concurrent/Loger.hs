@@ -13,7 +13,6 @@ module Control.Concurrent.Loger
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
-import           Control.Concurrent.Actor
 import           Control.Concurrent.Service.Subscription
 import           System.IO.Unsafe
 

@@ -1,15 +1,15 @@
 {-# Language FlexibleInstances     #-}
 {-# Language MultiParamTypeClasses #-}
 
-module Control.Concurrent.StateMachine.Interpreter (makeStateMachineData) where
+module Control.Concurrent.Model.StateMachine.Interpreter (makeStateMachineData) where
 
 import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import qualified Data.Set as S
-import           Control.Concurrent.Model
-import           Control.Concurrent.StateMachine.Language                      as L
-import           Control.Concurrent.StateMachine.Runtime                       as R
-import           Control.Concurrent.StateMachine.Domain                        as D
+import           Control.Concurrent.Model.Core
+import           Control.Concurrent.Model.StateMachine.Language             as L
+import           Control.Concurrent.Model.StateMachine.Runtime              as R
+import           Control.Concurrent.Model.StateMachine.Domain               as D
 
 data BuildingError = BuildingError deriving Show
 

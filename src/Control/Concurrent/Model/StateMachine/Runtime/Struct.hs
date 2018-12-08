@@ -1,14 +1,14 @@
 {-# Language TemplateHaskell #-}
 {-# Language RankNTypes      #-}
 
-module Control.Concurrent.StateMachine.Runtime.Struct where
+module Control.Concurrent.Model.StateMachine.Runtime.Struct where
 
 import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 import qualified Data.Set as S
 
-import           Control.Concurrent.Model
-import           Control.Concurrent.StateMachine.Domain
+import           Control.Concurrent.Model.Core
+import           Control.Concurrent.Model.StateMachine.Domain
 
 type TransitionMap          = M.Map (MachineState, EventType) MachineState
 type ConditionalTransitions = M.Map (MachineState, EventType) (Event -> IO (Maybe MachineState))

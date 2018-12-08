@@ -1,5 +1,5 @@
 {-# Language TemplateHaskell       #-}
-module Control.Concurrent.StateMachine.Language
+module Control.Concurrent.Model.StateMachine.Language
     ( StateMachineF(..)
     , StateMachineL
     , StateMachine(..)
@@ -24,8 +24,8 @@ module Control.Concurrent.StateMachine.Language
 
 import           Control.Concurrent.Prelude
 import           Language.Haskell.TH.MakeFunctor
-import           Control.Concurrent.Model
-import           Control.Concurrent.StateMachine.Domain
+import           Control.Concurrent.Model.Core
+import           Control.Concurrent.Model.StateMachine.Domain
 
 data StateMachine =
     StateMachine (Chan PackagedEvent) (MVar MachineState) TextId (MVar Bool)

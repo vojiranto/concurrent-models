@@ -1,10 +1,10 @@
 {-# Language MultiParamTypeClasses #-}
 {-# Language FlexibleInstances     #-}
-module Control.Concurrent.StateMachine.Domain where
+module Control.Concurrent.Model.StateMachine.Domain where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Model.Data
+import           Control.Concurrent.Model.Core.Data
 
 data Transition = Transition MachineState MachineState
 data PackagedEvent = FastEvent Event | WaitEvent Event Flag

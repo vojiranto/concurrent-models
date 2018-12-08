@@ -1,13 +1,13 @@
 {-# Language TemplateHaskell #-}
 {-# Language QuasiQuotes      #-}
-module Control.Concurrent.StateMachine.TH
+module Control.Concurrent.Model.StateMachine.TH
     ( makeStates
     , makeEvents
     , makeFsm
     ) where
 
 import           Control.Concurrent.Prelude
-import           Control.Concurrent.Model.Interface.Listener
+import           Control.Concurrent.Model.Core.Interface.Listener
 import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
 
