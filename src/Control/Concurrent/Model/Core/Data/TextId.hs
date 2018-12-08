@@ -1,4 +1,4 @@
-module Control.Concurrent.Model.Data.TextId
+module Control.Concurrent.Model.Core.Data.TextId
     ( TextId
     , HaveTextId(..)
     , Describe(..)
@@ -10,7 +10,7 @@ import           Data.Base58String.Bitcoin
 import           Control.Concurrent.Unique
 import           Data.Hashable
 
-import           Control.Concurrent.Model.Data.Describe
+import           Control.Concurrent.Model.Core.Data.Describe
 
 
 newtype TextId = TextId Text deriving (Eq, Ord)

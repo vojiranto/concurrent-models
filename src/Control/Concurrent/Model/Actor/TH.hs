@@ -1,7 +1,7 @@
-module Control.Concurrent.Actor.TH (makeAct) where
+module Control.Concurrent.Model.Actor.TH (makeAct) where
 
 import           Universum
-import           Control.Concurrent.Model.Interface.Listener
+import           Control.Concurrent.Model.Core.Interface.Listener
 import           Language.Haskell.TH.Extra 
 import           Language.Haskell.TH
 

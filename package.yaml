@@ -57,8 +57,8 @@ library:
   source-dirs: src
   exposed-modules:
     - Control.Concurrent.Model
-    - Control.Concurrent.StateMachine
-    - Control.Concurrent.Actor
+    - Control.Concurrent.Model.StateMachine
+    - Control.Concurrent.Model.Actor
     - Control.Concurrent.Service.Subscription
     - Control.Concurrent.Flag
     - Control.Concurrent.Loger

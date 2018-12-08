@@ -1,13 +1,13 @@
 {-# Language TemplateHaskell #-}
 {-# Language RankNTypes      #-}
 
-module Control.Concurrent.StateMachine.Runtime.Handlers where
+module Control.Concurrent.Model.StateMachine.Runtime.Handlers where
 
 import           Control.Concurrent.Prelude
 import qualified Data.Map as M
 
-import           Control.Concurrent.StateMachine.Domain
-import           Control.Concurrent.Model
+import           Control.Concurrent.Model.StateMachine.Domain
+import           Control.Concurrent.Model.Core
 
 data StateMaschineHandlers = StateMaschineHandlers
     { _staticalDo               :: M.Map (MachineState, EventType) (Event -> IO ())

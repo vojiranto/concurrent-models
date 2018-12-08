@@ -1,5 +1,5 @@
 {-# Language FlexibleInstances #-}
-module Control.Concurrent.Actor.Message
+module Control.Concurrent.Model.Actor.Message
     ( Event
     , ToType(..)
     , TypeRep
@@ -12,7 +12,7 @@ module Control.Concurrent.Actor.Message
     ) where
 
 import           Control.Concurrent.Prelude
-import           Control.Concurrent.Model.Data.Event
+import           Control.Concurrent.Model.Core.Data.Event
 
 data    Otherwise    = Otherwise 
 

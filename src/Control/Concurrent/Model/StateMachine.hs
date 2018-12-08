@@ -1,6 +1,6 @@
 {-# Language ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Control.Concurrent.StateMachine
+module Control.Concurrent.Model.StateMachine
     ( 
       StateMachine
     , StateMachineL
@@ -31,12 +31,12 @@ module Control.Concurrent.StateMachine
 import           Control.Concurrent.Prelude
 
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Model
-import           Control.Concurrent.StateMachine.TH
-import           Control.Concurrent.StateMachine.Language                      as L
-import           Control.Concurrent.StateMachine.Interpreter                   as I
-import qualified Control.Concurrent.StateMachine.Runtime                       as R
-import           Control.Concurrent.StateMachine.Domain                        as D
+import           Control.Concurrent.Model.Core
+import           Control.Concurrent.Model.StateMachine.TH
+import           Control.Concurrent.Model.StateMachine.Language             as L
+import           Control.Concurrent.Model.StateMachine.Interpreter          as I
+import qualified Control.Concurrent.Model.StateMachine.Runtime              as R
+import           Control.Concurrent.Model.StateMachine.Domain               as D
 
 -- | Emit event to the FSN.
 instance Typeable msg => Listener StateMachine msg where

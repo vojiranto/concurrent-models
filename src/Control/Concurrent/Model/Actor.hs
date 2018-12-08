@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts     #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Control.Concurrent.Actor
+module Control.Concurrent.Model.Actor
     ( Actor
     , ActorL
     , Role(..)
@@ -11,11 +11,11 @@ module Control.Concurrent.Actor
 
 import           Control.Concurrent.Prelude
 
-import           Control.Concurrent.Model
-import           Control.Concurrent.Actor.ActorRuntime 
-import           Control.Concurrent.Actor.Language
-import           Control.Concurrent.Actor.Message
-import           Control.Concurrent.Actor.TH
+import           Control.Concurrent.Model.Core
+import           Control.Concurrent.Model.Actor.ActorRuntime 
+import           Control.Concurrent.Model.Actor.Language
+import           Control.Concurrent.Model.Actor.Message
+import           Control.Concurrent.Model.Actor.TH
 
 class Role actor where
     -- | Build and run new actor.
