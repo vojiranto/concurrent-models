@@ -34,7 +34,6 @@ acceptTake _ = pure ()
 main :: IO ()
 main = do
     putTextLn ""
-    void сonsoleLogOn
     hspec $ do
         it "Actor ping pong test"               $ isOk (finishFor 5000 actorPingPong)
         it "Actor postman test (subscription)"  $ isOk (finishFor 5000 postmanExample1)
