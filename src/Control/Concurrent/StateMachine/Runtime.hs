@@ -19,8 +19,8 @@ import qualified Data.Set as S
 
 import           Control.Concurrent.Model
 import           Control.Concurrent.StateMachine.Domain
-import           Control.Concurrent.StateMachine.Runtime.StateMaschineStruct as X
-import           Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers as X
+import           Control.Concurrent.StateMachine.Runtime.Struct as X
+import           Control.Concurrent.StateMachine.Runtime.Handlers as X
 
 data StateMaschineData = StateMaschineData
     { _stateMachineStruct       :: StateMaschineStruct

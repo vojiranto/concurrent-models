@@ -1,7 +1,7 @@
 {-# Language TemplateHaskell #-}
 {-# Language RankNTypes      #-}
 
-module Control.Concurrent.StateMachine.Runtime.StateMaschineHandlers where
+module Control.Concurrent.StateMachine.Runtime.Handlers where
 
 import           Control.Concurrent.Prelude
 import qualified Data.Map as M
