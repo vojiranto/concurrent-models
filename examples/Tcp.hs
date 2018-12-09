@@ -16,7 +16,8 @@ tcpExample = do
     let pDescribe = packegeDescribe 50 id Just
     controller <- runActor loger $ do
         toLog Info "Start of central controller"
-        math $ \(Message _ (_ :: ByteString)) -> liftFlag success
+        math $ \(Message _ (msg :: ByteString)) ->
+            when (msg == "ping") $ liftFlag success
 
     void $ makeTcpServer loger controller 5000 pDescribe
     output <- makeTcpClient loger "127.0.0.1" 5000 pDescribe
