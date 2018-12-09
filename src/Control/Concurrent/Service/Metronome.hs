@@ -17,15 +17,15 @@ metronome loger timeout event = do
         startTime   <- liftIO $ getTime Realtime
         stepСounter <- liftIO $ newIORef (0 :: Integer)
         myRef <- this
-        math $ \Time -> void $ forkIO $ do
-            multicast subscribers event
-            step        <- readIORef stepСounter
-            writeIORef stepСounter $ step + 1
-            сurrentTime <- getTime Realtime
-            let timeOfWork = toNanoSecs (diffTimeSpec сurrentTime startTime)
-            let lateness   = timeOfWork - step * timeout
-            threadDelay $ fromEnum $ timeout - lateness
-            notify myRef Time
+        math $ \Time -> do
+            step <- atomicModifyIORef' stepСounter (\step -> (step + 1, step))
+            void $ forkIO $ do
+                multicast subscribers event
+                сurrentTime <- getTime Realtime
+                let timeOfWork = toNanoSecs (diffTimeSpec сurrentTime startTime)
+                let lateness   = timeOfWork - step * timeout
+                threadDelay $ fromEnum $ timeout - lateness
+                notify myRef Time
         addFinalState Stoped
         ifE Stop $ Started >-> Stoped
     notify fsm Time
