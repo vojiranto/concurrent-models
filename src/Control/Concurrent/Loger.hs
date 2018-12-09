@@ -50,7 +50,7 @@ stopLogListening = unsubscribe (LogMessage Trace "") logerActor
         stopRole consoleLoger
 
 setLogLevel :: LogLevel -> IO ()
-setLogLevel logLevel = notify logerActor $ SetLogLevel logLevel
+setLogLevel = notify logerActor . SetLogLevel
 
 loger :: Loger
-loger logLevel text = notify logerActor $ LogMessage logLevel text
+loger logLevel = notify logerActor . LogMessage logLevel

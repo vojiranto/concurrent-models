@@ -3,8 +3,7 @@
 {-# Language QuasiQuotes      #-}
 module Control.Concurrent.Service.StreamController where
 
-
-import           Control.Concurrent.Prelude 
+import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
 import           Control.Monad.Extra hiding (whenJust)
 import qualified Data.ByteString as B

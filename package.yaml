@@ -36,6 +36,7 @@ dependencies:
 - th-abstraction
 - network
 - free
+- clock
 - extra
 - text
 - containers
@@ -74,6 +75,7 @@ library:
     - Control.Concurrent.Model.Actor
     - Control.Concurrent.Service.Subscription
     - Control.Concurrent.Service.StreamController
+    - Control.Concurrent.Service.Metronome
     - Control.Concurrent.Flag
     - Control.Concurrent.Loger
   ghc-options:

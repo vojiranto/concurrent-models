@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 43d398b6e22cf9d2ee145420abd2c2c8c4850962d97ea0aab602108cdf722441
+-- hash: 962dca1ccfdb1710f4096fb76c092157a82a6550d290207b912233d9b4fa266a
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -58,6 +58,7 @@ library
       Control.Concurrent.Model.StateMachine.Runtime.Struct
       Control.Concurrent.Model.StateMachine.TH
       Control.Concurrent.Prelude
+      Control.Concurrent.Service.Metronome
       Control.Concurrent.Service.StreamController.Domain
       Control.Concurrent.Service.Subscription.Domain
       Language.Haskell.TH.Extra
@@ -71,6 +72,7 @@ library
       base >=4.7 && <5
     , base58string
     , bytestring
+    , clock
     , containers
     , extra
     , free
@@ -108,6 +110,7 @@ executable example
       base >=4.7 && <5
     , base58string
     , bytestring
+    , clock
     , concurrent-models
     , containers
     , extra
@@ -150,6 +153,7 @@ test-suite Actor-test
     , base >=4.7 && <5
     , base58string
     , bytestring
+    , clock
     , concurrent-models
     , containers
     , extra
