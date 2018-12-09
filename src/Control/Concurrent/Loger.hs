@@ -43,7 +43,7 @@ stopLogListening = unsubscribe (LogMessage Trace "") logerActor
 сonsoleLogOn = do
     consoleLoger <- runActor dummyLoger $
         math $ \(LogMessage logLevel text) ->
-            ((putTextLn $ "[" <> show logLevel <> "] " <> text) :: IO ())
+            ((putTextLn $ "[" <> show logLevel <> "]\t" <> text) :: IO ())
     startLogListening consoleLoger
     pure $ do
         stopLogListening consoleLoger

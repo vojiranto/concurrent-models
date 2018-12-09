@@ -12,8 +12,9 @@ import qualified GHC.IO.Handle as H
 import           Control.Concurrent.Service.Subscription
 import qualified Network.Socket as S
 import qualified Network        as S hiding (accept)
+import           Control.Concurrent.Service.StreamController.Domain
 
-newtype IsClosed = IsClosed TextId 
+newtype IsClosed = IsClosed TextId
 data HandleClosed   = HandleClosed
 data SocketClosed   = SocketClosed
 data CommandClose   = CommandClose
@@ -21,8 +22,13 @@ data Message msg    = Message TextId msg
 newtype Inbox msg   = Inbox msg
 newtype Outbox msg  = Outbox msg
 
+packegeDescribe :: Int -> (msg -> ByteString) -> (ByteString -> Maybe msg) -> PackegeDescribe msg
+packegeDescribe = PackegeDescribe
+
 makeStates ["Opened", "Closed"]
 makeFsm "StreamController" [[t|CommandClose|], [t|Subscription|], [t|Unsubscribe|]]
+
+newtype NewConnect = NewConnect StreamController
 
 instance Typeable msg => Listener StreamController (Outbox msg) where
     notify (StreamController fsm) = notify fsm
@@ -30,23 +36,11 @@ instance Typeable msg => Listener StreamController (Outbox msg) where
 instance HaveTextId StreamController where
     getTextId (StreamController fsm) = getTextId fsm
 
-
-data PackegeDescribe msg = PackegeDescribe Int (msg -> ByteString) (ByteString -> Maybe msg)
-
-getEncoder :: PackegeDescribe msg -> msg -> ByteString
-getEncoder (PackegeDescribe _ encoder _) = encoder
-
-getDecoder :: PackegeDescribe msg -> ByteString -> Maybe msg
-getDecoder (PackegeDescribe _ _ decoder) = decoder
-
-getMaxSize :: PackegeDescribe msg -> Int
-getMaxSize (PackegeDescribe maxSize _ _) = maxSize
-
-
 streamController
     :: forall msg. Typeable msg
     => Loger -> Handle -> PackegeDescribe msg -> IO StreamController
 streamController loger handler pDescribe = runFsm loger Opened $ do
+    toLog Info "Start of stream controller"
     subscribers <- subscriptioService
     myRef <- this
     liftIO $ void $ forkIO $ whileM $ do
@@ -76,16 +70,26 @@ closeLogic subscribers myRef ioAction = do
         multicast subscribers $ IsClosed $ getTextId myRef
         ioAction
 
+makeTcpClient
+    :: Typeable msg
+    => Loger -> S.HostName -> S.PortNumber -> PackegeDescribe msg -> IO StreamController
+makeTcpClient loger host port pDescribe =
+    catchAny (do
+        handle <- makeTcpConnection host port
+        streamController loger handle pDescribe
+    ) (\exception -> do
+        loger Warn $ "Fail of start tcp client: " <> show exception
+        runFsm loger Closed $ addFinalState Closed
+    )
+
 makeTcpConnection :: S.HostName -> S.PortNumber -> IO Handle
 makeTcpConnection host port = do
     address    <- head <$> S.getAddrInfo Nothing (Just host) (Just $ show port)
     sock       <- S.socket (S.addrFamily address) S.Stream S.defaultProtocol
-    catchAny (S.connect sock $ S.addrAddress address) (\_ -> pure ())
+    S.connect sock $ S.addrAddress address
     S.socketToHandle sock ReadWriteMode
 
 makeFsm "TcpServer" [[t|CommandClose|], [t|Subscription|], [t|Unsubscribe|]]
-
-newtype NewConnect = NewConnect StreamController
 
 makeTcpServer
     :: forall msg a.(
@@ -93,7 +97,7 @@ makeTcpServer
         Typeable msg,
         Listener a Subscription,
         Listener a NewConnect,
-        Listener a (Inbox msg),
+        Listener a (Message msg),
         Listener a IsClosed)
     => Loger -> a -> S.PortNumber -> PackegeDescribe msg -> IO TcpServer
 makeTcpServer loger centralActor port pDescribe =
@@ -111,10 +115,11 @@ tcpServer
     Typeable msg,
     Listener a Subscription,
     Listener a NewConnect,
-    Listener a (Inbox msg),
+    Listener a (Message msg),
     Listener a IsClosed)
     => Loger -> a -> S.Socket -> PackegeDescribe msg -> IO TcpServer
 tcpServer loger centralActor listenSock pDescribe = runFsm loger Opened $ do
+    toLog Info "Start of tcp server"
     subscribers <- subscriptioService
     fsmLoger    <- getLoger
     myRef       <- this
@@ -125,7 +130,7 @@ tcpServer loger centralActor listenSock pDescribe = runFsm loger Opened $ do
             sController <- streamController loger handler pDescribe
             -- sending events           from        to
             $(subscribe [t|IsClosed|])  sController centralActor
-            $(subscribe [t|Inbox msg|]) sController centralActor
+            $(subscribe [t|Message msg|]) sController centralActor
             notify centralActor $ NewConnect sController
             pure True
         ) (\exception -> do

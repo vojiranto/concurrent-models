@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d32220cb663060c98594af76ca9398a98bb11fdbc316ec1e1f72d4144f7cd7b2
+-- hash: 43d398b6e22cf9d2ee145420abd2c2c8c4850962d97ea0aab602108cdf722441
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -58,6 +58,7 @@ library
       Control.Concurrent.Model.StateMachine.Runtime.Struct
       Control.Concurrent.Model.StateMachine.TH
       Control.Concurrent.Prelude
+      Control.Concurrent.Service.StreamController.Domain
       Control.Concurrent.Service.Subscription.Domain
       Language.Haskell.TH.Extra
       Language.Haskell.TH.MakeFunctor
@@ -97,6 +98,7 @@ executable example
       StateMachine.Grouping
       StateMachine.Sequential
       StateMachine.TrafficLight
+      Tcp
       Paths_concurrent_models
   hs-source-dirs:
       examples
@@ -136,6 +138,7 @@ test-suite Actor-test
       StateMachine.Grouping
       StateMachine.Sequential
       StateMachine.TrafficLight
+      Tcp
       Paths_concurrent_models
   hs-source-dirs:
       test

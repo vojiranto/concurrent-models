@@ -1,8 +1,15 @@
-{-# Language TemplateHaskell  #-}
-{-# Language QuasiQuotes      #-}
+
+--{-# Language TemplateHaskell  #-}
+--{-# Language QuasiQuotes      #-}
+
 module Main where
 
 import           Universum
+import           Tcp
+
+main :: IO ()
+main = tcpExample
+{-
 import           Control.Concurrent (threadDelay)
 import           Control.Concurrent.Loger
 import           Control.Concurrent.Model
@@ -20,3 +27,4 @@ main = do
 
 showMsg :: Message Int -> IO ()
 showMsg (Message _id i) =  putTextLn $ describe _id <> " " <> show i
+-}
