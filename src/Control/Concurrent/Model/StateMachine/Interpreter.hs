@@ -113,7 +113,6 @@ interpretStateMachineL toLog' m _ (L.StaticalDo st1 eventType' action next) = do
     next <$> modifyIORef m (R.handlers . R.staticalDo %~ M.insert (st1, eventType') (toSafe toLog' eventType'  action))
 
 interpretStateMachineL toLog' m _ (L.ExitWithEventDo st1 eventType' action next) = do
-    -- TODO: add warning if handler already exists.
     dataStruct <- readIORef m
     let logTail = describe st1 <> " " <> describe eventType'
     if M.member (st1, eventType') (dataStruct ^. R.handlers . R.exitWithEventDo)

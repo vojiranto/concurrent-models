@@ -8,7 +8,6 @@ import           Control.Concurrent.Model.Core
 
 interpretActorL :: Loger -> Actor -> IORef HandlerMap -> ActorF a -> IO a
 interpretActorL loger _ m (Math messageType handler next) = do
-    -- TODO: add warning if handler already exists.
     loger Trace $ "[add handler] " <> describe messageType
     dataStruct <- readIORef m
     let logTail = describe messageType
