@@ -41,14 +41,8 @@ streamController
 streamController loger handler pDescribe = runFsm loger Opened $ do
     toLog Info "Start of stream controller"
     subscribers <- subscriptioService
-    myRef <- this
-    liftIO $ void $ forkIO $ whileM $ do
-        rawData <- B.hGetSome handler (getMaxSize pDescribe)
-        let retryReading = not $ B.null rawData
-        whenJust (getDecoder pDescribe rawData) $ notify myRef . Inbox
-        unless retryReading $ notify myRef HandleClosed
-        pure retryReading
-
+    myRef       <- this
+    liftIO $ readerWorker (handleRead handler pDescribe) myRef pDescribe
     math $ \((Inbox message) :: Inbox msg) ->
         multicast subscribers $ Message (getTextId myRef) message
     math $ \((Outbox msg) :: Outbox msg)   ->
@@ -57,6 +51,19 @@ streamController loger handler pDescribe = runFsm loger Opened $ do
             (\_ -> notify myRef HandleClosed)
 
     closeLogic subscribers myRef $ H.hClose handler
+
+handleRead :: Handle -> PackegeDescribe msg -> IO ByteString
+handleRead handler pDescribe = B.hGetSome handler (getMaxSize pDescribe)
+
+readerWorker
+    :: (Listener a HandleClosed, Listener a (Inbox msg))
+    => IO ByteString -> a -> PackegeDescribe msg -> IO ()
+readerWorker readerAction myRef pDescribe = void $ forkIO $ whileM $ do
+    rawData <- readerAction
+    let retryReading = not $ B.null rawData
+    whenJust (getDecoder pDescribe rawData) $ notify myRef . Inbox
+    unless retryReading $ notify myRef HandleClosed
+    pure retryReading
 
 closeLogic
     :: (HaveTextId a, Acception Closed (IO b))
@@ -128,7 +135,7 @@ tcpServer loger centralActor listenSock pDescribe = runFsm loger Opened $ do
             handler     <- S.socketToHandle clientSock ReadWriteMode
             sController <- streamController loger handler pDescribe
             -- sending events           from        to
-            $(subscribe [t|IsClosed|])  sController centralActor
+            $(subscribe [t|IsClosed|])    sController centralActor
             $(subscribe [t|Message msg|]) sController centralActor
             notify centralActor $ NewConnect sController
             pure True
