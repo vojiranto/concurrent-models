@@ -12,12 +12,10 @@ import           Control.Concurrent.Service.Subscription
 import qualified Network.Socket as S
 import qualified Network        as S hiding (accept)
 
-newtype IsClosed = IsClosed TextId
-data HandleClosed   = HandleClosed
-data SocketClosed   = SocketClosed
-data CommandClose   = CommandClose
-data Message        = Message TextId ByteString 
-newtype Inbox       = Inbox ByteString
+newtype IsClosed  = IsClosed TextId
+data CommandClose = CommandClose
+data Message      = Message TextId ByteString 
+newtype Inbox     = Inbox ByteString
 
 makeStates ["Opened", "Closed"]
 makeFsm "StreamController" [[t|CommandClose|], [t|ByteString|], [t|Subscription|], [t|Unsubscribe|]]
@@ -33,31 +31,29 @@ streamController loger handler maxPSize = runFsm loger Opened $ do
     subscribers <- subscriptioService
     myRef       <- this
     liftIO $ readerWorker (B.hGetSome handler maxPSize) myRef
-    math $ \((Inbox message) :: Inbox) ->
+    math $ \(Inbox message) ->
         multicast subscribers $ Message (getTextId myRef) message
-    math $ \(msg :: ByteString) ->
-        catchAny
-            (B.hPut handler msg)
-            (\_ -> notify myRef HandleClosed)
+    math $ \msg -> catchAny
+        (B.hPut handler msg)
+        (\_ -> notify myRef CommandClose)
 
     closeLogic subscribers myRef $ H.hClose handler
 
 readerWorker
-    :: (Listener a HandleClosed, Listener a Inbox, Listener a ByteString)
+    :: (Listener a CommandClose, Listener a Inbox, Listener a ByteString)
     => IO ByteString -> a -> IO ()
 readerWorker readerAction myRef = void $ forkIO $ whileM $ do
     rawData <- readerAction
     let retryReading = not $ B.null rawData
     if retryReading
         then notify myRef (Inbox rawData)
-        else notify myRef HandleClosed
+        else notify myRef CommandClose
     pure retryReading
 
 closeLogic
     :: (HaveTextId a, Acception Closed (IO b))
     => IORef Subscribers -> a -> IO b -> StateMachineL ()
 closeLogic subscribers myRef ioAction = do
-    ifE HandleClosed $ Opened >-> Closed
     ifE CommandClose $ Opened >-> Closed
     addFinalState Closed
     onEntry Closed $ do
@@ -126,7 +122,7 @@ tcpServer loger centralActor listenSock maxPSize = runFsm loger Opened $ do
             pure True
         ) (\exception -> do
             fsmLoger Error $ "Fail of connect accepting: " <> show exception
-            notify myRef SocketClosed
+            notify myRef CommandClose
             pure False
         )
     closeLogic subscribers myRef $ S.close listenSock
