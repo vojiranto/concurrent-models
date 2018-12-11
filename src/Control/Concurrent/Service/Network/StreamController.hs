@@ -1,7 +1,7 @@
 {-# Language FlexibleContexts #-}
 {-# Language TemplateHaskell  #-}
 {-# Language QuasiQuotes      #-}
-module Control.Concurrent.Service.StreamController where
+module Control.Concurrent.Service.Network.StreamController where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
@@ -83,7 +83,6 @@ makeFsm "TcpServer" [[t|CommandClose|], [t|Subscription|], [t|Unsubscribe|]]
 makeTcpServer
     :: forall a.(
         HaveTextId a,
-        Listener a Subscription,
         Listener a NewConnect,
         Listener a Message,
         Listener a IsClosed)
@@ -100,7 +99,6 @@ makeTcpServer loger centralActor port maxPSize =
 tcpServer
     :: forall a.(
     HaveTextId a,
-    Listener a Subscription,
     Listener a NewConnect,
     Listener a Message,
     Listener a IsClosed)

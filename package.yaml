@@ -74,10 +74,10 @@ library:
     - Control.Concurrent.Model.StateMachine
     - Control.Concurrent.Model.Actor
     - Control.Concurrent.Service.Subscription
-    - Control.Concurrent.Service.StreamController
-    - Control.Concurrent.Service.Metronome
+    - Control.Concurrent.Service.Network.StreamController
+    - Control.Concurrent.Node.Metronome
     - Control.Concurrent.Flag
-    - Control.Concurrent.Loger
+    - Control.Concurrent.Node.Loger
   ghc-options:
   - -Wall
   - -Werror

@@ -4,10 +4,10 @@ module Tcp where
 
 import           Universum
 
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Service.StreamController
+import           Control.Concurrent.Service.Network.StreamController
 --import           Control.Concurrent.Service.Subscription
 
 tcpExample :: IO ()

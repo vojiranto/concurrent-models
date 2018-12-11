@@ -1,7 +1,7 @@
 {-# Language TemplateHaskell  #-}
 {-# Language QuasiQuotes      #-}
 {-# Language FlexibleContexts #-}
-module Control.Concurrent.Loger
+module Control.Concurrent.Node.Loger
     ( dummyLoger
     , LogMessage(..)
     , startLogListening

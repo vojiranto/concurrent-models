@@ -6,7 +6,7 @@ import           Control.Concurrent
 import           Test.Hspec.Extra
 
 import           Control.Concurrent.Model
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Flag
 
 import           Tcp

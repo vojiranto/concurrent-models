@@ -1,5 +1,5 @@
 {-# Language TemplateHaskell  #-}
-module Control.Concurrent.Service.Metronome where
+module Control.Concurrent.Node.Metronome where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Service.Subscription

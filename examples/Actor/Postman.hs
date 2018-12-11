@@ -6,7 +6,7 @@ module Actor.Postman where
 import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag        -- To report about successful completion.
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Service.Subscription 
 
 data Times  = Times
