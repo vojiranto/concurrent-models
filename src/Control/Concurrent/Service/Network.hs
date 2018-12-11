@@ -58,7 +58,7 @@ subscribeStreem stream centralActor = do
     $(subscribe [t|Message|])  stream centralActor
     notify centralActor $ NewConnect stream
 
-connectManager :: StateMachineL (M.Map TextId Stream)
+connectManager :: StateMachineL (IORef (M.Map TextId Stream))
 connectManager = do
     toLog Info "Init connect manager service"
     conncets <- liftIO $ newIORef mempty 

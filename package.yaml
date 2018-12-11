@@ -74,6 +74,7 @@ library:
     - Control.Concurrent.Model.StateMachine
     - Control.Concurrent.Model.Actor
     - Control.Concurrent.Service.Subscription
+    - Control.Concurrent.Service.Network
     - Control.Concurrent.Node.Network.Tcp
     - Control.Concurrent.Node.Metronome
     - Control.Concurrent.Flag

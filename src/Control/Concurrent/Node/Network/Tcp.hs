@@ -3,6 +3,7 @@
 {-# Language QuasiQuotes      #-}
 module Control.Concurrent.Node.Network.Tcp
     ( module X
+    , TcpServer(..)
     , makeTcpServer
     , makeTcpClient
     ) where
