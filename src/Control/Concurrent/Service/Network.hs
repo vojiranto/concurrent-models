@@ -2,28 +2,24 @@
 {-# Language TemplateHaskell  #-}
 {-# Language QuasiQuotes      #-}
 
-module Control.Concurrent.Service.Network where
+module Control.Concurrent.Service.Network
+    (module X
+    , Message(..)
+    , Inbox(..)
+    , readerWorker
+    , subscribeStreem
+    , closeLogic
+    ) where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
-import qualified Data.Map as M
 import           Control.Monad.Extra hiding (whenJust)
 import qualified Data.ByteString as B
 import           Control.Concurrent.Service.Subscription
+import           Control.Concurrent.Service.Network.ConnectManager as X
 
-newtype IsClosed  = IsClosed TextId
-data CommandClose = CommandClose
 data Message      = Message TextId ByteString 
 newtype Inbox     = Inbox ByteString
-data ConnectManager = ConnectManager 
-
-makeStates ["Opened", "Closed"]
-makeFsm "Stream" [[t|CommandClose|], [t|ByteString|], [t|Subscription|], [t|Unsubscribe|]]
-
-newtype NewConnect = NewConnect Stream
-
-instance HaveTextId Stream where
-    getTextId (Stream fsm) = getTextId fsm
 
 readerWorker
     :: (Listener a CommandClose, Listener a Inbox, Listener a ByteString)
@@ -57,13 +53,3 @@ subscribeStreem stream centralActor = do
     $(subscribe [t|IsClosed|]) stream centralActor
     $(subscribe [t|Message|])  stream centralActor
     notify centralActor $ NewConnect stream
-
-connectManager :: StateMachineL (IORef (M.Map TextId Stream))
-connectManager = do
-    toLog Info "Init connect manager service"
-    conncets <- liftIO $ newIORef mempty 
-    mathS ConnectManager $ \(NewConnect fsm) ->
-        void $ modifyIORef' conncets (M.insert (getTextId fsm) fsm)
-    mathS ConnectManager $ \(IsClosed textId) ->
-        void $ modifyIORef' conncets (M.delete textId)
-    pure conncets
