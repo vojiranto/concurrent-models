@@ -34,7 +34,9 @@ connectManager = do
     -- finally logic
     addFinalState Closed
     ifE CommandClose $ ConnectManager >-> Closed
-    onEntry Closed $ broadcast connectsRef CommandClose
+    onExit ConnectManager $ do
+        broadcast connectsRef CommandClose
+        writeIORef connectsRef mempty
 
     pure connectsRef
 
