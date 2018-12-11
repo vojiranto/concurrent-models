@@ -13,9 +13,9 @@ tcpExample :: IO ()
 tcpExample = do
     success <- newFlag
     let maxPSize = 50
-    controller <- runStateMachine loger ConnectManager $ do
+    controller <- runStateMachine loger StreamManager $ do
         toLog Info "Start of central controller"
-        void connectManager
+        void streamManager
         math $ \(Message _ msg) ->
             when (msg == "ping") $ liftFlag success
     void $ makeTcpServer loger controller 5000 maxPSize

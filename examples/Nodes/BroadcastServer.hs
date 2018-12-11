@@ -13,9 +13,9 @@ broadcastServer :: IO (TcpServer, StateMachine)
 broadcastServer = do
     let maxPSize   = 500
     let portNumber = 5000
-    controller <- runStateMachine loger ConnectManager $ do
-        toLog Info "Start of bracast server"
-        connectsRef <- connectManager
+    controller <- runStateMachine loger StreamManager $ do
+        toLog Info "Start of broadcast server"
+        connectsRef <- streamManager
         math $ \(Message _ msg) -> broadcast connectsRef msg
 
     server <- makeTcpServer loger controller portNumber maxPSize

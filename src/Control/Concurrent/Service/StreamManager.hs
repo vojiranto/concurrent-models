@@ -2,39 +2,28 @@
 {-# Language TemplateHaskell  #-}
 {-# Language QuasiQuotes      #-}
 
-module Control.Concurrent.Service.Network.ConnectManager where
+module Control.Concurrent.Service.StreamManager where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
+import           Control.Concurrent.Service.Stream
+
 import qualified Data.Map as M
-import           Control.Concurrent.Service.Subscription
 
-newtype IsClosed  = IsClosed TextId
-data CommandClose = CommandClose
-data ConnectManager = ConnectManager 
-
-makeStates ["Opened", "Closed"]
-makeFsm "Stream" [[t|CommandClose|], [t|ByteString|], [t|Subscription|], [t|Unsubscribe|]]
-
-newtype NewConnect = NewConnect Stream
-
-instance HaveTextId Stream where
-    getTextId (Stream fsm) = getTextId fsm
-
-connectManager :: StateMachineL (IORef (M.Map TextId Stream))
-connectManager = do
+streamManager :: StateMachineL (IORef (M.Map TextId Stream))
+streamManager = do
     toLog Info "Init connect manager service"
     -- work logic
     connectsRef <- liftIO $ newIORef mempty 
-    mathS ConnectManager $ \(NewConnect fsm) ->
+    mathS StreamManager $ \(NewHandle fsm) ->
         void $ modifyIORef' connectsRef (M.insert (getTextId fsm) fsm)
-    mathS ConnectManager $ \(IsClosed textId) ->
+    mathS StreamManager $ \(IsClosed textId) ->
         void $ modifyIORef' connectsRef (M.delete textId)
 
     -- finally logic
     addFinalState Closed
-    ifE CommandClose $ ConnectManager >-> Closed
-    onExit ConnectManager $ do
+    ifE CommandClose $ StreamManager >-> Closed
+    onExit StreamManager $ do
         broadcast connectsRef CommandClose
         writeIORef connectsRef mempty
 

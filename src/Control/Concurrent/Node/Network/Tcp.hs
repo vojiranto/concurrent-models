@@ -16,13 +16,14 @@ import qualified GHC.IO.Handle as H
 import           Control.Concurrent.Service.Subscription
 import qualified Network.Socket as S
 import qualified Network        as S hiding (accept)
-import           Control.Concurrent.Service.Network as X
+import           Control.Concurrent.Service.StreamManager as X
+import           Control.Concurrent.Service.Stream        as X
 
 makeFsm "TcpServer" [[t|CommandClose|], [t|Subscription|], [t|Unsubscribe|]]
 makeTcpServer
     :: forall a.(
         HaveTextId a,
-        Listener a NewConnect,
+        Listener a NewHandle,
         Listener a Message,
         Listener a IsClosed)
     => Loger -> a -> S.PortNumber -> Int -> IO TcpServer
@@ -38,7 +39,7 @@ makeTcpServer loger centralActor port maxPSize =
 tcpServer
     :: forall a.(
     HaveTextId a,
-    Listener a NewConnect,
+    Listener a NewHandle,
     Listener a Message,
     Listener a IsClosed)
     => Loger -> a -> S.Socket -> Int -> IO TcpServer
@@ -92,3 +93,14 @@ makeStream loger handler maxPSize = runFsm loger Opened $ do
         (\_ -> notify myRef CommandClose)
 
     closeLogic subscribers myRef $ H.hClose handler
+
+readerWorker
+    :: (Listener a CommandClose, Listener a Inbox, Listener a ByteString)
+    => IO ByteString -> a -> IO ()
+readerWorker readerAction myRef = void $ forkIO $ whileM $ do
+    rawData <- readerAction
+    let retryReading = not $ B.null rawData
+    if retryReading
+        then notify myRef (Inbox rawData)
+        else notify myRef CommandClose
+    pure retryReading
