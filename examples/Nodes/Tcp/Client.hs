@@ -22,11 +22,13 @@ client = do
     resenderToConsole <- runActor loger $
         math $ \(Message _ msg) -> notify console msg
 
-    resenderToClient <- runActor loger $
+    resenderToClient <- runActor loger $ do
         math $ \(Message _ msg) -> do
             when (msg == "XXX") $ liftFlag exitFromClient
             notify tcpClient msg
+        math $ \(IsClosed _) -> liftFlag exitFromClient
 
     $(subscribe [t|Message|])  console   resenderToClient 
     $(subscribe [t|Message|])  tcpClient resenderToConsole
+    $(subscribe [t|IsClosed|]) tcpClient resenderToClient
     wait exitFromClient
