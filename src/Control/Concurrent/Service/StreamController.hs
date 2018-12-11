@@ -18,10 +18,9 @@ data SocketClosed   = SocketClosed
 data CommandClose   = CommandClose
 data Message        = Message TextId ByteString 
 newtype Inbox       = Inbox ByteString
-newtype Outbox      = Outbox ByteString
 
 makeStates ["Opened", "Closed"]
-makeFsm "StreamController" [[t|CommandClose|], [t|Outbox|], [t|Subscription|], [t|Unsubscribe|]]
+makeFsm "StreamController" [[t|CommandClose|], [t|ByteString|], [t|Subscription|], [t|Unsubscribe|]]
 
 newtype NewConnect = NewConnect StreamController
 
@@ -36,7 +35,7 @@ streamController loger handler maxPSize = runFsm loger Opened $ do
     liftIO $ readerWorker (B.hGetSome handler maxPSize) myRef
     math $ \((Inbox message) :: Inbox) ->
         multicast subscribers $ Message (getTextId myRef) message
-    math $ \((Outbox msg) :: Outbox)   ->
+    math $ \(msg :: ByteString) ->
         catchAny
             (B.hPut handler msg)
             (\_ -> notify myRef HandleClosed)

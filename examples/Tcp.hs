@@ -20,5 +20,5 @@ tcpExample = do
             when (msg == "ping") $ liftFlag success
     void $ makeTcpServer loger controller 5000 maxPSize
     output <- makeTcpClient loger "127.0.0.1" 5000 maxPSize
-    notify output $ Outbox "ping"
+    notify output ("ping" :: ByteString)
     wait success
