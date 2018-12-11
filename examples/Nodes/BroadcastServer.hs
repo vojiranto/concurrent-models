@@ -14,8 +14,11 @@ broadcastServer = do
     let maxPSize = 50
     controller <- runStateMachine loger ConnectManager $ do
         toLog Info "Start of bracast server"
+        -- work logic
         connectsRef <- connectManager
         math $ \(Message _ msg) -> broadcast connectsRef msg
+        
+        -- finally logic
         ifE CommandClose $ ConnectManager >-> Closed
         addFinalState Closed
         onEntry Closed $ broadcast connectsRef CommandClose
