@@ -9,8 +9,8 @@ import           Control.Concurrent.Model
 import           Control.Concurrent.Service.Stream
 import qualified Data.ByteString as B
 
-consoleWorker :: Loger -> IO Stream
-consoleWorker loger = runFsm loger Opened $ do
+runConsoleWorker :: Loger -> IO Stream
+runConsoleWorker loger = runFsm loger Opened $ do
     subscribers <- subscriptioService
     myRef <- this
     liftIO $ readerWorker B.getLine myRef

@@ -4,8 +4,8 @@
 module Control.Concurrent.Node.Network.Tcp
     ( module X
     , TcpServer(..)
-    , makeTcpServer
-    , makeTcpClient
+    , runTcpServer
+    , runTcpClient
     ) where
 
 import           Control.Concurrent.Prelude
@@ -20,14 +20,14 @@ import           Control.Concurrent.Service.StreamManager as X
 import           Control.Concurrent.Service.Stream        as X
 
 makeFsm "TcpServer" [[t|CommandClose|], [t|Subscription|], [t|Unsubscribe|]]
-makeTcpServer
+runTcpServer
     :: forall a.(
         HaveTextId a,
         Listener a NewHandle,
         Listener a Message,
         Listener a IsClosed)
     => Loger -> a -> S.PortNumber -> Int -> IO TcpServer
-makeTcpServer loger centralActor port maxPSize =
+runTcpServer loger centralActor port maxPSize =
     catchAny (do
         listenSock <- S.listenOn (S.PortNumber port)
         tcpServer loger centralActor listenSock maxPSize
@@ -52,7 +52,7 @@ tcpServer loger centralActor listenSock maxPSize = runFsm loger Opened $ do
         whileM $ catchAny (do
             (clientSock, _) <- S.accept listenSock
             handler     <- S.socketToHandle clientSock ReadWriteMode
-            stream <- makeStream loger handler maxPSize
+            stream <- runStream loger handler maxPSize
             subscribeStreem stream centralActor
             pure True
         ) (\exception -> do
@@ -62,12 +62,12 @@ tcpServer loger centralActor listenSock maxPSize = runFsm loger Opened $ do
         )
     closeLogic subscribers myRef $ S.close listenSock
 
-makeTcpClient
+runTcpClient
     :: Loger -> S.HostName -> S.PortNumber -> Int -> IO Stream
-makeTcpClient loger host port maxPSize =
+runTcpClient loger host port maxPSize =
     catchAny (do
         handle <- makeTcpConnection host port
-        makeStream loger handle maxPSize
+        runStream loger handle maxPSize
     ) (\exception -> do
         loger Warn $ "Fail of start tcp client: " <> show exception
         runFsm loger Closed $ addFinalState Closed
@@ -80,8 +80,8 @@ makeTcpConnection host port = do
     S.connect sock $ S.addrAddress address
     S.socketToHandle sock ReadWriteMode
 
-makeStream :: Loger -> Handle -> Int -> IO Stream
-makeStream loger handler maxPSize = runFsm loger Opened $ do
+runStream :: Loger -> Handle -> Int -> IO Stream
+runStream loger handler maxPSize = runFsm loger Opened $ do
     toLog Info "Start of stream controller"
     subscribers <- subscriptioService
     myRef       <- this

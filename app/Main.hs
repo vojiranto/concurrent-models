@@ -20,7 +20,7 @@ main :: IO ()
 main = do
     сonsoleLogOn
     let packageDescribe = PackegeDescribe 50 (const "") (Just . length)
-    input <- makeStream loger stdin packageDescribe
+    input <- runStream loger stdin packageDescribe
     printer <- runActor loger $ math showMsg
     $(subscribe [t|Message Int|]) input printer
     forever $ threadDelay 100000000

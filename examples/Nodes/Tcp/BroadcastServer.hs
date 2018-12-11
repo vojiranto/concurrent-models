@@ -1,7 +1,7 @@
 {-# Language TemplateHaskell  #-}
 {-# Language QuasiQuotes      #-}
 {-# Language FlexibleContexts #-}
-module Nodes.BroadcastServer where
+module Nodes.Tcp.BroadcastServer where
 
 import           Universum
 
@@ -18,5 +18,5 @@ broadcastServer = do
         connectsRef <- streamManager
         math $ \(Message _ msg) -> broadcast connectsRef msg
 
-    server <- makeTcpServer loger controller portNumber maxPSize
+    server <- runTcpServer loger controller portNumber maxPSize
     pure (server, controller)

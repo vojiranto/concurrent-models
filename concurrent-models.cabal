@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 69823031fbb83bacb503321b325ffd3cb48124fcd3dc11ead9681636b8aa58b9
+-- hash: f018ac059bcdba81d19f40e89a53f729228da45ed9c4cdac4d91c4a5328597ac
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -43,9 +43,10 @@ library
       Control.Concurrent.Service.Subscription
       Control.Concurrent.Service.StreamManager
       Control.Concurrent.Node.Network.Tcp
+      Control.Concurrent.Node.Console
       Control.Concurrent.Node.Metronome
-      Control.Concurrent.Flag
       Control.Concurrent.Node.Loger
+      Control.Concurrent.Flag
   other-modules:
       Control.Concurrent.Model.Actor.ActorRuntime
       Control.Concurrent.Model.Actor.Interpreter
@@ -59,7 +60,6 @@ library
       Control.Concurrent.Model.StateMachine.Runtime.Handlers
       Control.Concurrent.Model.StateMachine.Runtime.Struct
       Control.Concurrent.Model.StateMachine.TH
-      Control.Concurrent.Node.Console
       Control.Concurrent.Prelude
       Control.Concurrent.Service.Stream
       Control.Concurrent.Service.Subscription.Domain
@@ -96,7 +96,8 @@ executable example
       Actor.PingPong
       Actor.Postman
       Actor.TypeSafe
-      Nodes.BroadcastServer
+      Nodes.Tcp.BroadcastServer
+      Nodes.Tcp.Client
       StateMachine
       StateMachine.AppleGirl
       StateMachine.Door
@@ -138,7 +139,8 @@ test-suite Actor-test
       Actor.PingPong
       Actor.Postman
       Actor.TypeSafe
-      Nodes.BroadcastServer
+      Nodes.Tcp.BroadcastServer
+      Nodes.Tcp.Client
       StateMachine
       StateMachine.AppleGirl
       StateMachine.Door
