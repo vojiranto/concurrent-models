@@ -1,7 +1,7 @@
 {-# Language TemplateHaskell  #-}
 {-# Language QuasiQuotes      #-}
 {-# Language FlexibleContexts #-}
-module Nodes.Tcp.BroadcastServer where
+module Node.Tcp.BroadcastServer where
 
 import           Universum
 
@@ -12,9 +12,9 @@ import           Control.Concurrent.Node.Console
 import           Control.Concurrent.Flag
 import           Control.Concurrent.Service.Subscription
 
-broadcastServer :: IO ()
-broadcastServer = do
-    (tcpServer, controller) <- makeBroadcastServer
+tcpBroadcastServer :: IO ()
+tcpBroadcastServer = do
+    (tcpServer, controller) <- runBroadcastServer
     console                 <- runConsoleWorker loger
     exitFromServer <- newFlag
     commandReader <- runActor loger $
@@ -25,8 +25,8 @@ broadcastServer = do
     $(subscribe [t|Message|]) console commandReader
     wait exitFromServer
 
-makeBroadcastServer :: IO (TcpServer, StateMachine)
-makeBroadcastServer = do
+runBroadcastServer :: IO (TcpServer, StateMachine)
+runBroadcastServer = do
     let maxPSize   = 500
     let portNumber = 5000
     controller <- runStateMachine loger StreamManager $ do

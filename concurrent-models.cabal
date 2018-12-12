@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f018ac059bcdba81d19f40e89a53f729228da45ed9c4cdac4d91c4a5328597ac
+-- hash: b76d2e325ea8da734f7854e89150da440b4f1032dff66ba5f9d9d6910dffbf29
 
 name:           concurrent-models
 version:        0.1.0.0
@@ -96,8 +96,9 @@ executable example
       Actor.PingPong
       Actor.Postman
       Actor.TypeSafe
-      Nodes.Tcp.BroadcastServer
-      Nodes.Tcp.Client
+      Node
+      Node.Tcp.BroadcastServer
+      Node.Tcp.Client
       StateMachine
       StateMachine.AppleGirl
       StateMachine.Door
@@ -139,8 +140,9 @@ test-suite Actor-test
       Actor.PingPong
       Actor.Postman
       Actor.TypeSafe
-      Nodes.Tcp.BroadcastServer
-      Nodes.Tcp.Client
+      Node
+      Node.Tcp.BroadcastServer
+      Node.Tcp.Client
       StateMachine
       StateMachine.AppleGirl
       StateMachine.Door

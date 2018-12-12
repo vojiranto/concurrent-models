@@ -1,7 +1,7 @@
 {-# Language TemplateHaskell  #-}
 {-# Language QuasiQuotes      #-}
 {-# Language FlexibleContexts #-}
-module Nodes.Tcp.Client where
+module Node.Tcp.Client where
 
 import           Universum
 
@@ -12,11 +12,11 @@ import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Node.Network.Tcp
 import           Control.Concurrent.Node.Console
 
-client :: IO ()
-client = do
+tcpClient :: IO ()
+tcpClient = do
     let maxPSize   = 500
     exitFromClient  <- newFlag
-    tcpClient       <- runTcpClient loger "127.0.0.1" 5000 maxPSize
+    client          <- runTcpClient loger "127.0.0.1" 5000 maxPSize
     console         <- runConsoleWorker loger
 
     resenderToConsole <- runActor loger $
@@ -24,11 +24,14 @@ client = do
 
     resenderToClient <- runActor loger $ do
         math $ \(Message _ msg) -> do
-            when (msg == "XXX") $ liftFlag exitFromClient
-            notify tcpClient msg
+            when (msg == "exit") $ liftFlag exitFromClient
+            notify client msg
         math $ \(IsClosed _) -> liftFlag exitFromClient
 
     $(subscribe [t|Message|])  console   resenderToClient 
-    $(subscribe [t|Message|])  tcpClient resenderToConsole
-    $(subscribe [t|IsClosed|]) tcpClient resenderToClient
+    $(subscribe [t|Message|])  client    resenderToConsole
+    $(subscribe [t|IsClosed|]) client    resenderToClient
+
+    clientState <- readState client
+    when (clientState `is` Closed) $ liftFlag exitFromClient
     wait exitFromClient

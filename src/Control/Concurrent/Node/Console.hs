@@ -8,6 +8,7 @@ import           Control.Concurrent.Service.Subscription
 import           Control.Concurrent.Model
 import           Control.Concurrent.Service.Stream
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B8
 
 runConsoleWorker :: Loger -> IO Stream
 runConsoleWorker loger = runFsm loger Opened $ do
@@ -16,8 +17,8 @@ runConsoleWorker loger = runFsm loger Opened $ do
     liftIO $ readerWorker B.getLine myRef
     math $ \(Inbox message) ->
         multicast subscribers $ Message (getTextId myRef) message
-    math $ \message -> catchAny
-        (putTextLn message)
+    math $ \(message :: B.ByteString) -> catchAny
+        (B8.putStrLn message)
         (\_ -> notify myRef CommandClose)
     closeLogic subscribers myRef $ pure ()
 
