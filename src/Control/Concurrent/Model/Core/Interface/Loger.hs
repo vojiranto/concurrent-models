@@ -3,7 +3,7 @@ module Control.Concurrent.Model.Core.Interface.Loger where
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model.Core.Data.TextId
 
--- https://stackoverflow.com/a/2031209
+-- | https://stackoverflow.com/a/2031209
 data LogLevel = Trace | Debug | Info | Warn | Error | Fatal
     deriving (Eq, Ord, Enum, Show)
 
@@ -15,4 +15,4 @@ class Monad m => Logers m where
 
 addTagToLoger :: Loger -> Text -> TextId -> IO Loger
 addTagToLoger logerAction tag textId =
-    pure $ \logLevel txt -> logerAction logLevel (tag <> " " <> describe textId <> " " <> txt)
+    pure $ \logLevel txt -> logerAction logLevel (tag <> "\t" <> describe textId <> " " <> txt)

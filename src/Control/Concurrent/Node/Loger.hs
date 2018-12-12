@@ -1,7 +1,7 @@
 {-# Language TemplateHaskell  #-}
 {-# Language QuasiQuotes      #-}
 {-# Language FlexibleContexts #-}
-module Control.Concurrent.Loger
+module Control.Concurrent.Node.Loger
     ( dummyLoger
     , LogMessage(..)
     , startLogListening
@@ -26,7 +26,7 @@ logerActor :: Actor
 {-# NOINLINE logerActor #-}
 logerActor = unsafePerformIO $ runActor dummyLoger $ do
     subscribers <- subscriptioService
-    logLevelRef <- liftIO $ newIORef Trace
+    logLevelRef <- liftIO $ newIORef Warn
     math $ \(SetLogLevel logLever) -> (writeIORef logLevelRef logLever :: IO ())
     math $ \(LogMessage logLevel text) -> do
         counLevel <- readIORef logLevelRef
@@ -43,14 +43,14 @@ stopLogListening = unsubscribe (LogMessage Trace "") logerActor
 сonsoleLogOn = do
     consoleLoger <- runActor dummyLoger $
         math $ \(LogMessage logLevel text) ->
-            ((putTextLn $ "[" <> show logLevel <> "] " <> text) :: IO ())
+            ((putTextLn $ "[" <> show logLevel <> "]\t" <> text) :: IO ())
     startLogListening consoleLoger
     pure $ do
         stopLogListening consoleLoger
         stopRole consoleLoger
 
 setLogLevel :: LogLevel -> IO ()
-setLogLevel logLevel = notify logerActor $ SetLogLevel logLevel
+setLogLevel = notify logerActor . SetLogLevel
 
 loger :: Loger
-loger logLevel text = notify logerActor $ LogMessage logLevel text
+loger logLevel = notify logerActor . LogMessage logLevel

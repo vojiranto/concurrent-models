@@ -34,13 +34,17 @@ dependencies:
 - universum
 - template-haskell
 - th-abstraction
+- network
 - free
+- clock
+- extra
 - text
 - containers
 - lens
 - stm
 - unique
 - hashable
+- bytestring
 - base58string
 
 executables:
@@ -57,11 +61,25 @@ library:
   source-dirs: src
   exposed-modules:
     - Control.Concurrent.Model
+    - Control.Concurrent.Model.Core
+    - Control.Concurrent.Model.Core.Data
+    - Control.Concurrent.Model.Core.Data.Describe
+    - Control.Concurrent.Model.Core.Data.Event
+    - Control.Concurrent.Model.Core.Data.TextId
+    - Control.Concurrent.Model.Core.Interface
+    - Control.Concurrent.Model.Core.Interface.Listener
+    - Control.Concurrent.Model.Core.Interface.Loger
+    - Control.Concurrent.Model.Core.Interface.Math
+    - Control.Concurrent.Model.Core.Interface.This
     - Control.Concurrent.Model.StateMachine
     - Control.Concurrent.Model.Actor
     - Control.Concurrent.Service.Subscription
+    - Control.Concurrent.Service.StreamManager
+    - Control.Concurrent.Node.Network.Tcp
+    - Control.Concurrent.Node.Console 
+    - Control.Concurrent.Node.Metronome
+    - Control.Concurrent.Node.Loger
     - Control.Concurrent.Flag
-    - Control.Concurrent.Loger
   ghc-options:
   - -Wall
   - -Werror

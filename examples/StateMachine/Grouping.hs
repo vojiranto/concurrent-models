@@ -2,7 +2,7 @@ module StateMachine.Grouping where
 
 import           Universum
 import           Control.Concurrent.Model
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Flag
 
 data S1 = S1

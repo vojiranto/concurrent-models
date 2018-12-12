@@ -6,9 +6,10 @@ import           Control.Concurrent
 import           Test.Hspec.Extra
 
 import           Control.Concurrent.Model
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Flag
 
+import           Tcp
 import           StateMachine
 import           Actor
 
@@ -32,11 +33,13 @@ acceptTake _ = pure ()
 
 main :: IO ()
 main = do
+    void сonsoleLogOn
     putTextLn ""
     hspec $ do
         it "Actor ping pong test"               $ isOk (finishFor 5000 actorPingPong)
         it "Actor postman test (subscription)"  $ isOk (finishFor 5000 postmanExample1)
         it "Actor postman test (unscribe)"      $ isOk postmanExample2
+        it "Tcp connection test"                $ isOk (finishFor 5000 tcpExample)
         it "Test 1 for state machine"           $ isOk stateMachinTest1
         it "Test 2 for state machine"           $ isOk (finishFor 1000 sequentialStateMachine)
         it "Test 3 for state machine"           $ isOk (finishFor 1000 groupingStateMachine)

@@ -63,35 +63,69 @@ interpretStateMachineL toLog' m _ (L.AddFinalState st next) = do
     next <$> modifyIORef m (R.stateMachineStruct . R.finishStates %~ S.insert st)
 
 interpretStateMachineL toLog' m _ (L.AddTransition st1 ev st2 next) = do
-    toLog' Trace $ "[set transition] " <> describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
-    next <$> modifyIORef m (R.stateMachineStruct . R.transitions %~ M.insert (st1, eventToType ev) st2)    
+    dataStruct <- readIORef m
+    let key     = (st1, eventToType ev)
+    let logTail = describe st1 <> " -> " <> describe ev <> " -> " <> describe st2
+    if M.member key (dataStruct ^. R.stateMachineStruct . R.transitions)
+        then toLog' Warn  $ "[the transition already exists] " <> logTail
+        else toLog' Trace $ "[set transition] " <> logTail 
+    next <$> modifyIORef m (R.stateMachineStruct . R.transitions %~ M.insert key st2)    
 
 interpretStateMachineL toLog' m _ (L.AddConditionalTransition st1 ev condtition next) = do
-    toLog' Trace $ "[set conditional transition] " <> describe st1 <> " -> " <> describe ev <> " -> [st] [ ? ]"
-    next <$> modifyIORef m (R.stateMachineStruct . R.conditionalTransitions %~ M.insert (st1, ev) (toSafe toLog' ev condtition))
+    dataStruct <- readIORef m
+    let key     = (st1, ev)
+    let logTail = describe st1 <> " -> " <> describe ev <> " -> [state ? ]"
+    if M.member key (dataStruct ^. R.stateMachineStruct . R.conditionalTransitions)
+        then toLog' Warn  $ "[the conditional transition already exists] " <> logTail
+        else toLog' Trace $ "[set conditional transition] " <> logTail
+    next <$> modifyIORef m (R.stateMachineStruct . R.conditionalTransitions %~ M.insert key (toSafe toLog' ev condtition))
 
 interpretStateMachineL toLog' m _ (L.MathDo eventType' action next) = do
-    toLog' Trace  "[set 'math do' handler]"
+    dataStruct <- readIORef m
+    let logTail = describe eventType'
+    if M.member eventType' (dataStruct ^. R.handlers . R.mathDo)
+        then toLog' Warn  $ "[handler 'math' already exists] " <> logTail
+        else toLog' Trace $ "[set 'math' handler] " <> logTail
     next <$> modifyIORef m (R.handlers . R.mathDo %~ M.insert eventType' (toSafe toLog' eventType' action))
 
 interpretStateMachineL toLog' m _ (L.EntryDo st action next) = do
-    toLog' Trace $ "[set 'entry do' handler] " <> describe st
+    dataStruct <- readIORef m
+    let logTail = describe st
+    if M.member st (dataStruct ^. R.handlers . R.entryDo)
+        then toLog' Warn $ "[handler 'entry do' already exists] " <> logTail
+        else toLog' Trace $ "[set 'entry do' handler] " <> logTail
     next <$> modifyIORef m (R.handlers . R.entryDo %~ M.insert st (toSafeAction toLog' action))
 
 interpretStateMachineL toLog' m _ (L.EntryWithEventDo st1 eventType' action next) = do
-    toLog' Trace $ "[set 'entry with event do' handler] " <> describe st1 <> " " <> describe eventType'
+    dataStruct <- readIORef m
+    let logTail = describe st1 <> " " <> describe eventType'
+    if M.member (st1, eventType') (dataStruct ^. R.handlers . R.entryWithEventDo)
+        then toLog' Warn $ "[handler 'entry do' already exists] " <> logTail
+        else toLog' Trace $ "[set 'entry do' handler] " <> logTail
     next <$> modifyIORef m (R.handlers . R.entryWithEventDo %~ M.insert (st1, eventType') (toSafe toLog' eventType' action))
 
 interpretStateMachineL toLog' m _ (L.StaticalDo st1 eventType' action next) = do
-    toLog' Trace $ "[set 'statical do' handler] " <> describe st1 <> " " <> describe eventType'
+    dataStruct <- readIORef m
+    let logTail = describe st1 <> " " <> describe eventType'
+    if M.member (st1, eventType') (dataStruct ^. R.handlers . R.staticalDo)
+        then toLog' Warn $ "[handler 'math' already exists] " <> logTail
+        else toLog' Trace $ "[set 'math' handler] " <> logTail
     next <$> modifyIORef m (R.handlers . R.staticalDo %~ M.insert (st1, eventType') (toSafe toLog' eventType'  action))
 
 interpretStateMachineL toLog' m _ (L.ExitWithEventDo st1 eventType' action next) = do
-    toLog' Trace $ "[set 'exit with event do' handler] " <> describe st1 <> " " <> describe eventType'
+    dataStruct <- readIORef m
+    let logTail = describe st1 <> " " <> describe eventType'
+    if M.member (st1, eventType') (dataStruct ^. R.handlers . R.exitWithEventDo)
+        then toLog' Warn $ "[handler 'exit do' already exists] " <> logTail
+        else toLog' Trace $ "[set 'exit do' handler] " <> logTail
     next <$> modifyIORef m (R.handlers . R.exitWithEventDo %~ M.insert (st1, eventType') (toSafe toLog' eventType' action))    
 
 interpretStateMachineL toLog' m _ (L.ExitDo st action next) = do
-    toLog' Trace $ "[set 'exit do' handler] " <> describe st
+    dataStruct <- readIORef m
+    let logTail = describe st
+    if M.member st (dataStruct ^. R.handlers . R.exitDo)
+        then toLog' Warn $ "[handler 'exit do' already exists] " <> logTail
+        else toLog' Trace $ "[set 'exit do' handler] " <> logTail
     next <$> modifyIORef m (R.handlers . R.exitDo %~ M.insert st (toSafeAction toLog' action))
 
 class ToSafe t a where

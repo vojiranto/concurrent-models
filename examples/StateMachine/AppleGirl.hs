@@ -4,11 +4,11 @@ module StateMachine.AppleGirl where
 import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Node.Loger
 
 makeEvents ["Apple"]
 makeStates ["Hungry", "WellFed"]
-makeFsm "AppleGirl" ["Apple"]
+makeFsm "AppleGirl" [[t|Apple|]]
 
 appleGirl :: IO ()
 appleGirl = do

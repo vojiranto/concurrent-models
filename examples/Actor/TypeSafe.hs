@@ -6,4 +6,4 @@ import           Control.Concurrent.Model
 
 data Msg = Msg
 
-makeAct "SafeAct" ["Msg"]
+makeAct "SafeAct" [[t|Msg|]]

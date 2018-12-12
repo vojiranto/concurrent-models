@@ -73,12 +73,12 @@ applyHandler actRuntime message = do
 
 applyOtherwiseHandler :: ActorRuntimeData -> Event -> IO ()
 applyOtherwiseHandler actRuntime message = do
-    let printWarn = (actRuntime ^. loger) Warn handlerNotExistMsg
+    let printWarn = (actRuntime ^. loger) Warn (handlerNotExistMsg message)
     maybe printWarn ($ message) $
         actRuntime ^. handlers . at otherwiseType
 
-handlerNotExistMsg :: Text
-handlerNotExistMsg = "[error] handler does not exist, msg is droped."
+handlerNotExistMsg :: Event -> Text
+handlerNotExistMsg message = describe message <> " Handler does not exist, msg is droped."
 
 instance Typeable msg => Listener Actor msg where
     notify actor message = whenM (isLive actor) $

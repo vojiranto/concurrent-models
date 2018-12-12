@@ -3,7 +3,7 @@ module StateMachine.Sequential where
 import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Loger
+import           Control.Concurrent.Node.Loger
 
 data SequentialState1 = SequentialState1
 data SequentialState2 = SequentialState2 
