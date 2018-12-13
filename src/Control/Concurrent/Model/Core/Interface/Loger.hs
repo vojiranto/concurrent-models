@@ -16,3 +16,6 @@ class Monad m => Logers m where
 addTagToLoger :: Loger -> Text -> TextId -> IO Loger
 addTagToLoger logerAction tag textId =
     pure $ \logLevel txt -> logerAction logLevel (tag <> "\t" <> describe textId <> " " <> txt)
+
+dummyLoger :: Loger
+dummyLoger _ _ = pure ()

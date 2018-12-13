@@ -5,12 +5,11 @@ module Tcp where
 import           Universum
 
 import           Control.Concurrent.Model
-import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Node.Network.Tcp
 import           Control.Concurrent.Flag
 
-tcpExample :: IO ()
-tcpExample = do
+tcpExample :: Loger -> IO ()
+tcpExample loger = do
     success <- newFlag
     let maxPSize = 50
     controller <- runStateMachine loger StreamManager $ do

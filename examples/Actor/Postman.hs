@@ -6,20 +6,19 @@ module Actor.Postman where
 import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag        -- To report about successful completion.
-import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Service.Subscription 
 
 data Times  = Times
 data WSPost = WSPost
 
 runPostman :: Loger -> IO Actor
-runPostman loger' = runActor loger' $ do
+runPostman loger = runActor loger $ do
     subscribers <- subscriptioService
     math $ \Times  -> multicast subscribers Times
     math $ \WSPost -> multicast subscribers WSPost
 
-postmanExample1 :: IO ()
-postmanExample1 = do
+postmanExample1 :: Loger -> IO ()
+postmanExample1 loger = do
     postman       <- runPostman loger
 
     wsAccepted    <- newFlag
@@ -38,8 +37,8 @@ postmanExample1 = do
     wait wsAccepted
     wait timesAccepted
 
-postmanExample2 :: IO Bool
-postmanExample2 = do
+postmanExample2 :: Loger -> IO Bool
+postmanExample2 loger = do
     postman <- runPostman loger
     res     <- newEmptyMVar
 

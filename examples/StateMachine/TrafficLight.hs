@@ -2,7 +2,6 @@ module StateMachine.TrafficLight where
 
 import           Universum
 import           Control.Concurrent.Model
-import           Control.Concurrent.Node.Loger
 
 -- states for traffic light
 data Green      = Green
@@ -16,16 +15,16 @@ data ChangeColor = ChangeColor
 
 -- simple but not the right example, we all know that there is three traffic
 -- lights, not four lights?
-makeTrafficLight1 :: IO StateMachine
-makeTrafficLight1 = runStateMachine loger Green $ do
+makeTrafficLight1 :: Loger -> IO StateMachine
+makeTrafficLight1 loger = runStateMachine loger Green $ do
     ifE ChangeColor $ Green      >-> YellowUp
     ifE ChangeColor $ YellowUp   >-> Red
     ifE ChangeColor $ Red        >-> YellowDown
     ifE ChangeColor $ YellowDown >-> Green
 
 -- properly functioning traffic lights
-makeTrafficLight2 :: IO StateMachine
-makeTrafficLight2 = runStateMachine loger Green $ do
+makeTrafficLight2 :: Loger -> IO StateMachine
+makeTrafficLight2 loger = runStateMachine loger Green $ do
     -- add to fsm transitions from one states to another.
     ifE ChangeColor $ Green >-> Yellow
     ifE ChangeColor $ Red   >-> Yellow
