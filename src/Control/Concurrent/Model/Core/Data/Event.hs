@@ -8,8 +8,8 @@ module Control.Concurrent.Model.Core.Data.Event
     , fromEventUnsafe
     , eventToType
     , actionToType
-    , fromActionToMessageType
     , rawDataToType
+    , proxyToType
     ) where
 
 import           Control.Concurrent.Prelude
@@ -34,7 +34,13 @@ eventToType :: Event -> EventType
 eventToType (Event event) = EventType (dynTypeRep event)
 
 actionToType :: Typeable a => (a -> IO ()) -> EventType
-actionToType action = EventType (head . snd . splitTyConApp . typeOf $ action)
+actionToType = EventType . head . snd . splitTyConApp . typeOf
+
+proxyToType :: Typeable a => Proxy a -> EventType
+proxyToType = EventType . head . snd . splitTyConApp . typeOf
+
+rawDataToType :: Typeable a => a -> EventType
+rawDataToType = EventType . typeOf
 
 instance Describe Event where
     describe (Event a) = "[event " <> show (dynTypeRep a) <> "]"
@@ -52,8 +58,4 @@ instance {-# OVERLAPS #-} ToType Event where
 instance {-# OVERLAPPABLE #-} Typeable a => ToType a where
     toType = EventType . typeOf
 
-rawDataToType :: Typeable a => a -> EventType
-rawDataToType = EventType . typeOf
 
-fromActionToMessageType :: Typeable a => (a -> IO ()) -> EventType
-fromActionToMessageType = EventType . head . snd . splitTyConApp . typeOf    

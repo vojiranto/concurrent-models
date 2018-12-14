@@ -47,9 +47,9 @@ postmanExample2 loger = do
         math (\WSPost -> putMVar res False :: IO ())
         math (\Times  -> putMVar res True  :: IO ())
 
-    $(subscribe [t|WSPost|]) postman subs
-    $(subscribe [t|Times|])  postman subs
-    unsubscribe WSPost postman subs
+    $(subscribe   [t|WSPost|]) postman subs
+    $(subscribe   [t|Times|])  postman subs
+    $(unsubscribe [t|WSPost|]) postman subs
 
     postman `notify` WSPost
     postman `notify` Times

@@ -34,7 +34,7 @@ startLogListening :: (HaveTextId a, Listener a LogMessage) => LogerActor -> a ->
 startLogListening = $(subscribe [t|LogMessage|])
 
 stopLogListening :: (HaveTextId a, Listener a LogMessage) => LogerActor -> a -> IO ()
-stopLogListening = unsubscribe (LogMessage Trace "")
+stopLogListening = $(unsubscribe [t|LogMessage|])
 
 сonsoleLogOn :: LogerActor -> IO (IO ())
 сonsoleLogOn logActor = do

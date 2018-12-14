@@ -53,7 +53,7 @@ instance This ActorL Actor where
     isLive (Actor _ _ _ liveFlag) = readMVar liveFlag
 
 instance Typeable a => Math (a -> IO ()) ActorL where
-    math f = liftF $ Math (fromActionToMessageType f) (f . fromEventUnsafe) id
+    math f = liftF $ Math (actionToType f) (f . fromEventUnsafe) id
 
 -- | Add handler for processing messages with other types.
 otherwiseMath :: (Event -> IO ()) -> ActorL ()
