@@ -3,7 +3,9 @@ module Main where
 
 import           Universum
 import           Control.Concurrent
-import           Test.Hspec.Extra
+import           Testing.Hspec.Extra
+
+import           Tests.BroadcastServer
 
 import           Control.Concurrent.Model
 import           Control.Concurrent.Node.Loger
@@ -20,7 +22,7 @@ stateMachinTest1 :: Loger -> IO Bool
 stateMachinTest1 loger' = finishFor 100 $ do
     success <- newFlag
     sm <- runStateMachine loger' Off $ do
-        groupStates    AnyState $ On <: Off <: []
+        groupStates  AnyState $ On <: Off <: []
         ifE TakeOn $ AnyState >-> On
         onEntry On   acceptTake
         onEntry On $ liftFlag success
@@ -47,7 +49,10 @@ main = do
             $ isOk $ postmanExample2 $ loger logActor
 
         it "Tcp connection test"
-            $ isOk $ finishFor 5000 $ tcpExample $ loger logActor
+            $ isOk $ finishFor 5000 $ tcpExample (loger logActor) 5000 50
+
+        it "Tcp broadcast server test"
+            $ isOk $ finishFor 10000 $ broadcastServerTest (loger logActor) 5001 50
 
         it "Test 1 for state machine"
             $ isOk $ stateMachinTest1 $ loger logActor
@@ -60,4 +65,5 @@ main = do
 
         it "Test 4 for state machine"
             $ isOk $ finishFor 1000 $ appleGirl $ loger logActor
-    threadDelay 100000
+
+    threadDelay 1000000

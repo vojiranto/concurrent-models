@@ -6,6 +6,7 @@ module Control.Concurrent.Node.Network.Tcp
     , TcpServer(..)
     , runTcpServer
     , runTcpClient
+    , S.PortNumber (..)
     ) where
 
 import           Control.Concurrent.Prelude
@@ -51,12 +52,12 @@ tcpServer loger centralActor listenSock maxPSize = runFsm loger Opened $ do
     liftIO $ void $ forkIO $
         whileM $ catchAny (do
             (clientSock, _) <- S.accept listenSock
-            handler     <- S.socketToHandle clientSock ReadWriteMode
-            stream <- runStream loger handler maxPSize
+            handler         <- S.socketToHandle clientSock ReadWriteMode
+            stream          <- runStream loger handler maxPSize
             subscribeStreem stream centralActor
             pure True
-        ) (\exception -> do
-            fsmLoger Error $ "Fail of connect accepting: " <> show exception
+        ) (\_ -> do
+            fsmLoger Info "Accepting socket is closed."
             notify myRef CommandClose
             pure False
         )

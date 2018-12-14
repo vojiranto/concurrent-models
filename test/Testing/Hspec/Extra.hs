@@ -1,4 +1,4 @@
-module Test.Hspec.Extra (module X, finishFor, isOk) where
+module Testing.Hspec.Extra (module X, finishFor, isOk) where
 
 import           Universum
 import           Test.Hspec as X

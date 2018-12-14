@@ -13,7 +13,7 @@ import           Control.Concurrent.Service.Subscription
 
 tcpBroadcastServer :: Loger -> IO ()
 tcpBroadcastServer loger = do
-    (tcpServer, controller) <- runBroadcastServer loger
+    (tcpServer, controller) <- runBroadcastServer loger 5000 500
     console                 <- runConsoleWorker loger
     exitFromServer <- newFlag
     commandReader <- runActor loger $
@@ -24,10 +24,8 @@ tcpBroadcastServer loger = do
     $(subscribe [t|Message|]) console commandReader
     wait exitFromServer
 
-runBroadcastServer :: Loger -> IO (TcpServer, StateMachine)
-runBroadcastServer loger = do
-    let maxPSize   = 500
-    let portNumber = 5000
+runBroadcastServer :: Loger -> PortNumber -> Int -> IO (TcpServer, StateMachine)
+runBroadcastServer loger portNumber maxPSize = do
     controller <- runStateMachine loger StreamManager $ do
         toLog Info "Start of broadcast server"
         connectsRef <- streamManager
