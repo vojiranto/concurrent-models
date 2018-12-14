@@ -6,7 +6,7 @@ module Control.Concurrent.Node.Network.Tcp
     , TcpServer(..)
     , runTcpServer
     , runTcpClient
-    , S.PortNumber (..)
+    , S.PortNumber
     ) where
 
 import           Control.Concurrent.Prelude
@@ -16,7 +16,6 @@ import qualified Data.ByteString as B
 import qualified GHC.IO.Handle as H
 import           Control.Concurrent.Service.Subscription
 import qualified Network.Socket as S
-import qualified Network        as S hiding (accept)
 import           Control.Concurrent.Service.StreamManager as X
 import           Control.Concurrent.Service.Stream        as X
 
@@ -30,7 +29,13 @@ runTcpServer
     => Loger -> a -> S.PortNumber -> Int -> IO TcpServer
 runTcpServer loger centralActor port maxPSize =
     catchAny (do
-        listenSock <- S.listenOn (S.PortNumber port)
+        address    <- head <$> S.getAddrInfo
+            (Just (S.defaultHints {S.addrFlags = [S.AI_PASSIVE]}))
+            Nothing
+            (Just $ show port)
+        listenSock <- S.socket (S.addrFamily address) S.Stream S.defaultProtocol
+        S.bind listenSock (S.addrAddress address)
+        S.listen listenSock 1
         tcpServer loger centralActor listenSock maxPSize
     ) (\exception -> do
         loger Error $ "Fail of tcp server start: " <> show exception

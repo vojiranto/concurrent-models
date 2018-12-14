@@ -1,6 +1,7 @@
 module Main where
 
 import           Universum
+import           System.Environment
 import           Control.Concurrent.Node.Loger
 import           Node
 
