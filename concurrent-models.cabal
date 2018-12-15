@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2d2b3243c00eebf192d4812b96ce1bd48a2ce501c03b13bfbb190f30df9e01bf
+-- hash: 656e893c514b51301f1cf581e40105dbde4a63d223b4c120136c5c6b2bc98789
 
 name:           concurrent-models
 version:        0.2.0.0
@@ -62,6 +62,7 @@ library
       Control.Concurrent.Model.StateMachine.TH
       Control.Concurrent.Prelude
       Control.Concurrent.Service.Serialization
+      Control.Concurrent.Service.Serialization.Binary
       Control.Concurrent.Service.Serialization.Common
       Control.Concurrent.Service.Stream
       Control.Concurrent.Service.Subscription.Domain
@@ -73,8 +74,10 @@ library
   default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   ghc-options: -Wall -Werror
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , base58string
+    , binary
     , bytestring
     , clock
     , containers
@@ -114,8 +117,10 @@ executable example
       app
   default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , base58string
+    , binary
     , bytestring
     , clock
     , concurrent-models
@@ -160,9 +165,11 @@ test-suite Actor-test
   default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      async
+      aeson
+    , async
     , base >=4.7 && <5
     , base58string
+    , binary
     , bytestring
     , clock
     , concurrent-models

@@ -46,6 +46,8 @@ dependencies:
 - hashable
 - bytestring
 - base58string
+- binary
+- aeson
 
 executables:
   example:
