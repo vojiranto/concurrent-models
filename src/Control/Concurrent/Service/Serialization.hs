@@ -14,7 +14,7 @@ module Control.Concurrent.Service.Serialization where
     * Adt
         msg
 
-        chack :: Text -> TypeTag
+        check :: Text -> TypeTag
 
     ...
         handlers (Adt | Binary | Json) $ do
@@ -25,6 +25,7 @@ module Control.Concurrent.Service.Serialization where
     packIn (Adt | Binary | Json)
 
 *.Serialization.Common
+*.Serialization.Language
 
 clas PackFormat a b | a -> b where
     packIn   :: a -> Msg -> b
