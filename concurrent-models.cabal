@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2050b908e15a002279c16e62dda003ef953dfd6d7a1df4f0c327b98b838603f6
+-- hash: f1a4893f4931a972aca76147f25417773cfcd4f39d3c9cd8806e98c83439b5a0
 
 name:           concurrent-models
-version:        0.1.0.0
+version:        0.2.0.0
 description:    Please see the README on GitHub at <https://github.com/vojiranto/concurrent-models#readme>
 homepage:       https://github.com/vojiranto/concurrent-models#readme
 bug-reports:    https://github.com/vojiranto/concurrent-models/issues
