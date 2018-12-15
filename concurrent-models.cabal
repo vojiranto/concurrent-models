@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b76d2e325ea8da734f7854e89150da440b4f1032dff66ba5f9d9d6910dffbf29
+-- hash: f1a4893f4931a972aca76147f25417773cfcd4f39d3c9cd8806e98c83439b5a0
 
 name:           concurrent-models
-version:        0.1.0.0
+version:        0.2.0.0
 description:    Please see the README on GitHub at <https://github.com/vojiranto/concurrent-models#readme>
 homepage:       https://github.com/vojiranto/concurrent-models#readme
 bug-reports:    https://github.com/vojiranto/concurrent-models/issues
@@ -135,7 +135,8 @@ test-suite Actor-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Test.Hspec.Extra
+      Testing.Hspec.Extra
+      Tests.BroadcastServer
       Actor
       Actor.PingPong
       Actor.Postman

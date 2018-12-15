@@ -3,7 +3,9 @@ module Main where
 
 import           Universum
 import           Control.Concurrent
-import           Test.Hspec.Extra
+import           Testing.Hspec.Extra
+
+import           Tests.BroadcastServer
 
 import           Control.Concurrent.Model
 import           Control.Concurrent.Node.Loger
@@ -16,11 +18,11 @@ import           Actor
 makeStates ["On", "Off", "AnyState"]
 makeEvents ["TakeOn"]
 
-stateMachinTest1 :: IO Bool
-stateMachinTest1 = finishFor 100 $ do
+stateMachinTest1 :: Loger -> IO Bool
+stateMachinTest1 loger' = finishFor 100 $ do
     success <- newFlag
-    sm <- runStateMachine loger Off $ do
-        groupStates    AnyState $ On <: Off <: []
+    sm <- runStateMachine loger' Off $ do
+        groupStates  AnyState $ On <: Off <: []
         ifE TakeOn $ AnyState >-> On
         onEntry On   acceptTake
         onEntry On $ liftFlag success
@@ -33,15 +35,35 @@ acceptTake _ = pure ()
 
 main :: IO ()
 main = do
-    void сonsoleLogOn
+    logActor <- runLogerActor
+    void $ сonsoleLogOn logActor
     putTextLn ""
     hspec $ do
-        it "Actor ping pong test"               $ isOk (finishFor 5000 actorPingPong)
-        it "Actor postman test (subscription)"  $ isOk (finishFor 5000 postmanExample1)
-        it "Actor postman test (unscribe)"      $ isOk postmanExample2
-        it "Tcp connection test"                $ isOk (finishFor 5000 tcpExample)
-        it "Test 1 for state machine"           $ isOk stateMachinTest1
-        it "Test 2 for state machine"           $ isOk (finishFor 1000 sequentialStateMachine)
-        it "Test 3 for state machine"           $ isOk (finishFor 1000 groupingStateMachine)
-        it "Test 4 for state machine"           $ isOk (finishFor 1000 appleGirl)
-    threadDelay 100000
+        it "Actor ping pong test"
+            $ isOk $ finishFor 5000 $ actorPingPong $ loger logActor
+        
+        it "Actor postman test (subscription)"
+            $ isOk $ finishFor 5000 $ postmanExample1 $ loger logActor
+
+        it "Actor postman test (unscribe)"
+            $ isOk $ postmanExample2 $ loger logActor
+
+        it "Tcp connection test"
+            $ isOk $ finishFor 5000 $ tcpExample (loger logActor) 5000 50
+
+        it "Tcp broadcast server test"
+            $ isOk $ finishFor 10000 $ broadcastServerTest (loger logActor) 5001 50
+
+        it "Test 1 for state machine"
+            $ isOk $ stateMachinTest1 $ loger logActor
+
+        it "Test 2 for state machine"
+            $ isOk $ finishFor 1000 $ sequentialStateMachine $ loger logActor
+
+        it "Test 3 for state machine"
+            $ isOk $ finishFor 1000 $ groupingStateMachine $ loger logActor
+
+        it "Test 4 for state machine"
+            $ isOk $ finishFor 1000 $ appleGirl $ loger logActor
+
+    threadDelay 1000000

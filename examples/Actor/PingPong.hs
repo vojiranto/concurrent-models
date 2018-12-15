@@ -4,27 +4,26 @@ import           Universum
 
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag        -- To report about successful completion.
-import           Control.Concurrent.Node.Loger
 
 -- You can send different types of messages to actors.
 -- If there is no suitable handler, then it will simply be droped.
 data Ping = Ping Actor Int
 data Pong = Pong Actor Int
 
-actorPingPong :: IO ()
-actorPingPong = do
+actorPingPong :: Loger -> IO ()
+actorPingPong loger = do
     success <- newFlag
-    pingPong success
+    pingPong loger success
     wait success
 
-pingPong :: Flag -> IO ()
-pingPong success = do 
-    actor1 <- pinger success
-    actor2 <- pinger success
+pingPong :: Loger -> Flag -> IO ()
+pingPong loger success = do 
+    actor1 <- pinger loger success
+    actor2 <- pinger loger success
     notify actor2 $ Ping actor1 10
 
-pinger :: Flag -> IO Actor
-pinger success = runActor loger $ do
+pinger :: Loger -> Flag -> IO Actor
+pinger loger success = runActor loger $ do
     link <- this
     math $ ping success link
     math $ pong success link

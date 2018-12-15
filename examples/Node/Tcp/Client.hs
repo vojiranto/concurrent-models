@@ -8,12 +8,11 @@ import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag
 import           Control.Concurrent.Service.Subscription
-import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Node.Network.Tcp
 import           Control.Concurrent.Node.Console
 
-tcpClient :: IO ()
-tcpClient = do
+tcpClient :: Loger -> IO ()
+tcpClient loger = do
     let maxPSize   = 500
     exitFromClient  <- newFlag
     client          <- runTcpClient loger "127.0.0.1" 5000 maxPSize

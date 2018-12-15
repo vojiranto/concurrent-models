@@ -1,14 +1,16 @@
 module Main where
 
 import           Universum
+import           System.Environment
 import           Control.Concurrent.Node.Loger
 import           Node
 
 main :: IO ()
 main = do
-    void сonsoleLogOn
+    logActor <- runLogerActor
+    void $ сonsoleLogOn logActor
     args <- getArgs
     case args of
-        "tcp_client":_           -> tcpClient
-        "tcp_broadcast_server":_ -> tcpBroadcastServer
+        "tcp_client":_           -> tcpClient (loger logActor)
+        "tcp_broadcast_server":_ -> tcpBroadcastServer (loger logActor)
         _                        -> pure ()

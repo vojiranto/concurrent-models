@@ -2,7 +2,6 @@ module StateMachine.Grouping where
 
 import           Universum
 import           Control.Concurrent.Model
-import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Flag
 
 data S1 = S1
@@ -14,8 +13,8 @@ data FS = FS
 data Move = Move
 data Exit = Exit
 
-groupingStateMachine :: IO ()
-groupingStateMachine = do
+groupingStateMachine :: Loger -> IO ()
+groupingStateMachine loger = do
     stopSM <- newFlag
     sm <- runStateMachine loger S1 $ do
         ifE Move $ S1 >-> S2

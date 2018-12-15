@@ -6,15 +6,14 @@ module Node.Tcp.BroadcastServer where
 import           Universum
 
 import           Control.Concurrent.Model
-import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Node.Network.Tcp
 import           Control.Concurrent.Node.Console
 import           Control.Concurrent.Flag
 import           Control.Concurrent.Service.Subscription
 
-tcpBroadcastServer :: IO ()
-tcpBroadcastServer = do
-    (tcpServer, controller) <- runBroadcastServer
+tcpBroadcastServer :: Loger -> IO ()
+tcpBroadcastServer loger = do
+    (tcpServer, controller) <- runBroadcastServer loger 5000 500
     console                 <- runConsoleWorker loger
     exitFromServer <- newFlag
     commandReader <- runActor loger $
@@ -25,10 +24,8 @@ tcpBroadcastServer = do
     $(subscribe [t|Message|]) console commandReader
     wait exitFromServer
 
-runBroadcastServer :: IO (TcpServer, StateMachine)
-runBroadcastServer = do
-    let maxPSize   = 500
-    let portNumber = 5000
+runBroadcastServer :: Loger -> PortNumber -> Int -> IO (TcpServer, StateMachine)
+runBroadcastServer loger portNumber maxPSize = do
     controller <- runStateMachine loger StreamManager $ do
         toLog Info "Start of broadcast server"
         connectsRef <- streamManager

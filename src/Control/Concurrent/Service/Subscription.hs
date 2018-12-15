@@ -52,16 +52,16 @@ subscriptioService = do
 
 -- $(subscribe "WSPost") postman subs
 subscribe :: Q Type -> ExpQ
-subscribe typeName =
-    [e| \postman subs -> postman `notify` makeNotify subs (\(msg :: $(typeName)) -> notify subs msg) |]
+subscribe typeName = [e|
+    \postman subs ->
+        postman `notify` makeNotify subs (\(msg :: $(typeName)) -> notify subs msg)
+    |]
 
 makeNotify :: (Typeable a2, HaveTextId a1) => a1 -> (a2 -> IO ()) -> Subscription
 makeNotify subs act = Subscription (getTextId subs) (actionToType act) (packNotify act)
 
-unsubscribe
-    :: (HaveTextId a1, Typeable a2, Listener a Unsubscribe)
-    => a2 -> a -> a1 -> IO ()
-unsubscribe msg postman subs = postman `notify` makeUnsubscribe msg 
-    where
-        makeUnsubscribe act = Unsubscribe (getTextId subs) (rawDataToType act)
-
+unsubscribe :: Q Type -> ExpQ
+unsubscribe typeName = [e|
+    \postman subs ->
+        postman `notify` Unsubscribe (getTextId subs) (proxyToType (Proxy :: Proxy $(typeName)))
+    |]

@@ -2,17 +2,16 @@ module StateMachine.Door where
 
 import           Universum
 import           Control.Concurrent.Model
-import           Control.Concurrent.Node.Loger
 
 data Open   = Open
 data Close  = Close
 data Closed = Closed
 
-exampleDoor :: IO ()
-exampleDoor = readDoorComands =<< makeDoor
+exampleDoor :: Loger -> IO ()
+exampleDoor loger = readDoorComands =<< makeDoor loger
 
-makeDoor :: IO StateMachine
-makeDoor = runStateMachine loger Closed $ do
+makeDoor :: Loger -> IO StateMachine
+makeDoor loger = runStateMachine loger Closed $ do
     ifE Close $ Open   >-> Closed
     ifE Open  $ Closed >-> Open
 

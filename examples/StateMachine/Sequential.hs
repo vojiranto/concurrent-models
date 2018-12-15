@@ -3,7 +3,6 @@ module StateMachine.Sequential where
 import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Node.Loger
 
 data SequentialState1 = SequentialState1
 data SequentialState2 = SequentialState2 
@@ -11,8 +10,8 @@ data SequentialState3 = SequentialState3
 
 data EkzampleEvent = EkzampleEvent
 
-sequentialStateMachine :: IO ()
-sequentialStateMachine = do
+sequentialStateMachine :: Loger-> IO ()
+sequentialStateMachine loger = do
     stopSM <- newFlag
     sm    <- runStateMachine loger SequentialState1 $ do
         ifE EkzampleEvent $ SequentialState1 >-> SequentialState2

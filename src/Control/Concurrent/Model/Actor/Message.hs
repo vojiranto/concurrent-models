@@ -8,7 +8,7 @@ module Control.Concurrent.Model.Actor.Message
     , toEvent
     , fromEvent
     , fromEventUnsafe
-    , fromActionToMessageType
+    , actionToType
     ) where
 
 import           Control.Concurrent.Prelude
