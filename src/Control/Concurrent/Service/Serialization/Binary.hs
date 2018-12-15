@@ -1,10 +1,13 @@
-
+{-# Language FlexibleContexts #-}
+{-# Language UndecidableInstances #-}
 module Control.Concurrent.Service.Serialization.Binary where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
 import           Control.Concurrent.Service.Serialization.Common
+--import           Control.Concurrent.Service.Stream
 import qualified Data.ByteString.Lazy as B
+--import qualified Data.Map as M
 import           Data.Binary
 
 data Bin = Bin
@@ -20,30 +23,27 @@ instance (Typeable t, Binary t) => Math (t -> TextId -> IO ()) (HandlersL Bin By
 
 instance (Typeable msg, Binary msg) => PackFormat Bin ByteString msg where
     packIn _ msg = B.toStrict $ encode (show $ typeOf msg :: Text, msg)
-
-
 {-
-interpretStateMachineL toLog' m _ (L.MathDo eventType' action next) = do
+instance (Logers m, Math (Message -> IO ()) m) => Handlers Bin ByteString m where
+    handlers hs = do
+        loger <- getLoger
+        rm <- liftIO $ do
+            rm <- newIORef mempty
+            foldFree (makeHandlers loger rm) hs
+            pure rm
+        math $ error ""
+
+makeHandlers :: Loger -> IORef (Map Text (ByteString -> TextId -> IO ())) -> HandlersF Bin ByteString m -> IO ()
+makeHandlers toLoger m (Math eventType' action next) = do
     dataStruct <- readIORef m
     let logTail = describe eventType'
-    if M.member eventType' (dataStruct ^. R.handlers . R.mathDo)
-        then toLog' Warn  $ "[handler 'math' already exists] " <> logTail
-        else toLog' Trace $ "[set 'math' handler] " <> logTail
-    next <$> modifyIORef m (R.handlers . R.mathDo %~ M.insert eventType' (toSafe toLog' eventType' action))
+    if M.member eventType' dataStruct
+        then toLoger Warn  $ "[handler 'math' already exists] " <> logTail
+        else toLoger Trace $ "[set 'math' handler] " <> logTail
+    next <$> modifyIORef m (%~ M.insert eventType' (toSafe toLoger eventType' action))
+    
 
-makeStateMachineData
-    :: Loger
-    -> L.StateMachine
-    -> L.StateMachineL a
-    -> IO (Either BuildingError (IORef R.StateMaschineData))
-makeStateMachineData logerAction stateMachine h = do
-    initState <- takeState stateMachine
-    m <- newIORef $ emptyData logerAction initState 
-    success <- tryAny $ foldFree (interpretStateMachineL logerAction m stateMachine) h
-    mData   <- readIORef m
-    case success of
-        Right _  | mData ^. stateMachineStruct . to checkStruct ->
-            Right <$> newIORef mData
-        _   -> pure $ Left BuildingError
-
+toSafe :: Loger -> Text -> (ByteString -> TextId -> IO ()) -> ByteString -> TextId -> IO ()
+toSafe loger messageType action message textId = catchAny (action message textId) $ \ex ->
+    loger Warn $ show ex <> " in action with message " <> messageType
 -}
