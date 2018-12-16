@@ -38,3 +38,11 @@ makeHandlersMap toLoger m (Math eventType' action next) = do
         then toLoger Warn  $ "[handler 'math' already exists] " <> logTail
         else toLoger Trace $ "[set 'math' handler] " <> logTail
     next <$> modifyIORef m (M.insert eventType' action)
+
+applyMHandle
+    :: Loger -> Maybe (t2 -> TextId -> IO ()) -> Text -> t2 -> TextId -> IO ()
+applyMHandle loger mHandle tag rawMsg textId = case mHandle of
+    Just handle -> do
+        loger Trace $ "Accepted message " <> tag <> " from " <> describe textId
+        handle rawMsg textId
+    _   -> loger Warn $ "Handle for msg  " <> tag <> " not exixs."

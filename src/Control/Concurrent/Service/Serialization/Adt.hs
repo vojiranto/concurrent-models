@@ -34,8 +34,4 @@ instance forall (m :: * -> *). (Logers m, MonadIO m, Math (Message -> IO ()) m)
         math $ \(Message textId byteString) -> do
             let rawMsg = T.decodeUtf8 byteString
             let tag    = T.takeWhile (/= ' ') rawMsg
-            case M.lookup tag rm of
-                Just handle -> do
-                    loger Trace $ "Accepted message " <> tag <> " from " <> describe textId
-                    handle byteString textId
-                _   -> loger Warn $ "Handle for msg  " <> tag <> " not exixs."
+            applyMHandle loger (M.lookup tag rm) tag byteString textId

@@ -30,9 +30,7 @@ instance forall (m :: * -> *). (Logers m, MonadIO m, Math (Message -> IO ()) m)
     handlers _ hs = do
         loger <- getLoger
         rm <- makeHandlers loger hs
-        math $ \(Message textId byteString) -> case decode $ B.fromStrict byteString of
-            (tag :: Text, rawMsg) -> case M.lookup tag rm of
-                Just handle -> do
-                    loger Trace $ "Accepted message " <> tag <> " from " <> describe textId
-                    handle rawMsg textId
-                _   -> loger Warn $ "Handle for msg  " <> tag <> " not exixs."
+        math $ \(Message textId byteString) -> do
+            let (tag :: Text, rawMsg) = decode $ B.fromStrict byteString
+            applyMHandle loger (M.lookup tag rm) tag rawMsg textId
+
