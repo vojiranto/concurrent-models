@@ -30,7 +30,7 @@ instance forall (m :: * -> *). (Logers m, MonadIO m, Math (Message -> IO ()) m)
     => Handlers Adt ByteString m where
     handlers _ hs = do
         loger <- getLoger
-        rm <- makeHandlers loger hs
+        rm    <- makeHandlers loger hs
         math $ \(Message textId byteString) -> do
             let rawMsg = T.decodeUtf8 byteString
             let tag    = T.takeWhile (/= ' ') rawMsg

@@ -29,7 +29,7 @@ instance forall (m :: * -> *). (Logers m, MonadIO m, Math (Message -> IO ()) m)
     => Handlers Bin ByteString m where
     handlers _ hs = do
         loger <- getLoger
-        rm <- makeHandlers loger hs
+        rm    <- makeHandlers loger hs
         math $ \(Message textId byteString) -> do
             let (tag :: Text, rawMsg) = decode $ B.fromStrict byteString
             applyMHandle loger (M.lookup tag rm) tag rawMsg textId
