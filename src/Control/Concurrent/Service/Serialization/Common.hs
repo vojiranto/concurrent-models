@@ -18,5 +18,5 @@ type HandlersL a b = Free (HandlersF a b)
 class PackFormat a b msg | a -> b where
     packIn   :: a -> msg -> b
 
-class Handlers a b m where
-    handlers :: HandlersL a b () -> m ()
+class Handlers a b m | a -> b where
+    handlers :: a -> HandlersL a b () -> m ()

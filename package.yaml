@@ -77,6 +77,9 @@ library:
     - Control.Concurrent.Model.Actor
     - Control.Concurrent.Service.Subscription
     - Control.Concurrent.Service.StreamManager
+    - Control.Concurrent.Service.Serialization.Common
+    - Control.Concurrent.Service.Serialization.Binary
+    - Control.Concurrent.Service.Stream
     - Control.Concurrent.Node.Network.Tcp
     - Control.Concurrent.Node.Console 
     - Control.Concurrent.Node.Metronome
