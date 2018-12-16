@@ -6,6 +6,7 @@ import           Control.Concurrent
 import           Testing.Hspec.Extra
 
 import           Tests.BroadcastServer
+import           Tests.Serialization
 
 import           Control.Concurrent.Model
 import           Control.Concurrent.Node.Loger
@@ -54,6 +55,8 @@ main = do
         it "Tcp broadcast server test"
             $ isOk $ finishFor 10000 $ broadcastServerTest (loger logActor) 5001 50
 
+        it "Tcp serialization binary test "
+            $ isOk $ finishFor 10000 $ serializationTest (loger logActor)
         it "Test 1 for state machine"
             $ isOk $ stateMachinTest1 $ loger logActor
 
@@ -65,5 +68,6 @@ main = do
 
         it "Test 4 for state machine"
             $ isOk $ finishFor 1000 $ appleGirl $ loger logActor
+
 
     threadDelay 1000000

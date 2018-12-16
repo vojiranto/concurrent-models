@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f1a4893f4931a972aca76147f25417773cfcd4f39d3c9cd8806e98c83439b5a0
+-- hash: 132d7c2f1337779e894667bb84c5849cb4e2625a8e0f8997b84b5040695b3674
 
 name:           concurrent-models
 version:        0.2.0.0
@@ -42,6 +42,9 @@ library
       Control.Concurrent.Model.Actor
       Control.Concurrent.Service.Subscription
       Control.Concurrent.Service.StreamManager
+      Control.Concurrent.Service.Serialization.Common
+      Control.Concurrent.Service.Serialization.Binary
+      Control.Concurrent.Service.Stream
       Control.Concurrent.Node.Network.Tcp
       Control.Concurrent.Node.Console
       Control.Concurrent.Node.Metronome
@@ -61,7 +64,7 @@ library
       Control.Concurrent.Model.StateMachine.Runtime.Struct
       Control.Concurrent.Model.StateMachine.TH
       Control.Concurrent.Prelude
-      Control.Concurrent.Service.Stream
+      Control.Concurrent.Service.Serialization
       Control.Concurrent.Service.Subscription.Domain
       Language.Haskell.TH.Extra
       Language.Haskell.TH.MakeFunctor
@@ -71,8 +74,10 @@ library
   default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   ghc-options: -Wall -Werror
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , base58string
+    , binary
     , bytestring
     , clock
     , containers
@@ -112,8 +117,10 @@ executable example
       app
   default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , base58string
+    , binary
     , bytestring
     , clock
     , concurrent-models
@@ -137,6 +144,7 @@ test-suite Actor-test
   other-modules:
       Testing.Hspec.Extra
       Tests.BroadcastServer
+      Tests.Serialization
       Actor
       Actor.PingPong
       Actor.Postman
@@ -158,9 +166,11 @@ test-suite Actor-test
   default-extensions: NoImplicitPrelude TypeSynonymInstances FlexibleInstances MultiParamTypeClasses OverloadedStrings ScopedTypeVariables LambdaCase GADTs
   ghc-options: -Wall -Werror -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      async
+      aeson
+    , async
     , base >=4.7 && <5
     , base58string
+    , binary
     , bytestring
     , clock
     , concurrent-models
