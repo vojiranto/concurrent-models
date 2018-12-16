@@ -79,6 +79,7 @@ library:
     - Control.Concurrent.Service.StreamManager
     - Control.Concurrent.Service.Serialization.Common
     - Control.Concurrent.Service.Serialization.Binary
+    - Control.Concurrent.Service.Serialization.Adt
     - Control.Concurrent.Service.Stream
     - Control.Concurrent.Node.Network.Tcp
     - Control.Concurrent.Node.Console 

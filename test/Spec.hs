@@ -11,6 +11,8 @@ import           Tests.Serialization
 import           Control.Concurrent.Model
 import           Control.Concurrent.Node.Loger
 import           Control.Concurrent.Flag
+import           Control.Concurrent.Service.Serialization.Adt
+import           Control.Concurrent.Service.Serialization.Binary
 
 import           Tcp
 import           StateMachine
@@ -56,7 +58,11 @@ main = do
             $ isOk $ finishFor 10000 $ broadcastServerTest (loger logActor) 5001 50
 
         it "Tcp serialization binary test "
-            $ isOk $ finishFor 10000 $ serializationTest (loger logActor)
+            $ isOk $ finishFor 10000 $ serializationTest Bin (loger logActor)
+
+        it "Tcp serialization Adt test "
+            $ isOk $ finishFor 10000 $ serializationTest Adt (loger logActor)
+            
         it "Test 1 for state machine"
             $ isOk $ stateMachinTest1 $ loger logActor
 
