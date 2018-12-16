@@ -11,18 +11,23 @@ import           Control.Concurrent.Service.Serialization.Common
 import           Data.Binary
 
 newtype Ping = Ping Int deriving (Generic, Binary)
+newtype Pong = Pong Int deriving (Generic, Binary)
 
 serializationTest :: Loger -> IO ()
 serializationTest loger = do
-    ok <- newFlag
+    okPing <- newFlag
+    okPong <- newFlag
     receiver <- runActor loger $
-        handlers Bin $
-            math $ \(Ping i) (_:: TextId) -> when (i == 2) $ liftFlag ok
+        handlers Bin $ do
+            math $ \(Ping i) (_:: TextId) -> when (i == 2) $ liftFlag okPing
+            math $ \(Pong i) (_:: TextId) -> when (i == 12) $ liftFlag okPong
     
-    sender <- runActor loger $ do
+    void $ runActor loger $ do
         myRef <- this
-        math $ \(Ping i) -> notify receiver $
-            Message (getTextId myRef) (packIn Bin (Ping i)) 
-    
-    notify sender $ Ping 2
-    wait ok
+        liftIO $ do
+            notify receiver $ Message (getTextId myRef) (packIn Bin (Ping 2))
+            notify receiver $ Message (getTextId myRef) (packIn Bin (Pong 12)) 
+            stopRole myRef
+
+    wait okPing
+    wait okPong
