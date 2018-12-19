@@ -58,6 +58,7 @@ executables:
 
     dependencies:
     - concurrent-models
+    - configurator
 
 library:
   source-dirs: src

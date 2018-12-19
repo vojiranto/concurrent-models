@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 867c3f6e819e8c063e3c5093938226b122f72592e925052b92a95b30f7acd006
+-- hash: 4b896a43e4b5fd0402673bc41a7f6c2bc57b75d9048b19dcce5ed5954546ad57
 
 name:           concurrent-models
 version:        0.2.0.0
@@ -125,6 +125,7 @@ executable example
     , bytestring
     , clock
     , concurrent-models
+    , configurator
     , containers
     , extra
     , free

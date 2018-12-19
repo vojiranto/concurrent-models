@@ -11,9 +11,9 @@ import           Control.Concurrent.Node.Console
 import           Control.Concurrent.Flag
 import           Control.Concurrent.Service.Subscription
 
-tcpBroadcastServer :: Loger -> IO ()
-tcpBroadcastServer loger = do
-    (tcpServer, controller) <- runBroadcastServer loger 5000 500
+tcpBroadcastServer :: PortNumber -> Int -> Loger -> IO ()
+tcpBroadcastServer portNumber maxPSize loger = do
+    (tcpServer, controller) <- runBroadcastServer loger portNumber maxPSize
     console                 <- runConsoleWorker loger
     exitFromServer <- newFlag
     commandReader <- runActor loger $
