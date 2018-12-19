@@ -52,7 +52,7 @@ main = do
             $ isOk $ postmanExample2 $ loger logActor
 
         it "Tcp connection test"
-            $ isOk $ finishFor 5000 $ tcpExample (loger logActor) 5000 50
+            $ isOk $ finishFor 10000 $ tcpExample (loger logActor) 5000 50
 
         it "Tcp broadcast server test"
             $ isOk $ finishFor 10000 $ broadcastServerTest (loger logActor) 5001 50

@@ -10,11 +10,10 @@ import           Control.Concurrent.Flag
 import           Control.Concurrent.Service.Subscription
 import           Control.Concurrent.Node.Network.Tcp
 import           Control.Concurrent.Node.Console
+import           Node.Tcp.Configs
 
-type Host = String
-
-tcpClient :: Host -> PortNumber -> Int -> Loger -> IO ()
-tcpClient host portNumber maxPSize loger = do
+tcpClient :: Loger -> ClientConfig -> IO ()
+tcpClient loger (ClientConfig host (ServerConfig portNumber maxPSize)) = do
     exitFromClient  <- newFlag
     client          <- runTcpClient loger host portNumber maxPSize
     console         <- runConsoleWorker loger

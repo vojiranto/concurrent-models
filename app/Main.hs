@@ -5,6 +5,7 @@ import           System.Environment
 import qualified Data.Configurator as Cfg
 import           Data.Text (pack)
 import           Control.Concurrent.Node.Loger
+import           Node.Tcp.Configs
 import           Node
 
 main :: IO ()
@@ -14,17 +15,14 @@ main = do
     args <- getArgs
     case args of
         "tcp_client":_           -> catchAny (do
-                cfg             <- Cfg.load ["configs/tcp_client.cfg"]
-                host            <- Cfg.require cfg "server_host"
-                portNumber      <- Cfg.require cfg "port_number"
-                maxPackageSize  <- Cfg.require cfg "max_package_size"
-                tcpClient host (toEnum portNumber) maxPackageSize (loger logActor)
+                cfg       <- Cfg.load ["configs/tcp_client.cfg"]
+                clientCfg <- getClientConfig cfg
+                tcpClient (loger logActor) clientCfg
             ) (putTextLn .show)
         "tcp_broadcast_server":_ -> catchAny (do
-                cfg             <- Cfg.load ["configs/tcp_server.cfg"]
-                portNumber      <- Cfg.require cfg "port_number"
-                maxPackageSize  <- Cfg.require cfg "max_package_size"
-                tcpBroadcastServer (toEnum portNumber) maxPackageSize (loger logActor)
+                cfg       <- Cfg.load ["configs/tcp_server.cfg"]
+                serverCfg <- getServerConfig cfg 
+                tcpBroadcastServer (loger logActor) serverCfg
             ) (putTextLn .show)
         key:_ -> putTextLn $
             "The key \"" <> pack key <> "\" isn't supported."
