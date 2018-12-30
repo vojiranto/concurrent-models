@@ -7,13 +7,14 @@ import           Universum
 import           Control.Concurrent.Node.Network.Tcp
 import           Control.Concurrent.Model
 import           Node.Tcp.BroadcastServer
+import           Node.Tcp.Configs
 import           Control.Concurrent.Flag
 import           Control.Concurrent.Service.Subscription
 
 
 broadcastServerTest :: Loger -> PortNumber -> Int -> IO ()
 broadcastServerTest loger portNumber maxPSize = do
-    (server, controller) <- runBroadcastServer loger       portNumber maxPSize
+    (server, controller) <- runBroadcastServer loger (ServerConfig portNumber maxPSize)
     client               <- runTcpClient loger "127.0.0.1" portNumber maxPSize
     exitFromServer <- newFlag
     commandReader <- runActor loger $

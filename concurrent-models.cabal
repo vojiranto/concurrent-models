@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 867c3f6e819e8c063e3c5093938226b122f72592e925052b92a95b30f7acd006
+-- hash: fe9ee1048b0579a5b76b044c68dd6145680ac0ce1bfc6a8d7e54bf903cb586fd
 
 name:           concurrent-models
 version:        0.2.0.0
@@ -67,8 +67,6 @@ library
       Control.Concurrent.Prelude
       Control.Concurrent.Service.Serialization
       Control.Concurrent.Service.Subscription.Domain
-      Language.Haskell.TH.Extra
-      Language.Haskell.TH.MakeFunctor
       Paths_concurrent_models
   hs-source-dirs:
       src
@@ -91,6 +89,7 @@ library
     , template-haskell
     , text
     , th-abstraction
+    , th-extra
     , unique
     , universum
   default-language: Haskell2010
@@ -105,6 +104,7 @@ executable example
       Node
       Node.Tcp.BroadcastServer
       Node.Tcp.Client
+      Node.Tcp.Configs
       StateMachine
       StateMachine.AppleGirl
       StateMachine.Door
@@ -125,6 +125,7 @@ executable example
     , bytestring
     , clock
     , concurrent-models
+    , configurator
     , containers
     , extra
     , free
@@ -135,6 +136,7 @@ executable example
     , template-haskell
     , text
     , th-abstraction
+    , th-extra
     , unique
     , universum
   default-language: Haskell2010
@@ -153,6 +155,7 @@ test-suite Actor-test
       Node
       Node.Tcp.BroadcastServer
       Node.Tcp.Client
+      Node.Tcp.Configs
       StateMachine
       StateMachine.AppleGirl
       StateMachine.Door
@@ -175,6 +178,7 @@ test-suite Actor-test
     , bytestring
     , clock
     , concurrent-models
+    , configurator
     , containers
     , extra
     , free
@@ -186,6 +190,7 @@ test-suite Actor-test
     , template-haskell
     , text
     , th-abstraction
+    , th-extra
     , unique
     , universum
   default-language: Haskell2010

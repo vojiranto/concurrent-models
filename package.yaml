@@ -48,6 +48,7 @@ dependencies:
 - base58string
 - binary
 - aeson
+- th-extra
 
 executables:
   example:
@@ -58,6 +59,7 @@ executables:
 
     dependencies:
     - concurrent-models
+    - configurator
 
 library:
   source-dirs: src
@@ -107,3 +109,4 @@ tests:
     - concurrent-models
     - async
     - nanospec
+    - configurator
