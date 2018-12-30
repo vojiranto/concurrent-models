@@ -14,7 +14,6 @@ getServerConfig cfg = do
     maxPackageSize  <- Cfg.require serverCfg "max_package_size"
     pure $ ServerConfig (toEnum portNumber) maxPackageSize
 
-
 type Host         = String
 data ClientConfig = ClientConfig Host ServerConfig
 

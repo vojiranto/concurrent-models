@@ -61,6 +61,9 @@ packages:
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
+extra-deps:
+  - git: https://github.com/vojiranto/th-extra.git
+    commit: 978f47422ee3b0a296c78c3a1e79be936aa4e539
 
 build:
   haddock-arguments:

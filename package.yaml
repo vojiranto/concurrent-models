@@ -48,6 +48,7 @@ dependencies:
 - base58string
 - binary
 - aeson
+- th-extra
 
 executables:
   example:
