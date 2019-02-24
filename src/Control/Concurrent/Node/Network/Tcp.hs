@@ -24,7 +24,7 @@ runTcpServer
     :: forall a.(
         HaveTextId a,
         Listener a NewHandle,
-        Listener a Message,
+        Listener a (Message ByteStream),
         Listener a IsClosed)
     => Loger -> a -> S.PortNumber -> Int -> IO TcpServer
 runTcpServer loger centralActor port maxPSize =
@@ -46,7 +46,7 @@ tcpServer
     :: forall a.(
     HaveTextId a,
     Listener a NewHandle,
-    Listener a Message,
+    Listener a (Message ByteStream),
     Listener a IsClosed)
     => Loger -> a -> S.Socket -> Int -> IO TcpServer
 tcpServer loger centralActor listenSock maxPSize = runFsm loger Opened $ do
@@ -93,7 +93,7 @@ runStream loger handler maxPSize = runFsm loger Opened $ do
     myRef       <- this
     liftIO $ readerWorker (B.hGetSome handler maxPSize) myRef
     math $ \(Inbox message) ->
-        multicast subscribers $ Message (getTextId myRef) message
+        multicast subscribers $ ByteStreamMessage (getTextId myRef) message
     math $ \msg -> catchAny
         (B.hPut handler msg)
         (\_ -> notify myRef CommandClose)

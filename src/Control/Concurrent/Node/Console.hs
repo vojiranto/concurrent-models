@@ -16,7 +16,7 @@ runConsoleWorker loger = runFsm loger Opened $ do
     myRef <- this
     liftIO $ readerWorker B.getLine myRef
     math $ \(Inbox message) ->
-        multicast subscribers $ Message (getTextId myRef) message
+        multicast subscribers $ ByteStreamMessage (getTextId myRef) message
     math $ \(message :: B.ByteString) -> catchAny
         (B8.putStrLn message)
         (\_ -> notify myRef CommandClose)

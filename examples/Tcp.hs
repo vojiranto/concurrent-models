@@ -14,7 +14,7 @@ tcpExample loger portNumber maxPSize = do
     controller <- runStateMachine loger StreamManager $ do
         toLog Info "Start of central controller"
         void streamManager
-        math $ \(Message _ msg) ->
+        math $ \(ByteStreamMessage _ msg) ->
             when (msg == "ping") $ liftFlag success
     void $ runTcpServer loger controller portNumber maxPSize
     output <- runTcpClient loger "127.0.0.1" portNumber maxPSize

@@ -18,10 +18,10 @@ broadcastServerTest loger portNumber maxPSize = do
     client               <- runTcpClient loger "127.0.0.1" portNumber maxPSize
     exitFromServer <- newFlag
     commandReader <- runActor loger $
-        math $ \(Message _ msg) -> when (msg == "ping") $ do
+        math $ \(ByteStreamMessage _ msg) -> when (msg == "ping") $ do
             notify server     CommandClose
             notify controller CommandClose
             liftFlag exitFromServer
-    $(subscribe [t|Message|]) client commandReader
+    $(subscribe [t|Message ByteStream|]) client commandReader
     notify client ("ping" :: ByteString) 
     wait exitFromServer

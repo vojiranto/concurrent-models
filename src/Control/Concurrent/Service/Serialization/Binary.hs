@@ -25,12 +25,12 @@ instance (Typeable t, Binary t) => Math (t -> TextId -> IO ()) (HandlersL Bin By
 instance (Typeable msg, Binary msg) => PackFormat Bin ByteString msg where
     packIn _ msg = B.toStrict $ encode (show $ typeOf msg :: Text, encode msg)
 
-instance forall (m :: * -> *). (Logers m, MonadIO m, Math (Message -> IO ()) m)
+instance forall (m :: * -> *). (Logers m, MonadIO m, Math (Message ByteStream -> IO ()) m)
     => Handlers Bin ByteString m where
     handlers _ hs = do
         loger <- getLoger
         rm    <- makeHandlers loger hs
-        math $ \(Message textId byteString) -> do
+        math $ \(ByteStreamMessage textId byteString) -> do
             let (tag :: Text, rawMsg) = decode $ B.fromStrict byteString
             applyMHandle loger (M.lookup tag rm) tag rawMsg textId
 

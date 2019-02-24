@@ -7,6 +7,13 @@ module Control.Concurrent.Service.StreamManager where
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
 import           Control.Concurrent.Service.ByteStream
+    ( ByteStream
+    , IsClosed(..)
+    , NewHandle(..)
+    , CommandClose(..)
+    , StreamManager(..)
+    , Closed(..)
+    )
 
 import qualified Data.Map as M
 

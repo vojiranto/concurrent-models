@@ -18,11 +18,11 @@ tcpBroadcastServer loger serverConfig  = do
     console                 <- runConsoleWorker loger
     exitFromServer <- newFlag
     commandReader <- runActor loger $
-        math $ \(Message _ msg) -> when (msg == "exit") $ do
+        math $ \(ByteStreamMessage _ msg) -> when (msg == "exit") $ do
             notify tcpServer  CommandClose
             notify controller CommandClose
             liftFlag exitFromServer
-    $(subscribe [t|Message|]) console commandReader
+    $(subscribe [t|Message ByteStream|]) console commandReader
     wait exitFromServer
 
 runBroadcastServer :: Loger -> ServerConfig -> IO (TcpServer, StateMachine)
@@ -30,7 +30,7 @@ runBroadcastServer loger (ServerConfig portNumber maxPSize) = do
     controller <- runStateMachine loger StreamManager $ do
         toLog Info "Start of broadcast server"
         connectsRef <- streamManager
-        math $ \(Message _ msg) -> broadcast connectsRef msg
+        math $ \(ByteStreamMessage _ msg) -> broadcast connectsRef msg
 
     server <- runTcpServer loger controller portNumber maxPSize
     pure (server, controller)

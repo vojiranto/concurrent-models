@@ -19,16 +19,16 @@ tcpClient loger (ClientConfig host (ServerConfig portNumber maxPSize)) = do
     console         <- runConsoleWorker loger
 
     resenderToConsole <- runActor loger $
-        math $ \(Message _ msg) -> notify console msg
+        math $ \(ByteStreamMessage _ msg) -> notify console msg
 
     resenderToClient <- runActor loger $ do
-        math $ \(Message _ msg) -> do
+        math $ \(ByteStreamMessage _ msg) -> do
             when (msg == "exit") $ liftFlag exitFromClient
             notify client msg
         math $ \(IsClosed _) -> liftFlag exitFromClient
 
-    $(subscribe [t|Message|])  console   resenderToClient 
-    $(subscribe [t|Message|])  client    resenderToConsole
+    $(subscribe [t|Message ByteStream|])  console   resenderToClient 
+    $(subscribe [t|Message ByteStream|])  client    resenderToConsole
     $(subscribe [t|IsClosed|]) client    resenderToClient
 
     clientState <- readState client

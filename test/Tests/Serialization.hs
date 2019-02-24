@@ -30,8 +30,8 @@ serializationTest format loger = do
     void $ runActor loger $ do
         myRef <- this
         liftIO $ do
-            notify receiver $ Message (getTextId myRef) (packIn format (Ping 2))
-            notify receiver $ Message (getTextId myRef) (packIn format (Pong 12)) 
+            notify receiver $ ByteStreamMessage (getTextId myRef) (packIn format (Ping 2))
+            notify receiver $ ByteStreamMessage (getTextId myRef) (packIn format (Pong 12)) 
             stopRole myRef
 
     wait okPing

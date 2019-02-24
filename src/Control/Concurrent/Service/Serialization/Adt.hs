@@ -26,12 +26,12 @@ instance (Typeable t, Read t) => Math (t -> TextId -> IO ()) (HandlersL Adt Byte
 instance Show msg => PackFormat Adt ByteString msg where
     packIn _  = encodeUtf8 . (show :: msg -> Text)
 
-instance forall (m :: * -> *). (Logers m, MonadIO m, Math (Message -> IO ()) m)
+instance forall (m :: * -> *). (Logers m, MonadIO m, Math (Message ByteStream -> IO ()) m)
     => Handlers Adt ByteString m where
     handlers _ hs = do
         loger <- getLoger
         rm    <- makeHandlers loger hs
-        math $ \(Message textId byteString) -> do
+        math $ \(ByteStreamMessage textId byteString) -> do
             let rawMsg = T.decodeUtf8 byteString
             let tag    = T.takeWhile (/= ' ') rawMsg
             applyMHandle loger (M.lookup tag rm) tag byteString textId
