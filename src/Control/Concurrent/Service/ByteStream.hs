@@ -24,7 +24,10 @@ class (Listener s CommandClose, Typeable s, HaveTextId s) => Stream s where
     data family Inbox s
     data family NewHandle s
 
-    fromHandler :: NewHandle s -> s
+    fromHandler     :: NewHandle s -> s
+    streemSubscribe ::
+        (Listener a (NewHandle s), Listener a (Message s), Listener a IsClosed, HaveTextId a)
+        => s -> a -> IO ()
 
 instance Stream ByteStream where
     data Message   ByteStream = ByteStreamMessage TextId ByteString 
@@ -32,6 +35,12 @@ instance Stream ByteStream where
     data NewHandle ByteStream = ByteStreamNewHandle ByteStream
 
     fromHandler (ByteStreamNewHandle byteStream) = byteStream
+
+    streemSubscribe stream centralActor = do
+        -- sending events          from   to
+        $(subscribe [t|IsClosed|]) stream centralActor
+        $(subscribe [t|Message ByteStream|])  stream centralActor
+        notify centralActor $ ByteStreamNewHandle stream
 
 streemCloseLogic
     :: (HaveTextId a, Acception Closed (IO b))
@@ -43,14 +52,3 @@ streemCloseLogic subscribers myRef ioAction = do
         multicast subscribers $ IsClosed $ getTextId myRef
         ioAction
 
-streemSubscribe
-    :: (Listener a (NewHandle ByteStream)
-    , Listener a (Message ByteStream)
-    , Listener a IsClosed
-    , HaveTextId a)
-    => ByteStream -> a -> IO ()
-streemSubscribe stream centralActor = do
-    -- sending events          from   to
-    $(subscribe [t|IsClosed|]) stream centralActor
-    $(subscribe [t|Message ByteStream|])  stream centralActor
-    notify centralActor $ ByteStreamNewHandle stream
