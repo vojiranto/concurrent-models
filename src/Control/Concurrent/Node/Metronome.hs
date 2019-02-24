@@ -13,7 +13,7 @@ metronome :: Typeable msg => Loger -> Integer -> msg -> IO Metronome
 metronome loger timeout event = do
     Metronome fsm <- runFsm loger Started $ do
         toLog Info "Start of metronome"
-        subscribers <- subscriptioService
+        subscribers <- subscriptionService
         startTime   <- liftIO $ getTime Realtime
         stepСounter <- liftIO $ newIORef (0 :: Integer)
         myRef <- this
