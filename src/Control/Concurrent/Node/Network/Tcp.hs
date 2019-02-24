@@ -23,7 +23,7 @@ makeFsm "TcpServer" [[t|CommandClose|], [t|Subscription|], [t|Unsubscribe|]]
 runTcpServer
     :: forall a.(
         HaveTextId a,
-        Listener a NewHandle,
+        Listener a (NewHandle ByteStream),
         Listener a (Message ByteStream),
         Listener a IsClosed)
     => Loger -> a -> S.PortNumber -> Int -> IO TcpServer
@@ -45,7 +45,7 @@ runTcpServer loger centralActor port maxPSize =
 tcpServer
     :: forall a.(
     HaveTextId a,
-    Listener a NewHandle,
+    Listener a (NewHandle ByteStream),
     Listener a (Message ByteStream),
     Listener a IsClosed)
     => Loger -> a -> S.Socket -> Int -> IO TcpServer

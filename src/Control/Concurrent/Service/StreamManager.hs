@@ -22,7 +22,7 @@ streamManager = do
     toLog Info "Init connect manager service"
     -- work logic
     connectsRef <- liftIO $ newIORef mempty 
-    mathS StreamManager $ \(NewHandle fsm) ->
+    mathS StreamManager $ \(ByteStreamNewHandle fsm) ->
         void $ modifyIORef' connectsRef (M.insert (getTextId fsm) fsm)
     mathS StreamManager $ \(IsClosed textId) ->
         void $ modifyIORef' connectsRef (M.delete textId)
