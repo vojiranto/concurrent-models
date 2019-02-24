@@ -10,7 +10,7 @@ import           Control.Concurrent.Service.ByteStream
 
 import qualified Data.Map as M
 
-streamManager :: StateMachineL (IORef (M.Map TextId Stream))
+streamManager :: StateMachineL (IORef (M.Map TextId ByteStream))
 streamManager = do
     toLog Info "Init connect manager service"
     -- work logic

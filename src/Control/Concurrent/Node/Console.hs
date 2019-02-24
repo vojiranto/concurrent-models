@@ -10,7 +10,7 @@ import           Control.Concurrent.Service.ByteStream
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 
-runConsoleWorker :: Loger -> IO Stream
+runConsoleWorker :: Loger -> IO ByteStream
 runConsoleWorker loger = runFsm loger Opened $ do
     subscribers <- subscriptionService
     myRef <- this

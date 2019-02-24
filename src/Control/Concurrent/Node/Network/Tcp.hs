@@ -69,7 +69,7 @@ tcpServer loger centralActor listenSock maxPSize = runFsm loger Opened $ do
     streemCloseLogic subscribers myRef $ S.close listenSock
 
 runTcpClient
-    :: Loger -> S.HostName -> S.PortNumber -> Int -> IO Stream
+    :: Loger -> S.HostName -> S.PortNumber -> Int -> IO ByteStream
 runTcpClient loger host port maxPSize =
     catchAny (do
         handle <- makeTcpConnection host port
@@ -86,7 +86,7 @@ makeTcpConnection host port = do
     S.connect sock $ S.addrAddress address
     S.socketToHandle sock ReadWriteMode
 
-runStream :: Loger -> Handle -> Int -> IO Stream
+runStream :: Loger -> Handle -> Int -> IO ByteStream
 runStream loger handler maxPSize = runFsm loger Opened $ do
     toLog Info "Start of stream controller"
     subscribers <- subscriptionService
