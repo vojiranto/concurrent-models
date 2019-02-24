@@ -92,7 +92,7 @@ runStream loger handler maxPSize = runFsm loger Opened $ do
     subscribers <- subscriptionService
     myRef       <- this
     liftIO $ readerWorker (B.hGetSome handler maxPSize) myRef
-    math $ \(Inbox message) ->
+    math $ \(ByteStreamInbox message) ->
         multicast subscribers $ ByteStreamMessage (getTextId myRef) message
     math $ \msg -> catchAny
         (B.hPut handler msg)
@@ -101,12 +101,12 @@ runStream loger handler maxPSize = runFsm loger Opened $ do
     streemCloseLogic subscribers myRef $ H.hClose handler
 
 readerWorker
-    :: (Listener a CommandClose, Listener a Inbox, Listener a ByteString)
+    :: (Listener a CommandClose, Listener a (Inbox ByteStream), Listener a ByteString)
     => IO ByteString -> a -> IO ()
 readerWorker readerAction myRef = void $ forkIO $ whileM $ do
     rawData <- readerAction
     let retryReading = not $ B.null rawData
     if retryReading
-        then notify myRef (Inbox rawData)
+        then notify myRef (ByteStreamInbox rawData)
         else notify myRef CommandClose
     pure retryReading

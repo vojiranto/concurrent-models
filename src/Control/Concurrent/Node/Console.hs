@@ -15,7 +15,7 @@ runConsoleWorker loger = runFsm loger Opened $ do
     subscribers <- subscriptionService
     myRef <- this
     liftIO $ readerWorker B.getLine myRef
-    math $ \(Inbox message) ->
+    math $ \(ByteStreamInbox message) ->
         multicast subscribers $ ByteStreamMessage (getTextId myRef) message
     math $ \(message :: B.ByteString) -> catchAny
         (B8.putStrLn message)
@@ -23,9 +23,9 @@ runConsoleWorker loger = runFsm loger Opened $ do
     streemCloseLogic subscribers myRef $ pure ()
 
 readerWorker
-    :: (Listener a Inbox, Listener a ByteString)
+    :: (Listener a (Inbox ByteStream), Listener a ByteString)
     => IO ByteString -> a -> IO ()
 readerWorker readerAction myRef =
     void $ forkIO $ forever $ do
         rawData <- readerAction
-        notify myRef (Inbox rawData)
+        notify myRef (ByteStreamInbox rawData)
