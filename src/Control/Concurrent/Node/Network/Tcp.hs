@@ -17,7 +17,7 @@ import qualified GHC.IO.Handle as H
 import           Control.Concurrent.Service.Subscription
 import qualified Network.Socket as S
 import           Control.Concurrent.Service.StreamManager as X
-import           Control.Concurrent.Service.Stream        as X
+import           Control.Concurrent.Service.ByteStream        as X
 
 makeFsm "TcpServer" [[t|CommandClose|], [t|Subscription|], [t|Unsubscribe|]]
 runTcpServer
@@ -59,14 +59,14 @@ tcpServer loger centralActor listenSock maxPSize = runFsm loger Opened $ do
             (clientSock, _) <- S.accept listenSock
             handler         <- S.socketToHandle clientSock ReadWriteMode
             stream          <- runStream loger handler maxPSize
-            subscribeStreem stream centralActor
+            streemSubscribe stream centralActor
             pure True
         ) (\_ -> do
             fsmLoger Info "Accepting socket is closed."
             notify myRef CommandClose
             pure False
         )
-    closeLogic subscribers myRef $ S.close listenSock
+    streemCloseLogic subscribers myRef $ S.close listenSock
 
 runTcpClient
     :: Loger -> S.HostName -> S.PortNumber -> Int -> IO Stream
@@ -98,7 +98,7 @@ runStream loger handler maxPSize = runFsm loger Opened $ do
         (B.hPut handler msg)
         (\_ -> notify myRef CommandClose)
 
-    closeLogic subscribers myRef $ H.hClose handler
+    streemCloseLogic subscribers myRef $ H.hClose handler
 
 readerWorker
     :: (Listener a CommandClose, Listener a Inbox, Listener a ByteString)

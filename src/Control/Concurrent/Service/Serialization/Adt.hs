@@ -6,7 +6,7 @@ module Control.Concurrent.Service.Serialization.Adt where
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
 import           Control.Concurrent.Service.Serialization.Common
-import           Control.Concurrent.Service.Stream
+import           Control.Concurrent.Service.ByteStream
 import           Text.Read
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T

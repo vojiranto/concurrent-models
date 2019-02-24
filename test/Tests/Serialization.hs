@@ -6,7 +6,7 @@ module Tests.Serialization where
 import           Universum
 import           Control.Concurrent.Model
 import           Control.Concurrent.Flag
-import           Control.Concurrent.Service.Stream
+import           Control.Concurrent.Service.ByteStream
 import           Control.Concurrent.Service.Serialization.Common
 import           Data.Binary
 

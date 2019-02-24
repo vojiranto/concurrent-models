@@ -6,7 +6,7 @@ module Control.Concurrent.Node.Console where
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Service.Subscription
 import           Control.Concurrent.Model
-import           Control.Concurrent.Service.Stream
+import           Control.Concurrent.Service.ByteStream
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 
@@ -20,7 +20,7 @@ runConsoleWorker loger = runFsm loger Opened $ do
     math $ \(message :: B.ByteString) -> catchAny
         (B8.putStrLn message)
         (\_ -> notify myRef CommandClose)
-    closeLogic subscribers myRef $ pure ()
+    streemCloseLogic subscribers myRef $ pure ()
 
 readerWorker
     :: (Listener a Inbox, Listener a ByteString)

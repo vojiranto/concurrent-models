@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.1.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fe9ee1048b0579a5b76b044c68dd6145680ac0ce1bfc6a8d7e54bf903cb586fd
+-- hash: 6c6db9fde63a6c0bffda401648cdfb1526bcbece79a264c6478b8aea77ed0804
 
 name:           concurrent-models
 version:        0.2.0.0
@@ -45,7 +45,7 @@ library
       Control.Concurrent.Service.Serialization.Common
       Control.Concurrent.Service.Serialization.Binary
       Control.Concurrent.Service.Serialization.Adt
-      Control.Concurrent.Service.Stream
+      Control.Concurrent.Service.ByteStream
       Control.Concurrent.Node.Network.Tcp
       Control.Concurrent.Node.Console
       Control.Concurrent.Node.Metronome

@@ -6,7 +6,7 @@ module Control.Concurrent.Service.Serialization.Binary where
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
 import           Control.Concurrent.Service.Serialization.Common
-import           Control.Concurrent.Service.Stream
+import           Control.Concurrent.Service.ByteStream
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Map as M
 import           Data.Binary

@@ -6,7 +6,7 @@ module Control.Concurrent.Service.StreamManager where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
-import           Control.Concurrent.Service.Stream
+import           Control.Concurrent.Service.ByteStream
 
 import qualified Data.Map as M
 

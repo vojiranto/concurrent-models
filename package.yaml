@@ -82,7 +82,7 @@ library:
     - Control.Concurrent.Service.Serialization.Common
     - Control.Concurrent.Service.Serialization.Binary
     - Control.Concurrent.Service.Serialization.Adt
-    - Control.Concurrent.Service.Stream
+    - Control.Concurrent.Service.ByteStream
     - Control.Concurrent.Node.Network.Tcp
     - Control.Concurrent.Node.Console 
     - Control.Concurrent.Node.Metronome
