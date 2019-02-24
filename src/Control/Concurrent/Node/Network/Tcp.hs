@@ -51,7 +51,7 @@ tcpServer
     => Loger -> a -> S.Socket -> Int -> IO TcpServer
 tcpServer loger centralActor listenSock maxPSize = runFsm loger Opened $ do
     toLog Info "Start of tcp server"
-    subscribers <- subscriptioService
+    subscribers <- subscriptionService
     fsmLoger    <- getLoger
     myRef       <- this
     liftIO $ void $ forkIO $
@@ -89,7 +89,7 @@ makeTcpConnection host port = do
 runStream :: Loger -> Handle -> Int -> IO Stream
 runStream loger handler maxPSize = runFsm loger Opened $ do
     toLog Info "Start of stream controller"
-    subscribers <- subscriptioService
+    subscribers <- subscriptionService
     myRef       <- this
     liftIO $ readerWorker (B.hGetSome handler maxPSize) myRef
     math $ \(Inbox message) ->

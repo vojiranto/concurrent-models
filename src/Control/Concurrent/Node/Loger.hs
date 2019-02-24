@@ -22,7 +22,7 @@ makeAct "LogerActor" [[t|LogMessage|], [t|SetLogLevel|], [t|Subscription|], [t|U
 
 runLogerActor :: IO LogerActor
 runLogerActor = runRole dummyLoger $ do
-    subscribers <- subscriptioService
+    subscribers <- subscriptionService
     logLevelRef <- liftIO $ newIORef Warn
     math $ \(SetLogLevel logLever) -> (writeIORef logLevelRef logLever :: IO ())
     math $ \(LogMessage logLevel text) -> do

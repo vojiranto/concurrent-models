@@ -6,7 +6,7 @@ module Control.Concurrent.Service.Subscription
     , Subscribers
     , Subscription
     , Unsubscribe
-    , subscriptioService
+    , subscriptionService
     , makeNotify
     , unsubscribe
     , subscribe
@@ -24,7 +24,7 @@ multicast subscribers msg = do
     broadcastList <- readIORef subscribers
     forM_ (getNotifyList broadcastList msg) ($ msg)
 
-subscriptioService
+subscriptionService
     :: (Math (Unsubscribe -> IO ()) m
     ,   Math (Subscription -> IO ()) m
     ,   MonadIO m
@@ -32,7 +32,7 @@ subscriptioService
     ,   This m act
     ,   HaveTextId act) =>
     m (IORef Subscribers)
-subscriptioService = do
+subscriptionService = do
     toLog Trace "[Subscription service] [init begin]"
     loger <- getLoger
     subscribers <- liftIO $ newIORef $ Subscribers mempty

@@ -12,7 +12,7 @@ import qualified Data.ByteString.Char8 as B8
 
 runConsoleWorker :: Loger -> IO Stream
 runConsoleWorker loger = runFsm loger Opened $ do
-    subscribers <- subscriptioService
+    subscribers <- subscriptionService
     myRef <- this
     liftIO $ readerWorker B.getLine myRef
     math $ \(Inbox message) ->
