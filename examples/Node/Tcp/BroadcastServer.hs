@@ -29,7 +29,7 @@ runBroadcastServer :: Loger -> ServerConfig -> IO (TcpServer, StateMachine)
 runBroadcastServer loger (ServerConfig portNumber maxPSize) = do
     controller <- runStateMachine loger StreamManager $ do
         toLog Info "Start of broadcast server"
-        connectsRef <- streamManager
+        connectsRef :: Streams ByteStream <- streamManager
         math $ \(ByteStreamMessage _ msg) -> broadcast connectsRef msg
 
     server <- runTcpServer loger controller portNumber maxPSize

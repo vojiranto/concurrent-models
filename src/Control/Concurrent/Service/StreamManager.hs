@@ -1,28 +1,22 @@
 {-# Language FlexibleContexts #-}
-{-# Language TemplateHaskell  #-}
-{-# Language QuasiQuotes      #-}
+{-# Language ViewPatterns     #-}
 
 module Control.Concurrent.Service.StreamManager where
 
 import           Control.Concurrent.Prelude
 import           Control.Concurrent.Model
 import           Control.Concurrent.Service.ByteStream
-    ( ByteStream
-    , IsClosed(..)
-    , NewHandle(..)
-    , CommandClose(..)
-    , StreamManager(..)
-    , Closed(..)
-    )
 
 import qualified Data.Map as M
 
-streamManager :: StateMachineL (IORef (M.Map TextId ByteStream))
+type Streams s = IORef (M.Map TextId s)
+
+streamManager :: Stream s => StateMachineL (Streams s)
 streamManager = do
     toLog Info "Init connect manager service"
     -- work logic
     connectsRef <- liftIO $ newIORef mempty 
-    mathS StreamManager $ \(ByteStreamNewHandle fsm) ->
+    mathS StreamManager $ \(fromHandler -> fsm) ->
         void $ modifyIORef' connectsRef (M.insert (getTextId fsm) fsm)
     mathS StreamManager $ \(IsClosed textId) ->
         void $ modifyIORef' connectsRef (M.delete textId)
